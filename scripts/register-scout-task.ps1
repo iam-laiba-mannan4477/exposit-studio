@@ -2,9 +2,9 @@
   Registers a daily Windows scheduled task that runs one Scout collection, even when the studio is closed.
   The task starts a short Python process (no AI model, no server) and exits; it runs as you, only while you are signed in.
 
-      powershell -ExecutionPolicy Bypass -File .\scripts\register-scout-task.ps1            # daily at 09:10
-      powershell -ExecutionPolicy Bypass -File .\scripts\register-scout-task.ps1 -At 21:40
-      powershell -ExecutionPolicy Bypass -File .\scripts\register-scout-task.ps1 -Remove
+      .\scripts\register-scout-task.ps1            # daily at 09:10
+      .\scripts\register-scout-task.ps1 -At 21:40
+      .\scripts\register-scout-task.ps1 -Remove
 
   The Scout reads public sources only (GitHub search, release feeds, YouTube channel feeds, Hacker News search).
   It records what it finds; it never installs or runs anything it discovers.

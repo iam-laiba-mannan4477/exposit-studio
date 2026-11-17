@@ -1,8 +1,9 @@
 <#
   Exposit Studio — installer for Windows PowerShell 5.1 and PowerShell 7.
 
-  Run from the project folder:
-      powershell -ExecutionPolicy Bypass -File .\install.ps1
+  Run from the project folder (works in Windows PowerShell 5.1 and PowerShell 7):
+      Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+      .\install.ps1
 
   What it does, in order (each step can be re-run safely):
     1. Finds Python 3.12 or 3.13.
@@ -58,8 +59,9 @@ if ($Python) {
     }
 }
 if (-not $pyExe) {
-    Fail ("Python 3.12 or 3.13 was not found.`n  Install it with:  winget install -e --id Python.Python.3.12`n" +
-          "  or from https://www.python.org/downloads/ (tick 'Add python.exe to PATH'), then open a new PowerShell window and run install.ps1 again.")
+    Fail ("Python 3.12 or 3.13 was not found.`n" +
+          "  Download the 'Windows installer (64-bit)' for Python 3.12 from https://www.python.org/downloads/windows/`n" +
+          "  and tick 'Add python.exe to PATH' on its first screen. Then open a NEW PowerShell window and run install.ps1 again.")
 }
 Write-Host "    Using: $pyExe $($pyPre -join ' ') (Python $(Get-PyVersion $pyExe $pyPre))"
 
@@ -104,7 +106,7 @@ $dist = Join-Path $PSScriptRoot 'web\dist\index.html'
 if ($BuildWeb -or -not (Test-Path -LiteralPath $dist)) {
     Step 'Building the web interface'
     if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-        Fail "The web interface needs building and Node.js was not found. Install it with:  winget install -e --id OpenJS.NodeJS.LTS  then run install.ps1 again."
+        Fail "The web interface needs building and Node.js was not found. Install the LTS version from https://nodejs.org/ and run install.ps1 again."
     }
     Push-Location web
     try {
@@ -127,4 +129,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host ''
 Write-Host 'Exposit Studio is installed. Start it with:' -ForegroundColor Green
-Write-Host '    powershell -ExecutionPolicy Bypass -File .\start-exposit.ps1'
+Write-Host '    .\start-exposit.ps1   (in a new window, first run:  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass)'

@@ -1,7 +1,7 @@
 <#
   Exposit Studio — start the studio and open it in your browser.
 
-      powershell -ExecutionPolicy Bypass -File .\start-exposit.ps1
+      Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\start-exposit.ps1
 
   Options:
     -Port 8700     listen on another port (default 8600, or EXPOSIT_PORT in .env)
@@ -19,7 +19,7 @@ Set-Location -LiteralPath $PSScriptRoot
 $onWindows = ($PSVersionTable.PSEdition -eq 'Desktop') -or $IsWindows
 if ($onWindows) { $venvPy = Join-Path $PSScriptRoot '.venv\Scripts\python.exe' } else { $venvPy = Join-Path $PSScriptRoot '.venv/bin/python' }
 if (-not (Test-Path -LiteralPath $venvPy)) {
-    Write-Host 'Exposit is not installed yet. Run:  powershell -ExecutionPolicy Bypass -File .\install.ps1' -ForegroundColor Red
+    Write-Host 'Exposit is not installed yet. Run:  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\install.ps1' -ForegroundColor Red
     exit 1
 }
 

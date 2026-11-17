@@ -9,18 +9,20 @@ Start with the self-check. It names the failing part:
 ## Installing
 
 **"running scripts is disabled on this system"**
-Run the scripts with `powershell -ExecutionPolicy Bypass -File .\install.ps1`. This applies to that run only and changes no setting.
+Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first. It applies to that PowerShell window only and changes no permanent setting.
+
+**"'winget' is not recognized" or "'powershell' is not recognized"**
+You don't need either. Install Python from python.org (see README), and run the scripts directly as `.\install.ps1` and `.\start-exposit.ps1`.
 
 **"Python 3.12 or 3.13 was not found"**
-`winget install -e --id Python.Python.3.12`, then **open a new PowerShell window** so PATH updates, and run the installer again. If you have several Pythons, pass one: `.\install.ps1 -Python C:\Path\To\python.exe`.
+Install the 64-bit Python 3.12 from https://www.python.org/downloads/windows/ with "Add python.exe to PATH" ticked, then **open a new PowerShell window** so PATH updates, and run the installer again. If you have several Pythons, pass one: `.\install.ps1 -Python C:\Path\To\python.exe`.
 Python 3.14 is not supported yet, because some packages have no 3.14 build. Python 3.11 is untested.
 
 **pip fails with "No matching distribution" or tries to compile something**
 The installer only accepts prebuilt packages (`--only-binary`). This error means the Python is the wrong version or 32-bit. Check with `python -c "import struct,sys;print(sys.version, struct.calcsize('P')*8)"`: it must be 3.12 or 3.13, and 64.
 
 **doctor: `package onnxruntime` or `package skia` PROBLEM, "DLL load failed"**
-The Microsoft Visual C++ runtime is missing. Install it and run `doctor` again:
-`winget install -e --id Microsoft.VCRedist.2015+.x64`
+The Microsoft Visual C++ runtime is missing. Install it from https://aka.ms/vs/17/release/vc_redist.x64.exe and run `doctor` again.
 
 **Model download fails or "checksum does not match"**
 Run `.\.venv\Scripts\python -m exposit.cli models` again; it resumes cleanly. Behind a company proxy, set `HTTPS_PROXY` first. To download by hand, put these two files in `models\`, then run the command again to verify them:
@@ -40,7 +42,7 @@ To find the program using the port: `Get-NetTCPConnection -LocalPort 8600 | Sele
 Use `http://127.0.0.1:8600`. Some systems resolve `localhost` to the IPv6 address first, and the studio listens on IPv4.
 
 **The page is blank, or "The web interface has not been built"**
-The `web\dist` folder is missing. Run `.\install.ps1 -BuildWeb` (needs Node.js 20+: `winget install -e --id OpenJS.NodeJS.LTS`).
+The `web\dist` folder is missing. Run `.\install.ps1 -BuildWeb` (needs Node.js 20+ from https://nodejs.org/).
 
 ## Producing
 

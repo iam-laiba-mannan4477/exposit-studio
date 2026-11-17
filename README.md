@@ -10,25 +10,24 @@ The included 60-second sample, *How an HTTP request reaches a Kubernetes app*, i
 
 ## 1. Install (Windows PowerShell)
 
-You need **Python 3.12 or 3.13** and about **1.5 GB** of disk. Node.js is *not* needed (the web interface comes prebuilt).
+You need **Python 3.12 or 3.13** (64-bit) and about **1.5 GB** of disk. Node.js is *not* needed (the web interface comes prebuilt). These commands work in both Windows PowerShell and PowerShell 7.
+
+1. **Python.** Check with `py --version` or `python --version`. If neither prints 3.12 or 3.13, download the **Windows installer (64-bit)** for Python 3.12 from https://www.python.org/downloads/windows/, tick **"Add python.exe to PATH"** on the first screen, and open a **new** PowerShell window afterwards.
+2. **Go to the folder that contains `install.ps1`.** After unzipping it is the inner `exposit-studio` folder; `ls install.ps1` should find the file.
+3. **Install:**
 
 ```powershell
-# 1. If you do not have Python 3.12 or 3.13:
-winget install -e --id Python.Python.3.12
-
-# 2. Unzip exposit-studio.zip, then in PowerShell go to the folder:
-cd $HOME\Downloads\exposit-studio
-
-# 3. Install (creates .venv, installs packages, downloads the 120 MB narration model, runs a self-check):
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass   # allows scripts in this window only
+.\install.ps1
 ```
 
-The installer finishes with `All checks passed.` If it reports a problem, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The most likely one on Windows is a missing Visual C++ runtime: `winget install -e --id Microsoft.VCRedist.2015+.x64`.
+The installer creates `.venv`, installs the packages, downloads the 120 MB narration model and runs a self-check. It finishes with `All checks passed.` If it reports a problem, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The most likely one on Windows is a missing Visual C++ runtime: install it from https://aka.ms/vs/17/release/vc_redist.x64.exe (Microsoft's official link) and run `.\install.ps1` again.
 
 ## 2. Start
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\start-exposit.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass   # needed once per new PowerShell window
+.\start-exposit.ps1
 ```
 
 It waits until the studio answers, prints the address, and opens your browser at **http://127.0.0.1:8600** (`http://localhost:8600` also works). Stop it with **Ctrl+C** in that window. Options: `-Port 8700`, `-NoBrowser`.
@@ -86,7 +85,7 @@ Every setting is optional. `install.ps1` creates `.env` from `.env.example`, whi
 ## 7. Scout, library, references
 
 - **Scout** collects public signals: GitHub repositories and releases, feeds, YouTube channel uploads and Hacker News. Run it from the Scout page, let it run daily while the studio is open, or register a Windows task that runs it daily even when the studio is closed:
-  `powershell -ExecutionPolicy Bypass -File .\scripts\register-scout-task.ps1` (add `-Remove` to undo).
+  `.\scripts\register-scout-task.ps1` (add `-Remove` to undo).
   It uses no AI model. Every tool it finds is recorded as *discovered*, with licence, maintenance, hardware, cost and security notes from public metadata. **It never installs or runs anything.**
 - **Creative library**: 35 starting items in 11 categories, each with source, date, evidence level (verified / preference / observation / hypothesis / experiment), applicability and confidence.
 - **Reference analysis**: upload a video you may use, an image or a transcript. It measures shots (hard cuts and fades), motion, palettes, pauses, loudness and narration pace, and can add those numbers to the library. It does not download from platforms or keep anyone's wording. Transcribing a video's speech is optional: `.\.venv\Scripts\python -m pip install -r requirements-optional.txt`.
@@ -164,7 +163,7 @@ Each production is a folder under `data\productions\<id>\` holding plain JSON an
 ## 12. Changing the interface
 
 ```powershell
-winget install -e --id OpenJS.NodeJS.LTS
+# install Node.js LTS from https://nodejs.org/ first
 cd web; npm ci; npm run dev     # http://127.0.0.1:5173, with the studio running on 8600
 npm run build                   # writes web\dist, which the studio serves
 ```

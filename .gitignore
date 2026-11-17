@@ -8,3 +8,5 @@ models/*.onnx
 models/*.bin
 web/node_modules/
 *.part
+.vscode/
+*.bundle

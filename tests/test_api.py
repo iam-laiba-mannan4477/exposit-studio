@@ -110,3 +110,35 @@ def test_caption_style_setting(client):
     assert client.put("/api/settings", json={"caption_style": "loud"}).status_code == 400
     assert client.put("/api/settings", json={"caption_style": "word"}).json()["settings"]["caption_style"] == "word"
     assert client.put("/api/settings", json={"caption_style": "phrase"}).json()["settings"]["caption_style"] == "phrase"
+
+
+def test_caption_style_changes_clip_hashes_and_rebuild_plan(client):
+    """Switching Phrase -> Word highlight must re-render clips; switching back restores the original hashes."""
+    from conftest import example
+    from exposit import director, store
+    p = store.create_production({"title": "Caption hash", "topic": "x", "format": "9:16"})
+    pid = p["id"]
+    store.write_json(pid, "script/script.json", example("script.json"))
+    store.write_json(pid, "storyboard/board.json", example("board.json"))
+    try:
+        client.put("/api/settings", json={"caption_style": "phrase"})
+        phrase = [s["clip_hash"] for s in director.scene_hashes(pid)]
+        audio = [s["audio_hash"] for s in director.scene_hashes(pid)]
+        # Pretend everything was built with Phrase captions.
+        store.write_json(pid, "export/manifest.json", {"scenes": [{"id": s["id"], "audio_hash": s["audio_hash"], "clip_hash": s["clip_hash"]}
+                                                                  for s in director.scene_hashes(pid)],
+                                                       "final_hash": director.final_hash(pid)})
+        assert director.plan(pid)["rejoin"] is False, "nothing to do before the switch"
+
+        client.put("/api/settings", json={"caption_style": "word"})
+        word = director.scene_hashes(pid)
+        assert all(a != b for a, b in zip(phrase, (s["clip_hash"] for s in word))), "every clip hash changes"
+        assert [s["audio_hash"] for s in word] == audio, "narration is not affected"
+        pl = director.plan(pid)
+        assert pl["renders"] == len(phrase) and pl["narrations"] == 0 and pl["rejoin"]
+
+        client.put("/api/settings", json={"caption_style": "phrase"})
+        assert [s["clip_hash"] for s in director.scene_hashes(pid)] == phrase, "Phrase hashes are the same as before"
+        assert director.plan(pid)["rejoin"] is False
+    finally:
+        client.put("/api/settings", json={"caption_style": "phrase"})

@@ -8,7 +8,7 @@ Treatments: kinetic (typography + UI bar), flow2d (network-flow map), isometric 
 cutaway (inside a Kubernetes node), chart (bars).
 """
 from __future__ import annotations
-import math, re, subprocess
+import functools, math, re, subprocess
 from typing import Callable
 import skia
 from .. import config
@@ -208,6 +208,26 @@ def text(c: skia.Canvas, s: str, x: float, y: float, f: skia.Font, color: int, a
     return w
 
 
+@functools.lru_cache(maxsize=4096)
+def fit_font(s: str, maxw: float, size: float, smallest: float, weight: str = "Regular", mono: bool = False) -> skia.Font:
+    """The largest size from `size` down to `smallest` at which `s` fits in `maxw`."""
+    sz = size
+    while sz > smallest and font(sz, weight, mono=mono).measureText(s) > maxw:
+        sz -= 1
+    return font(sz, weight, mono=mono)
+
+
+@functools.lru_cache(maxsize=4096)
+def fit(s: str, maxw: float, size: float, smallest: float, weight: str = "Regular", mono: bool = False) -> str:
+    """`s` itself if it fits at some size down to `smallest`; otherwise cut with an ellipsis so it never leaves its box."""
+    f = fit_font(s, maxw, size, smallest, weight, mono)
+    if f.measureText(s) <= maxw:
+        return s
+    while s and f.measureText(s + "…") > maxw:
+        s = s[:-1]
+    return s.rstrip() + "…"
+
+
 def wrap(s: str, f: skia.Font, maxw: float) -> list[str]:
     """Greedy word wrap to a pixel width."""
     rows, cur = [], ""
@@ -241,9 +261,9 @@ def box(c, sc: Scene, x, y, w, h, label, kind="node", a=1.0, hl=0.0, dim=0.0, su
     c.drawRoundRect(r, radius, radius, paint(col(T["panel"], alpha)))
     c.drawRoundRect(r, radius, radius, paint(col(kc if hl > 0.05 else T["line"], alpha * (0.6 + 0.4 * hl)), 2 + 1.5 * hl))
     c.drawCircle(x + 30, y + 34, 9, paint(col(kc, alpha)))
-    text(c, label, x + 50, y + 43, font(27, "SemiBold"), col(T["text"], alpha))
+    text(c, fit(label, w - 66, 27, 18, "SemiBold"), x + 50, y + 43, fit_font(label, w - 66, 27, 18, "SemiBold"), col(T["text"], alpha))
     if sub:
-        text(c, sub, x + 28, y + h - 26, font(21, mono=mono_sub), col(T["text2"], alpha))
+        text(c, fit(sub, w - 52, 21, 15, mono=mono_sub), x + 28, y + h - 26, fit_font(sub, w - 52, 21, 15, mono=mono_sub), col(T["text2"], alpha))
 
 
 def packet_dot(c, sc: Scene, x, y, a=1.0):
@@ -314,6 +334,9 @@ class Flow2D(Treatment):
             for i, eid in enumerate(ids):
                 self.pos[eid] = (540 - self.W / 2, y0 + i * (self.H + gap), self.W, self.H)
             return
+        need = max([font(27, "SemiBold").measureText(self.sc.els[i].get("label", i)) + 66 for i in ids] +
+                   [font(21).measureText(self.sc.els[i].get("sub") or "") + 56 for i in ids] + [250])
+        self.W = min(need, max(250.0, (1920 - 220 - (n - 1) * 60) / n), 420)
         gap = min(140, (1920 - 220 - n * self.W) / max(1, n - 1)) if n > 1 else 0
         total = n * self.W + (n - 1) * gap
         x0 = (1920 - total) / 2
@@ -321,6 +344,22 @@ class Flow2D(Treatment):
             self.pos[eid] = (x0 + i * (self.W + gap), 474, self.W, self.H)
 
     def frame_for(self, targets):
+        """Frame the targets; then widen until no other box is cut by the frame edge."""
+        targets = [i for i in targets if i in self.pos]
+        for _ in range(len(self.pos) + 1):
+            s, fx, fy = self._frame(targets)
+            if self.portrait:
+                lo, hi, a, b = fy - 440 / s, fy + 440 / s, 1, 3
+            else:
+                lo, hi, a, b = fx - 960 / s, fx + 960 / s, 0, 2
+            cut = [i for i, p in self.pos.items() if i not in targets and p[a] < hi and p[a] + p[b] > lo
+                   and not (p[a] >= lo and p[a] + p[b] <= hi)]
+            if not cut:
+                return s, fx, fy
+            targets = targets + cut
+        return s, fx, fy
+
+    def _frame(self, targets):
         xs = [self.pos[i] for i in targets if i in self.pos]
         if not xs:
             return 1.0, self.CX, self.CY

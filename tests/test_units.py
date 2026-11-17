@@ -150,3 +150,17 @@ def test_generic_isometric_and_cutaway_kinds(portrait):
     assert b.ng and b.svc and len(b.pods) == 2
     for sp in (iso, cut):
         assert len(engine.render_still(sp, tm, 2.5, *((540, 960) if portrait else (960, 540)))) > 5000
+
+
+def test_long_labels_stay_inside_their_boxes():
+    long = "Cache-Control: max-age=86400, s-maxage=600, stale-while-revalidate=30"
+    assert engine.fit(long, 200, 21, 15) != long and engine.font(15).measureText(engine.fit(long, 200, 21, 15)) <= 200
+    assert engine.fit("Origin", 200, 21, 15) == "Origin"
+    els = [{"id": f"e{i}", "label": "Regional edge cache", "sub": "the website's own server"} for i in range(5)]
+    tr = engine.build({"id": "a", "title": "t", "treatment": "flow2d", "elements": els, "camera": {"start": ["e0", "e1"]}},
+                      {"duration": 3, "sentences": [], "words": []})
+    assert all(p[0] >= 0 and p[0] + p[2] <= 1920 for p in tr.pos.values())
+    s, fx, _ = tr.frame_for(["e0", "e1"])
+    lo, hi = fx - 960 / s, fx + 960 / s
+    for p in tr.pos.values():   # no box is cut by the frame edge
+        assert p[0] >= lo - 0.5 and p[0] + p[2] <= hi + 0.5 or p[0] + p[2] <= lo or p[0] >= hi

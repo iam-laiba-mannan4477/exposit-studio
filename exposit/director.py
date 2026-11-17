@@ -55,11 +55,19 @@ def _save_gate(pid: str, gate: dict, auto: bool) -> None:
 
 
 # ------------------------------------------------------------------ stages
+def _repairs() -> int:
+    """Repair rounds a role gets when its gate fails, before the stage stops for you (Settings)."""
+    try:
+        return max(0, min(3, int(store.get_settings().get("repair_rounds", 1))))
+    except (TypeError, ValueError):
+        return 1
+
+
 def run_research(pid: str, ctx: Ctx) -> bool:
     brief = _brief(pid)
     payload = {"brief": brief, "documents": _documents(pid)}
     gate = None
-    for attempt in range(2):
+    for attempt in range(1 + _repairs()):
         ctx.say("Researcher: collecting facts and sources" + (" (repair)" if attempt else ""), 0.05)
         facts = roles.run("researcher", payload, ctx.meta(pid)).model_dump()
         gate = gates.research_gate(facts)
@@ -153,7 +161,7 @@ def run_script(pid: str, ctx: Ctx) -> bool:
     payload = {"brief": brief, "facts": facts, "strategy": strategy, "target_seconds": _target_seconds(brief),
                "words_per_second": gates.WPS, "library": [k for k in knowledge.for_strategy() if k["category"] in ("Narration guidelines", "Opening hooks", "Audience engagement")]}
     gate = None
-    for attempt in range(2):
+    for attempt in range(1 + _repairs()):
         ctx.say("Storyteller: writing the narration" + (" (repair)" if attempt else ""), 0.25)
         script = roles.run("storyteller", payload, ctx.meta(pid)).model_dump()
         review = _review(pid, ctx, script, facts)
@@ -174,7 +182,7 @@ def run_storyboard(pid: str, ctx: Ctx) -> bool:
     payload = {"script": script, "system_model": facts.get("model", {}), "strategy": strategy,
                "library": [k for k in knowledge.for_strategy() if k["category"] in ("Animation recipes", "Camera movements", "Transition patterns", "Visual compositions", "Motion graphics patterns")]}
     gate = None
-    for attempt in range(2):
+    for attempt in range(1 + _repairs()):
         ctx.say("Visual Planner: writing one specification per scene" + (" (repair)" if attempt else ""), 0.35)
         board = roles.run("visual_planner", payload, ctx.meta(pid)).model_dump(exclude_none=True)
         gate = gates.storyboard_gate(board, script, facts)

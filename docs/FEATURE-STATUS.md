@@ -37,6 +37,7 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 | Sequential orchestration, one model call at a time | Tested | Single worker thread runs one job at a time |
 | Audio Producer as plain code (no model) | Tested | Kokoro narration, generated music bed and effects, loudness normalisation |
 | Quality Reviewer: code checks on every gate and on the final video | Tested | Independent model review is optional (Settings) |
+| Repair rounds before a failing stage stops for you (0 to 3, Settings) | Tested | Default 1. If the same agent writes and reviews, the review is not truly independent |
 | Provider: **Agent bridge** (default, $0) | Tested | Full production driven through it in the end-to-end test, with a stand-in agent answering |
 | Provider: **Claude Code command line** (`claude -p`) | Not fully tested | Code written; not run here because the sandbox has no signed-in Claude Code. Uses your plan's limits; not unlimited |
 | Provider: **OpenAI-compatible** (Ollama, LM Studio, hosted) | Not fully tested | Code written; no endpoint available here. Local addresses count as free |
@@ -63,8 +64,8 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 |---|---|---|
 | Kinetic typography | Tested | |
 | 2D network flow (nodes, arrows, travelling packets, highlights) | Tested | |
-| Isometric architecture scene | Tested | |
-| Technical cutaway (containers inside containers, code panel, strike-through misconception) | Tested | |
+| Isometric architecture scene | Tested | Generic: any front component (load balancer, CDN cache, gateway, primary database) sending to members grouped in zones, with topic-specific state labels |
+| Technical cutaway (containers inside containers, code panel, strike-through misconception) | Tested | Generic: inside any component (panel, router, row of workers); Kubernetes kinds still work |
 | Charts | Tested | Bar chart; unit test only, not used in the sample |
 | UI demonstrations | Partial | Browser address bar with typing, code/config panels. No general UI-screen mock-up component |
 | 3D scenes | Planned | Optional. Blender is in the tool register as "watching"; nothing 3D is rendered |

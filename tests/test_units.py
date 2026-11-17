@@ -129,3 +129,24 @@ def test_wrap_respects_width():
     f = engine.font(46, "SemiBold")
     rows = engine.wrap("Before the page appears, four decisions are made about where your request goes", f, 600)
     assert len(rows) > 1 and all(f.measureText(r) <= 600 for r in rows)
+
+
+@pytest.mark.parametrize("portrait", [False, True])
+def test_generic_isometric_and_cutaway_kinds(portrait):
+    """The zone view and the cutaway are not tied to AWS or Kubernetes: a CDN draws with them too."""
+    iso = {"id": "x", "title": "Edges", "treatment": "isometric", "state_labels": {"healthy": "has a copy", "unhealthy": "no copy yet"},
+           "elements": [{"id": "rc", "kind": "cache", "label": "Regional edge cache"}, {"id": "r1", "kind": "region", "label": "Asia"},
+                        {"id": "r2", "kind": "region", "label": "Europe"}, {"id": "e1", "kind": "edge", "label": "Karachi edge", "zone": "r1"},
+                        {"id": "e2", "kind": "edge", "label": "Frankfurt edge", "zone": "r2", "state": "unhealthy"}],
+           "cues": [{"at": 0.5, "action": "pulse"}]}
+    cut = {"id": "y", "title": "Inside", "treatment": "cutaway", "container_label": "Edge server", "code": ["GET /logo.png"],
+           "elements": [{"id": "p", "kind": "server", "label": "Request handler"}, {"id": "c", "kind": "cache", "label": "Cache lookup"},
+                        {"id": "w1", "kind": "storage", "label": "Memory"}, {"id": "w2", "kind": "storage", "label": "SSD"}],
+           "cues": [{"at": 0.5, "action": "lookup"}]}
+    tm = {"duration": 3, "sentences": [], "words": []}
+    a = engine.build(iso, tm, portrait=portrait)
+    assert a.lb and len(a.zones) == 2 and len(a.nodes) == 2
+    b = engine.build(cut, tm, portrait=portrait)
+    assert b.ng and b.svc and len(b.pods) == 2
+    for sp in (iso, cut):
+        assert len(engine.render_still(sp, tm, 2.5, *((540, 960) if portrait else (960, 540)))) > 5000

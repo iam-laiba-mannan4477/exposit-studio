@@ -77,6 +77,9 @@ export function Settings() {
               <span className="sec">The key is read from <span className="mono">EXPOSIT_LLM_API_KEY</span> in <span className="mono">.env</span>; it is never stored by the app or shown here. Hosted providers charge per token: check the provider's current price list before raising the budget.</span></>}
             <Field label="Budget for paid services per production (US dollars)" hint="At 0, every paid provider is refused."><input type="number" min="0" step="0.5" value={s.budget_paid_usd} onChange={e => set('budget_paid_usd', +e.target.value)} /></Field>
             <Check k="independent_review">Ask the Quality Reviewer role for an independent review of script and storyboard</Check>
+            <Field label="Repair rounds when a check fails" hint="After these, the stage stops and waits for you. Each round is one more task for the agent.">
+              <select value={s.repair_rounds ?? 1} onChange={e => set('repair_rounds', +e.target.value)}>
+                {[0, 1, 2, 3].map(n => <option key={n} value={n}>{n === 0 ? 'None: stop at the first failure' : n === 1 ? '1 (default)' : String(n)}</option>)}</select></Field>
             <span className="label">Keys present in .env</span>{Object.entries(data.env).map(([k, v]) => <Line key={k} k={<span className="mono">{k}</span>}><Badge tone={v ? 'ok' : 'muted'}>{v ? 'Set' : 'Not set'}</Badge></Line>)}
           </Card>
           <Card title="Defaults for new productions">

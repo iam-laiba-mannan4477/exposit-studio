@@ -18,8 +18,19 @@ Aim for a visual change every 2 to 4 seconds. Every packet `from`/`to` must be a
 Treatments
 - kinetic: "lines": [{"text", "at", "accent"?: true, "size"?: 84}], optional "ui": {"url": "..."} with cues `type` and `enter`.
 - flow2d: elements in left-to-right order; "camera": {"start": [ids to frame first], "exit": "push_in", "exit_focus": id}.
-- isometric: one element of kind lb; elements of kind zone; elements of kind node with "zone": <zone id> and "state": healthy|unhealthy.
-- cutaway: one element of kind nginx, one of kind service, several of kind pod; "code": [lines shown in the ingress panel]; "container_label".
+- isometric: a 3D-looking view of one front component sending work to servers grouped in zones. Use it for any
+  "one thing in front, several groups behind it" arrangement: a load balancer and availability zones, a CDN's regional
+  cache and its edge locations by region, an API gateway and service regions, a database primary and replica regions.
+  One front element (kind lb, hub, gateway, cdn, router, origin or cache); group elements (kind zone, region, group or
+  datacenter); member elements (kind node, server, edge, replica, instance or worker) with "zone": <group id> and
+  "state": healthy|unhealthy. Optional "state_labels": {"healthy": "...", "unhealthy": "..."} to say what the two
+  states mean in this topic (for a CDN, for example {"healthy": "has a copy", "unhealthy": "no copy yet"}).
+- cutaway: a look inside one component. A top panel (kind panel, component, server, cdn, edge, gateway, nginx or ingress)
+  with optional "code": [lines shown in it, such as a config or a header]; a router in the middle (kind router, cache,
+  service, switch, queue or balancer) that "lookup" connects to the workers; a row of workers below (kind worker,
+  replica, item, storage, db, instance or pod). Set "container_label" to what the outer box is (for example "Edge server
+  in Karachi"). Works for an edge server with its cache and storage, a service with its worker pool, a queue with its
+  consumers, as well as an ingress, a Service and pods.
 - chart: "title", "data": [{"label", "value", "accent"?}].
 Camera: "enter": "zoom_out", "exit": "push_in" join scenes with motion.
 

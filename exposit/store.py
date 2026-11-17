@@ -84,6 +84,7 @@ DEFAULT_SETTINGS = {
     "scout_hn_queries": ["explainer video", "text to speech", "MCP server"],
     "budget_paid_usd": 0,
     "independent_review": True,
+    "repair_rounds": 1,
     "scout_last_run": 0,
     "default_review_mode": "final_only",
 }

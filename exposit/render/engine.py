@@ -25,7 +25,18 @@ THEMES = {
                          green="#E6E6E6", amber="#CFCFCF", red="#8A8A8A", pink="#BDBDBD"),
 }
 KIND_COLOR = {"browser": "blue", "client": "blue", "dns": "teal", "lb": "accent", "nginx": "green", "ingress": "green",
-              "service": "amber", "pod": "blue", "node": "text2", "zone": "line", "db": "pink", "queue": "amber"}
+              "service": "amber", "pod": "blue", "node": "text2", "zone": "line", "db": "pink", "queue": "amber",
+              "hub": "accent", "gateway": "accent", "cdn": "teal", "edge": "teal", "cache": "amber", "router": "amber",
+              "server": "text2", "origin": "pink", "worker": "blue", "replica": "blue", "item": "blue", "panel": "green",
+              "component": "green", "storage": "pink", "user": "blue"}
+
+# Generic roles inside the isometric and cutaway treatments. The original Kubernetes/AWS kinds still work.
+ISO_HUB = ("lb", "hub", "gateway", "cdn", "router", "origin", "cache")
+ISO_GROUP = ("zone", "region", "group", "datacenter")
+ISO_MEMBER = ("node", "server", "edge", "replica", "instance", "worker")
+CUT_PANEL = ("nginx", "ingress", "panel", "component", "gateway", "cdn", "edge", "server")
+CUT_ROUTER = ("service", "router", "cache", "switch", "queue", "balancer")
+CUT_WORKER = ("pod", "worker", "item", "replica", "storage", "db", "instance")
 
 _fonts: dict = {}
 
@@ -471,9 +482,9 @@ class Isometric(Treatment):
 
     def layout(self):
         sc = self.sc
-        self.zones = [e for e in sc.spec.get("elements", []) if e.get("kind") == "zone"]
-        self.nodes = [e for e in sc.spec.get("elements", []) if e.get("kind") == "node"]
-        self.lb = next((e for e in sc.spec.get("elements", []) if e.get("kind") == "lb"), None)
+        self.zones = [e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_GROUP]
+        self.nodes = [e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_MEMBER]
+        self.lb = next((e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_HUB), None)
         n = max(1, len(self.zones))
         if self.portrait:
             self.span = 0.0
@@ -611,7 +622,8 @@ class Isometric(Treatment):
                                paint(col(T["green"] if healthy else T["red"], 0.55 * a), 2.5))
                     if k > 0.6:
                         ma = ease((k - 0.6) / 0.3)
-                        text(c, "healthy" if healthy else "failing health check", lx, hy, font(21, "Medium"),
+                        sl = sc.spec.get("state_labels") or {}
+                        text(c, sl.get("healthy", "healthy") if healthy else sl.get("unhealthy", "failing health check"), lx, hy, font(21, "Medium"),
                              col(T["green"] if healthy else T["red"], ma * a), al)
         self.draw_packets(c, t, self.center)
 
@@ -620,9 +632,9 @@ class Cutaway(Treatment):
     def layout(self):
         sc = self.sc
         els = sc.spec.get("elements", [])
-        self.ng = next((e for e in els if e.get("kind") in ("nginx", "ingress")), None)
-        self.svc = next((e for e in els if e.get("kind") == "service"), None)
-        self.pods = [e for e in els if e.get("kind") == "pod"]
+        self.ng = next((e for e in els if e.get("kind") in CUT_PANEL), None)
+        self.svc = next((e for e in els if e.get("kind") in CUT_ROUTER), None)
+        self.pods = [e for e in els if e.get("kind") in CUT_WORKER]
         if self.portrait:                                  # ingress on top, Service in the middle, pods in a row below
             if self.ng:
                 self.pos[self.ng["id"]] = (100, 450, 880, 290)
@@ -669,13 +681,13 @@ class Cutaway(Treatment):
         dash.setPathEffect(skia.DashPathEffect.Make([18, 12], 0))
         c.drawRoundRect(shell, 28, 28, dash)
         lx, ly = (86, 412) if self.portrait else (206, 204)
-        text(c, sc.spec.get("container_label", "Kubernetes worker node"), lx, ly, font(28, "SemiBold"), col(T["text2"], a0))
+        text(c, sc.spec.get("container_label", ""), lx, ly, font(28, "SemiBold"), col(T["text2"], a0))
         dim = sc.any_highlight(t)
         if self.ng:
             eid = self.ng["id"]
             x, y, w, h = self.pos[eid]
             a, hl = sc.vis(eid, t), sc.highlight(eid, t)
-            box(c, sc, x, y, w, h, self.ng.get("label", "NGINX ingress"), "nginx", a, hl, dim, radius=22)
+            box(c, sc, x, y, w, h, self.ng.get("label", "Component"), self.ng.get("kind", "nginx"), a, hl, dim, radius=22)
             code = sc.spec.get("code", [])
             cl = sc.latest("code", t)
             for i, line in enumerate(code):
@@ -733,7 +745,7 @@ class Cutaway(Treatment):
         for p in self.pods:
             eid = p["id"]
             x, y, w, h = self.pos[eid]
-            box(c, sc, x, y, w, h, p.get("label", "Pod"), "pod", sc.vis(eid, t), sc.highlight(eid, t), dim, sub=p.get("sub"), mono_sub=True)
+            box(c, sc, x, y, w, h, p.get("label", "Worker"), p.get("kind", "pod"), sc.vis(eid, t), sc.highlight(eid, t), dim, sub=p.get("sub"), mono_sub=True)
         self.draw_packets(c, t, self.edge_point)
 
 

@@ -164,3 +164,63 @@ def test_long_labels_stay_inside_their_boxes():
     lo, hi = fx - 960 / s, fx + 960 / s
     for p in tr.pos.values():   # no box is cut by the frame edge
         assert p[0] >= lo - 0.5 and p[0] + p[2] <= hi + 0.5 or p[0] + p[2] <= lo or p[0] >= hi
+
+
+def _timing_for(sents):
+    words, t = [], 0.5
+    for si, s in enumerate(sents):
+        for w in s.split():
+            words.append({"w": w, "s": t, "e": t + 0.3, "si": si}); t += 0.35
+        t += 0.3
+    return {"duration": t + 0.5, "sentences": [], "words": words}
+
+
+def test_word_groups_are_two_to_four_words_within_a_sentence():
+    sents = ["Behind a CDN, your request often never reaches the website's own server.", "So where does it go?", "Hi.", "Now"]
+    timing = _timing_for(sents)
+    groups = engine.word_groups(timing)
+    flat = [w["w"] for g in groups for w in g["words"]]
+    assert flat == [w["w"] for w in timing["words"]], "every word, once, in order"
+    for g in groups:
+        assert len({w["si"] for w in g["words"]}) == 1, "a group never spans two sentences"
+        n_in_sentence = sum(1 for w in timing["words"] if w["si"] == g["words"][0]["si"])
+        assert 2 <= len(g["words"]) <= 4 or n_in_sentence < 2, [w["w"] for w in g["words"]]
+        assert g["s"] == g["words"][0]["s"] and g["e"] == g["words"][-1]["e"]
+
+
+def _accent_pixels(png, region, accent="#7C6CF6"):
+    import io
+    from PIL import Image
+    a = np.asarray(Image.open(io.BytesIO(png)).convert("RGB")).astype(int)
+    y0, y1 = region
+    band = a[int(y0 * a.shape[0]):int(y1 * a.shape[0])]
+    r, g, b = (int(accent[i:i + 2], 16) for i in (1, 3, 5))
+    return int((np.abs(band - [r, g, b]).sum(axis=2) < 60).sum())
+
+
+@pytest.mark.parametrize("portrait", [False, True])
+def test_word_highlight_captions_follow_the_spoken_word(portrait):
+    spec = {"id": "s1", "treatment": "kinetic", "lines": [], "elements": [], "cues": []}
+    timing = _timing_for(["Behind a CDN your request often never reaches the server."])
+    w, h = (540, 960) if portrait else (960, 540)
+    band = (1350 / 1920, 1500 / 1920) if portrait else (900 / 1080, 1010 / 1080)
+    tr = engine.build(spec, timing, portrait=portrait, caption_style="word")
+    t2 = tr.sc.word_groups[0]["words"][1]["s"] + 0.1          # second word of the first group is being spoken
+    g, k = engine.active_word_group(tr.sc, t2)
+    assert k == 1 and g is tr.sc.word_groups[0]
+    word = engine.render_still(spec, timing, t2, w, h, captions=True, caption_style="word")
+    phrase = engine.render_still(spec, timing, t2, w, h, captions=True, caption_style="phrase")
+    assert _accent_pixels(word, band) > 50, "the spoken word is drawn in the accent colour"
+    assert _accent_pixels(phrase, band) == 0, "Phrase captions are white on black"
+    off = engine.render_still(spec, timing, t2, w, h, captions=False, caption_style="word")
+    assert _accent_pixels(off, band) == 0, "no captions when burn-in is off"
+
+
+def test_phrase_style_is_the_default_and_unchanged():
+    spec = example("board.json")["scenes"][0]
+    timing = _timing_for([s["text"] for s in example("script.json")["scenes"][0]["sentences"]])
+    t = timing["duration"] * 0.5
+    default = engine.render_still(spec, timing, t, 960, 540, "premium-technical", True)
+    assert default == engine.render_still(spec, timing, t, 960, 540, "premium-technical", True, caption_style="phrase")
+    assert default == engine.render_still(spec, timing, t, 960, 540, "premium-technical", True, caption_style="bogus"), "unknown styles fall back to Phrase"
+    assert store.DEFAULT_SETTINGS["caption_style"] == "phrase"

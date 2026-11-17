@@ -103,3 +103,10 @@ def test_reference_video_analysis_on_the_sample(client):
     made = client.post(f"/api/references/{r['id']}/to-library").json()["created"]
     assert {m["title"].split(" of ")[0] for m in made} >= {"Editing rhythm", "Audio pattern"}
     client.delete(f"/api/references/{r['id']}")
+
+
+def test_caption_style_setting(client):
+    assert client.get("/api/settings").json()["settings"]["caption_style"] == "phrase"
+    assert client.put("/api/settings", json={"caption_style": "loud"}).status_code == 400
+    assert client.put("/api/settings", json={"caption_style": "word"}).json()["settings"]["caption_style"] == "word"
+    assert client.put("/api/settings", json={"caption_style": "phrase"}).json()["settings"]["caption_style"] == "phrase"

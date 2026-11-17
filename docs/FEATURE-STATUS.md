@@ -71,6 +71,7 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 | 3D scenes | Planned | Optional. Blender is in the tool register as "watching"; nothing 3D is rendered |
 | Word-level cue sync: visuals fire on a spoken word | Tested | Sentence timing is exact (per-sentence synthesis); word timing within a sentence is estimated |
 | Captions burned in + SRT and VTT files | Tested | |
+| Caption style: Phrase (default) or Word highlight (2 to 4 words, large bold, spoken word in the accent colour), 16:9 and 9:16 | Tested | Unit tests on stills; Phrase frames checked byte-identical to the previous engine. Not watched in a full rendered video by a person. Word timing within a sentence is estimated, so the highlight can lead or lag a word slightly. In the Mono theme (white accent) the other words are drawn grey instead |
 | Sound design: generated ambient bed, ducking, blips/whooshes on cues | Tested | Not listened to by a person (see limitations) |
 | Transitions: fade, pull-back in, push-in out | Tested | |
 | Automated final checks: size, frame rate, duration, black, frozen, silence, clipping, codec, no paid service | Tested | |

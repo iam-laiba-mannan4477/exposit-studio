@@ -114,6 +114,8 @@ async def put_settings(req: Request):
     patch = await req.json()
     cur = store.get_settings()
     merged = {**cur, **patch}
+    if merged.get("caption_style", "phrase") not in ("phrase", "word"):
+        raise HTTPException(400, "Caption style must be 'phrase' or 'word'.")
     if providers.is_paid(merged) and float(merged.get("budget_paid_usd") or 0) <= 0:
         raise HTTPException(400, "That provider is paid, and your budget for paid services is $0. Raise the budget first if you want to allow it.")
     return {"settings": store.set_settings(patch), "provider": providers.status()}

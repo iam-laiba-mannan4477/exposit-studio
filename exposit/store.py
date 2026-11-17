@@ -74,6 +74,7 @@ DEFAULT_SETTINGS = {
     "voice": "am_michael",
     "voice_speed": 1.0,
     "burn_captions": True,
+    "caption_style": "phrase",       # phrase | word (Reels-style word highlight)
     "music": True,
     "sfx": True,
     "scout_daily_in_app": False,

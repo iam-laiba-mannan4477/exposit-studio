@@ -92,6 +92,10 @@ export function Settings() {
             <div className="row"><div className="grow"><Field label="Default voice"><select value={s.voice} onChange={e => set('voice', e.target.value)}>{(data.voices.length ? data.voices : [s.voice]).map(v => <option key={v}>{v}</option>)}</select></Field></div>
               <div className="grow"><Field label={`Speed ${(+s.voice_speed).toFixed(2)}×`}><input type="range" min="0.8" max="1.3" step="0.02" value={s.voice_speed} onChange={e => set('voice_speed', +e.target.value)} /></Field></div></div>
             <Check k="burn_captions">Draw captions in the picture (subtitle files are always written)</Check>
+            <Field label="Caption style"><Seg value={s.caption_style || 'phrase'} onChange={v => set('caption_style', v)} options={[
+              { value: 'phrase', label: 'Phrase', title: 'A line of the narration at a time, in a small box at the bottom' },
+              { value: 'word', label: 'Word highlight', title: 'Reels style: 2 to 4 words at a time, large and bold, the spoken word in the accent colour' }]} /></Field>
+            {s.caption_style === 'word' && !s.burn_captions && <p className="muted">Captions are off, so the style has no effect until you turn them on.</p>}
             <Check k="music">Add the generated ambient music bed</Check><Check k="sfx">Add sound effects on visual cues</Check>
             <Line k="Urdu narration"><Planned /></Line><Line k="Premium cloud voices"><Planned>Optional, paid · off</Planned></Line><Line k="Licensed music library"><Planned /></Line></Card>
           <Card title="This machine">{!h ? <Loading rows={2} /> : <>

@@ -209,7 +209,7 @@ def render_settings(pid: str) -> dict:
     if q == "540p":
         w, h = w // 2, h // 2
     return {"w": w, "h": h, "fps": int(b.get("fps", config.FPS)), "theme": b.get("theme", "premium-technical"),
-            "captions": bool(s.get("burn_captions", True)), "voice": b.get("voice") or s["voice"], "speed": float(b.get("voice_speed") or s["voice_speed"]),
+            "captions": bool(s.get("burn_captions", True)), "caption_style": s.get("caption_style", "phrase") if s.get("caption_style") in engine.CAPTION_STYLES else "phrase", "voice": b.get("voice") or s["voice"], "speed": float(b.get("voice_speed") or s["voice_speed"]),
             "music": bool(s.get("music", True)), "sfx": bool(s.get("sfx", True))}
 
 
@@ -223,7 +223,8 @@ def scene_hashes(pid: str) -> list[dict]:
         sc = next((s for s in script["scenes"] if s["id"] == spec["id"]), None)
         sentences = [s["text"] for s in sc["sentences"]] if sc else []
         ah = store.sha("audio", sentences, rs["voice"], rs["speed"], tts.PRONUNCIATION)
-        ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION)
+        ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
+                      *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))   # Phrase hashes unchanged
         out.append({"id": spec["id"], "title": spec.get("title", ""), "audio_hash": ah, "clip_hash": ch, "sentences": sentences, "spec": spec})
     return out
 
@@ -280,7 +281,8 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             t_start = time.time()
             tmp = clip.with_suffix(".part.mp4")
             info = engine.render_clip(s["spec"], s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
-                                      progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None)
+                                      progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None,
+                                      caption_style=rs["caption_style"])
             tmp.replace(clip)
             store.job_log(ctx.job_id, f"Rendered {s['id']}: {info['frames']} frames in {time.time() - t_start:.1f} s") if ctx.job_id else None
         sw, sh = (540, 960) if rs["h"] > rs["w"] else (960, 540)

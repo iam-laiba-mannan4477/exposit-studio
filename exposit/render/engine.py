@@ -93,6 +93,38 @@ def caption_chunks(timing: dict, max_chars: int = 44) -> list[dict]:
     return [{"s": c[0]["s"], "e": c[-1]["e"], "text": " ".join(x["w"] for x in c)} for c in out]
 
 
+CAPTION_STYLES = ("phrase", "word")
+
+
+def word_groups(timing: dict, max_words: int = 4, max_chars: int = 22) -> list[dict]:
+    """Groups of 2 to 4 words for word-highlight captions. A group never spans two sentences. A lone word left
+    at a sentence end takes the last word of the group before it (or joins it, if that group has only two), so
+    only a one-word sentence gives a one-word group. Each group keeps its words with their own timings."""
+    sentences: list[list[dict]] = []
+    for w in timing.get("words", []):
+        if not sentences or sentences[-1][-1]["si"] != w["si"]:
+            sentences.append([])
+        sentences[-1].append(w)
+    out = []
+    for ws in sentences:
+        groups: list[list[dict]] = []
+        cur: list[dict] = []
+        for w in ws:
+            if cur and (len(cur) >= max_words or (len(cur) >= 2 and len(" ".join(x["w"] for x in cur)) + len(w["w"]) + 1 > max_chars)):
+                groups.append(cur)
+                cur = []
+            cur.append(w)
+        if cur:
+            if len(cur) == 1 and groups and len(groups[-1]) >= 3:
+                groups.append([groups[-1].pop()] + cur)
+            elif len(cur) == 1 and groups:
+                groups[-1].extend(cur)
+            else:
+                groups.append(cur)
+        out += [{"s": g[0]["s"], "e": g[-1]["e"], "words": [dict(w) for w in g]} for g in groups]
+    return out
+
+
 class Scene:
     """Resolves cues to times and answers 'what is on screen at t'."""
 
@@ -123,6 +155,10 @@ class Scene:
                 self.show_at[i] = 1e9 if i in hidden else 0.15 + 0.12 * k
                 k += 1
         self.captions = [dict(c, s=c["s"] + self.pad0, e=c["e"] + self.pad0) for c in caption_chunks(timing)]
+        self.caption_style = "phrase"
+        self.word_groups = [dict(g, s=g["s"] + self.pad0, e=g["e"] + self.pad0,
+                                 words=[dict(w, s=w["s"] + self.pad0, e=w["e"] + self.pad0) for w in g["words"]])
+                            for g in word_groups(timing)]
 
     def cue_time(self, at) -> float | None:
         if at is None:
@@ -829,6 +865,45 @@ TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cut
 
 
 # ------------------------------------------------------------------ frame + clip
+def active_word_group(sc, t: float) -> tuple[dict, int] | None:
+    """The word group on screen at t and the index of the word being spoken (the last one that has started)."""
+    for g in sc.word_groups:
+        if g["s"] - 0.05 <= t <= g["e"] + 0.25:
+            k = 0
+            for i, w in enumerate(g["words"]):
+                if w["s"] <= t:
+                    k = i
+            return g, k
+    return None
+
+
+def draw_word_captions(canvas: skia.Canvas, sc, t: float, cx: float, top: float, size: float, max_w: float) -> None:
+    """Reels-style captions: 2 to 4 words, large and bold, the spoken word in the accent colour.
+    Shrinks the type when a group of long words would not fit in max_w."""
+    hit = active_word_group(sc, t)
+    if not hit:
+        return
+    g, k = hit
+    T = sc.T
+    words = [w["w"] for w in g["words"]]
+    f = font(size, "Bold")
+    gap = f.measureText(" ")
+    total = sum(f.measureText(w) for w in words) + gap * (len(words) - 1)
+    if total > max_w:
+        size = size * max_w / total
+        f = font(size, "Bold")
+        gap = f.measureText(" ")
+        total = sum(f.measureText(w) for w in words) + gap * (len(words) - 1)
+    pad_x, h = size * 0.5, size * 1.5
+    r = skia.Rect.MakeXYWH(cx - total / 2 - pad_x, top, total + 2 * pad_x, h)
+    canvas.drawRoundRect(r, size * 0.3, size * 0.3, paint(col("#000000", 0.62)))
+    x, base = cx - total / 2, top + h / 2 + size * 0.36
+    rest = T["text2"] if T["accent"].upper() == "#FFFFFF" else "#FFFFFF"    # Mono theme: white accent, so dim the other words
+    for i, w in enumerate(words):
+        text(canvas, w, x, base, f, col(T["accent"] if i == k else rest))
+        x += f.measureText(w) + gap
+
+
 def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
     sc, T = tr.sc, tr.sc.T
     if tr.portrait:
@@ -878,7 +953,9 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], 0.20 * k)))
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], k), 2))
         text(canvas, co.get("text", ""), 960, r.top() + 53, f, col(T["text"], k), "center")
-    if captions:
+    if captions and sc.caption_style == "word":
+        draw_word_captions(canvas, sc, t, 960, 900, 72, 1500)
+    elif captions:
         for cp in sc.captions:
             if cp["s"] - 0.05 <= t <= cp["e"] + 0.25:
                 f = font(36, "Medium")
@@ -947,7 +1024,9 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], k), 2))
         for j, row in enumerate(rows):
             text(canvas, row, 540, r.top() + 58 + j * 54, f, col(T["text"], k), "center")
-    if captions:
+    if captions and sc.caption_style == "word":
+        draw_word_captions(canvas, sc, t, 540, 1350, 88, 900)    # box ends by y 1482, inside the 1500 safe line
+    elif captions:
         for cp in sc.captions:
             if cp["s"] - 0.05 <= t <= cp["e"] + 0.25:
                 f = font(46, "SemiBold")
@@ -964,17 +1043,18 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     canvas.restore()
 
 
-def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False) -> Treatment:
+def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase") -> Treatment:
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
+    sc.caption_style = caption_style if caption_style in CAPTION_STYLES else "phrase"
     if portrait:                                           # shorter caption cues for a narrow frame
         sc.captions = [dict(c, s=c["s"] + sc.pad0, e=c["e"] + sc.pad0) for c in caption_chunks(timing, 30)]
     return TREATMENTS.get(spec.get("treatment", "flow2d"), Flow2D)(sc)
 
 
 def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960, h: int = 540,
-                 theme: str = "premium-technical", captions: bool = False) -> bytes:
-    tr = build(spec, timing, theme, portrait=h > w)
+                 theme: str = "premium-technical", captions: bool = False, caption_style: str = "phrase") -> bytes:
+    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style)
     surf = skia.Surface(w, h)
     draw_frame(surf.getCanvas(), tr, tr.sc.dur * 0.62 if t is None else t, w, h, captions)
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 90))
@@ -982,9 +1062,9 @@ def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960,
 
 def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, h: int = config.HEIGHT,
                 fps: int = config.FPS, theme: str = "premium-technical", captions: bool = True,
-                progress: Callable[[float], None] | None = None) -> dict:
+                progress: Callable[[float], None] | None = None, caption_style: str = "phrase") -> dict:
     """Render one scene to a silent H.264 clip. Returns duration and frame count."""
-    tr = build(spec, timing, theme, portrait=h > w)
+    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style)
     n = max(1, int(round(tr.sc.dur * fps)))
     surf = skia.Surface(w, h)
     canvas = surf.getCanvas()

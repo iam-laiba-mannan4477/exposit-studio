@@ -49,3 +49,50 @@ def test_scout_module_has_no_install_or_exec_path():
     src = inspect.getsource(scout)
     for banned in ("subprocess", "os.system", "pip install", "git clone", "npm install", "exec("):
         assert banned not in src
+
+
+YT_FEED = """<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><author><name>Some Channel</name></author>
+<entry><title>CDNs explained</title><link href="https://www.youtube.com/watch?v=sig1"/><published>2026-11-15T00:00:00Z</published></entry></feed>"""
+
+
+def test_scout_signals_for_creative_director(monkeypatch):
+    from exposit import director, roles
+    # Channel name comes from the feed's author.
+    assert scout.parse_feed(YT_FEED)[0]["channel"] == "Some Channel"
+    scout._add({"source": "youtube", "kind": "video", "title": "CDNs explained", "url": "https://www.youtube.com/watch?v=sig1",
+                "date": "2026-11-15T00:00:00Z", "channel": "Some Channel", "views": 1234})
+    scout._add({"source": "youtube", "kind": "video", "title": "Old video", "url": "https://www.youtube.com/watch?v=sigold"})
+    for i, (pts, com) in enumerate([(500, 30), (10, 90), (50, 40)]):
+        scout._add({"source": "hackernews", "kind": "discussion", "title": f"Thread {i}", "url": f"https://example.org/sig-hn{i}", "points": pts, "comments": com})
+    for i in range(12):
+        scout._add({"source": "hackernews", "kind": "discussion", "title": f"Quiet {i}", "url": f"https://example.org/sig-quiet{i}", "points": 1, "comments": 0})
+    store.q("UPDATE scout_items SET fetched=? WHERE id=?", (store.now() - 20 * 86400, store.sha("https://www.youtube.com/watch?v=sigold")))
+
+    sig = scout.signals()
+    vids = [s for s in sig if s["kind"] == "video"]
+    disc = [s for s in sig if s["kind"] == "discussion"]
+    v = next(s for s in vids if s["url"].endswith("sig1"))
+    assert v == {"kind": "video", "title": "CDNs explained", "channel": "Some Channel", "date": "2026-11-15T00:00:00Z", "views": 1234,
+                 "url": "https://www.youtube.com/watch?v=sig1"}
+    assert not any(s["url"].endswith("sigold") for s in vids), "only the last 14 days"
+    assert len(disc) == 10, "the 10 most-discussed only"
+    assert [d["title"] for d in disc[:3]] == ["Thread 1", "Thread 2", "Thread 0"], "ordered by comments, then points"
+    assert all(s["url"].startswith("https://") for s in sig)
+
+    # run_strategy hands the signals and their caveat to the Creative Director.
+    seen = {}
+
+    def fake_run(role, payload, meta):
+        seen[role] = payload
+        raise RuntimeError("stop after capturing the payload")
+    monkeypatch.setattr(roles, "run", fake_run)
+    p = store.create_production({"title": "Signals", "topic": "CDN"})
+    try:
+        director.run_strategy(p["id"], director.Ctx())
+    except RuntimeError:
+        pass
+    pay = seen["creative_director"]
+    assert any(s["url"].endswith("sig1") for s in pay["scout_signals"])
+    assert "observation" in pay["scout_signals_caveat"] and "hypothesis" in pay["scout_signals_caveat"]
+    skill = (director.config.ROOT / "exposit" / "skills" / "creative_director.md").read_text(encoding="utf-8")
+    assert "scout_signals" in skill and "Never infer animation styles" in skill

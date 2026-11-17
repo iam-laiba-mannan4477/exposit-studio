@@ -6,7 +6,7 @@ deterministic tools (voice, renderer, ffmpeg), validates what comes back, and de
 from __future__ import annotations
 import json, shutil, time, zipfile
 from pathlib import Path
-from . import config, store, roles, providers, gates, knowledge, tts, sound, compose, schemas
+from . import config, store, roles, providers, gates, knowledge, tts, sound, compose, schemas, scout
 from .render import engine
 
 ORDER = store.STAGES  # research, strategy, script, storyboard, produce, export
@@ -129,7 +129,8 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
                "preferences": [{"title": k["title"], "body": k["body"]} for k in prefs],
                "recent_productions": recent_structures(pid), "treatments_available": schemas.TREATMENTS,
                "tools_available": [t["name"] for t in knowledge.tools() if t["status"] in ("adopted", "optional")],
-               "hardware": "8 GB RAM, CPU only, one render at a time", "budget_paid_usd": store.get_settings()["budget_paid_usd"]}
+               "hardware": "8 GB RAM, CPU only, one render at a time", "budget_paid_usd": store.get_settings()["budget_paid_usd"],
+               "scout_signals": scout.signals(), "scout_signals_caveat": scout.SIGNALS_CAVEAT}
     ctx.say("Creative Director: comparing three treatments", 0.15)
     s = roles.run("creative_director", payload, ctx.meta(pid)).model_dump()
     crit = [gates._crit("Three treatments compared", len(s["treatments"]) >= 3, f"{len(s['treatments'])} treatments"),

@@ -104,6 +104,7 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 | On-demand run; daily run while the studio is open | Tested (on demand); daily timer not waited for |
 | Daily run when the studio is closed (Windows Task Scheduler) | Not fully tested | `scripts/register-scout-task.ps1` parses; not run on Windows |
 | Weekly summary (counts and links) | Tested |
+| Scout signals passed to the Creative Director (videos from the last 14 days, 10 most-discussed items; titles, counts, URLs) | Tested | Payload and skill rules tested; whether a model uses them well depends on the model. Channel names only for items collected after this change |
 | Written trend interpretation | Planned |
 | YouTube view counts | Needs your free API key |
 | Instagram Reels trends | Blocked: no legitimate automated access for an individual account |

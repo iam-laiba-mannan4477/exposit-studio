@@ -106,7 +106,8 @@ def parse_feed(xml_text: str) -> list[dict]:
     for e in root.findall("a:entry", ns):
         link = e.find("a:link", ns)
         out.append({"title": (e.findtext("a:title", "", ns) or "").strip(), "url": link.get("href") if link is not None else "",
-                    "date": e.findtext("a:published", "", ns) or e.findtext("a:updated", "", ns)})
+                    "date": e.findtext("a:published", "", ns) or e.findtext("a:updated", "", ns),
+                    "channel": (e.findtext("a:author/a:name", "", ns) or root.findtext("a:author/a:name", "", ns) or "").strip()})
     for it in root.iter("item"):
         out.append({"title": (it.findtext("title") or "").strip(), "url": (it.findtext("link") or "").strip(), "date": it.findtext("pubDate") or ""})
     return [o for o in out if o["url"]]
@@ -122,7 +123,8 @@ def collect_feeds(feeds: list[str], kind: str = "release", source: str = "feed")
                 continue
             for o in parse_feed(r.text)[:10]:
                 seen += 1
-                new += _add({"source": source, "kind": kind, "title": o["title"], "url": o["url"], "signal_class": "observed data", "date": o["date"], "feed": f})
+                new += _add({"source": source, "kind": kind, "title": o["title"], "url": o["url"], "signal_class": "observed data", "date": o["date"], "feed": f,
+                             "channel": o.get("channel", "")})
         except Exception as e:
             errors.append(f"{f}: {type(e).__name__}: {str(e)[:120]}")
     return {"collector": source, "seen": seen, "new": new, "errors": errors}
@@ -203,6 +205,23 @@ def items(limit: int = 200, kind: str = "") -> list[dict]:
 
 def runs(limit: int = 30) -> list[dict]:
     return [dict(r, summary=json.loads(r["summary"])) for r in store.q("SELECT * FROM scout_runs ORDER BY started DESC LIMIT ?", (limit,))]
+
+
+SIGNALS_CAVEAT = ("Public titles and counts only. They may suggest topics, hooks and title phrasing; they say nothing about animation "
+                  "style or whether a technique works. Ideas drawn from them are tier 'observation' or 'hypothesis'.")
+
+
+def signals(days: int = 14, top_discussions: int = 10) -> list[dict]:
+    """Scout items for the Creative Director: videos collected in the last `days`, plus the most-discussed items
+    from the same window (by comment count, then points). Titles, counts and URLs only."""
+    since = time.time() - days * 86400
+    rows = [r for r in items(1000) if r["fetched"] >= since]
+    videos = [{"kind": "video", "title": r["title"], "channel": r.get("channel") or None, "date": r.get("date") or None,
+               "views": r.get("views"), "url": r["url"]} for r in rows if r["kind"] == "video"]
+    disc = sorted((r for r in rows if r["kind"] == "discussion"), key=lambda r: (-(r.get("comments") or 0), -(r.get("points") or 0)))
+    discussed = [{"kind": "discussion", "title": r["title"], "comments": r.get("comments"), "points": r.get("points"), "url": r["url"]}
+                 for r in disc[:top_discussions]]
+    return videos + discussed
 
 
 def weekly_summary() -> dict:

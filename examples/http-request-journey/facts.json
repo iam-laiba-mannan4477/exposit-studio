@@ -1,0 +1,228 @@
+{
+ "arrangement": "A public DNS name that resolves to an AWS Network Load Balancer with instance targets (the cluster's worker nodes) across three Availability Zones; the F5 NGINX Ingress Controller running in the cluster; one Ingress rule for host shop.example.com and path /cart pointing at a Service named cart; three pods behind that Service. NGINX balances directly to pod addresses, which is that controller's default.",
+ "claims": [
+  {
+   "id": "c1",
+   "text": "A Network Load Balancer has a DNS name that resolves to the IP addresses of its load balancer nodes, one per enabled Availability Zone; AWS removes a zone's address from DNS when that zone has no healthy target.",
+   "sources": [
+    {
+     "title": "AWS: Health checks for Network Load Balancer target groups",
+     "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html",
+     "kind": "primary"
+    },
+    {
+     "title": "AWS: What is a Network Load Balancer?",
+     "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in AWS documentation"
+  },
+  {
+   "id": "c2",
+   "text": "A Network Load Balancer monitors the health of its registered targets and routes traffic only to healthy targets.",
+   "sources": [
+    {
+     "title": "AWS: What is a Network Load Balancer?",
+     "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html",
+     "kind": "primary"
+    },
+    {
+     "title": "AWS: Health checks for Network Load Balancer target groups",
+     "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in AWS documentation"
+  },
+  {
+   "id": "c3",
+   "text": "By default each load balancer node distributes traffic across the registered targets in its own Availability Zone.",
+   "sources": [
+    {
+     "title": "AWS: What is a Network Load Balancer?",
+     "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in AWS documentation"
+  },
+  {
+   "id": "c4",
+   "text": "An Ingress rule matches HTTP requests on host and path and sends them to the listed backend, which is a Service name and port.",
+   "sources": [
+    {
+     "title": "Kubernetes documentation: Ingress",
+     "url": "https://kubernetes.io/docs/concepts/services-networking/ingress/",
+     "kind": "primary"
+    },
+    {
+     "title": "NGINX Ingress Controller documentation: Basic configuration",
+     "url": "https://docs.nginx.com/nginx-ingress-controller/configuration/ingress-resources/basic-configuration",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in Kubernetes documentation"
+  },
+  {
+   "id": "c5",
+   "text": "An Ingress does nothing by itself; an ingress controller such as NGINX fulfils the rules.",
+   "sources": [
+    {
+     "title": "Kubernetes documentation: Ingress",
+     "url": "https://kubernetes.io/docs/concepts/services-networking/ingress/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in Kubernetes documentation"
+  },
+  {
+   "id": "c6",
+   "text": "A Service is an abstraction that gives a set of pods one stable name and virtual IP address; the virtual IP is implemented by rules that kube-proxy programs on each node, not by a process listening on that address.",
+   "sources": [
+    {
+     "title": "Kubernetes documentation: Service",
+     "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+     "kind": "primary"
+    },
+    {
+     "title": "Kubernetes documentation: Virtual IPs and Service Proxies",
+     "url": "https://kubernetes.io/docs/reference/networking/virtual-ips/",
+     "kind": "primary"
+    },
+    {
+     "title": "How does traffic actually reach your Pods? (dev.to)",
+     "url": "https://dev.to/sreekanth_kuruba_91721e5d/how-does-traffic-actually-reach-your-pods-kubernetes-services-kube-proxy-explained-ph9",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "Stated in Kubernetes documentation; the 'no process listening' wording is from a secondary article consistent with it"
+  },
+  {
+   "id": "c7",
+   "text": "NGINX Ingress Controller enumerates the pods of the backend Service and balances traffic directly to them unless told to use the Service's cluster IP.",
+   "sources": [
+    {
+     "title": "NGINX Ingress Controller documentation: NGINX Ingress Controller and Istio Service Mesh",
+     "url": "https://docs.nginx.com/nginx-ingress-controller/tutorials/nginx-ingress-istio",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in NGINX documentation"
+  },
+  {
+   "id": "c8",
+   "text": "Each pod has its own IP address.",
+   "sources": [
+    {
+     "title": "Kubernetes documentation: Service",
+     "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "Stated in Kubernetes documentation"
+  }
+ ],
+ "model": {
+  "components": [
+   {
+    "id": "browser",
+    "kind": "browser",
+    "label": "Browser"
+   },
+   {
+    "id": "resolver",
+    "kind": "dns",
+    "label": "DNS resolver"
+   },
+   {
+    "id": "nlb",
+    "kind": "lb",
+    "label": "AWS Network Load Balancer"
+   },
+   {
+    "id": "node",
+    "kind": "node",
+    "label": "Worker node"
+   },
+   {
+    "id": "nginx",
+    "kind": "nginx",
+    "label": "NGINX Ingress Controller"
+   },
+   {
+    "id": "service",
+    "kind": "service",
+    "label": "Service"
+   },
+   {
+    "id": "pod",
+    "kind": "pod",
+    "label": "Application pod"
+   }
+  ],
+  "links": [
+   [
+    "browser",
+    "resolver"
+   ],
+   [
+    "browser",
+    "nlb"
+   ],
+   [
+    "nlb",
+    "node"
+   ],
+   [
+    "node",
+    "nginx"
+   ],
+   [
+    "nginx",
+    "service"
+   ],
+   [
+    "nginx",
+    "pod"
+   ]
+  ],
+  "steps": [
+   {
+    "n": 1,
+    "text": "The browser resolves the name to the load balancer's addresses.",
+    "components": [
+     "browser",
+     "resolver",
+     "nlb"
+    ]
+   },
+   {
+    "n": 2,
+    "text": "The load balancer forwards to a healthy node.",
+    "components": [
+     "nlb",
+     "node"
+    ]
+   },
+   {
+    "n": 3,
+    "text": "NGINX matches host and path to an Ingress rule that names a Service.",
+    "components": [
+     "nginx",
+     "service"
+    ]
+   },
+   {
+    "n": 4,
+    "text": "NGINX chooses one of the pods behind that Service and sends the request to it.",
+    "components": [
+     "nginx",
+     "service",
+     "pod"
+    ]
+   }
+  ]
+ },
+ "open_questions": []
+}

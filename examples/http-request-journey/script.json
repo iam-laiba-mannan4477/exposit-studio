@@ -1,0 +1,159 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Hook",
+   "sentences": [
+    {
+     "text": "You press Enter.",
+     "claims": []
+    },
+    {
+     "text": "Before the page appears, four decisions are made about where your request goes.",
+     "claims": [
+      "c1",
+      "c2",
+      "c4",
+      "c7"
+     ]
+    },
+    {
+     "text": "Let's follow it.",
+     "claims": []
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "DNS",
+   "sentences": [
+    {
+     "text": "First, the name.",
+     "claims": []
+    },
+    {
+     "text": "Your computer asks a DNS resolver, and gets back the addresses of a load balancer.",
+     "claims": [
+      "c1"
+     ]
+    },
+    {
+     "text": "That is decision one: which address.",
+     "claims": [
+      "c1"
+     ]
+    }
+   ],
+   "terms": [
+    "DNS resolver"
+   ]
+  },
+  {
+   "id": "s3",
+   "title": "AWS load balancer",
+   "sentences": [
+    {
+     "text": "The load balancer is an AWS Network Load Balancer.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "It checks the health of every node behind it, and sends your request only to a healthy one.",
+     "claims": [
+      "c2",
+      "c3"
+     ]
+    },
+    {
+     "text": "Decision two.",
+     "claims": []
+    }
+   ],
+   "terms": [
+    "Network Load Balancer"
+   ]
+  },
+  {
+   "id": "s4",
+   "title": "NGINX ingress",
+   "sentences": [
+    {
+     "text": "Inside the cluster, the request reaches NGINX, the ingress controller.",
+     "claims": [
+      "c5"
+     ]
+    },
+    {
+     "text": "It reads the host and the path, and matches them to a routing rule.",
+     "claims": [
+      "c4"
+     ]
+    },
+    {
+     "text": "Decision three: which Service.",
+     "claims": [
+      "c4"
+     ]
+    }
+   ],
+   "terms": [
+    "ingress controller"
+   ]
+  },
+  {
+   "id": "s5",
+   "title": "Service to pod",
+   "sentences": [
+    {
+     "text": "But a Service is not a program.",
+     "claims": [
+      "c6"
+     ]
+    },
+    {
+     "text": "It is a stable name for a set of pods.",
+     "claims": [
+      "c6"
+     ]
+    },
+    {
+     "text": "So NGINX looks up the pods behind it, and picks one.",
+     "claims": [
+      "c7",
+      "c8"
+     ]
+    },
+    {
+     "text": "Decision four.",
+     "claims": []
+    }
+   ],
+   "terms": [
+    "Service"
+   ]
+  },
+  {
+   "id": "s6",
+   "title": "Response and recap",
+   "sentences": [
+    {
+     "text": "The pod answers, and the response travels back the same way.",
+     "claims": [
+      "c8"
+     ]
+    },
+    {
+     "text": "One request. Four decisions.",
+     "claims": []
+    },
+    {
+     "text": "All before the page appears.",
+     "claims": []
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

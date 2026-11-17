@@ -1,0 +1,17 @@
+# Exposit Studio — Python dependencies (pinned; tested together on Python 3.13, wheel-checked for Windows on 3.12 and 3.13)
+fastapi==0.163.1
+starlette==1.7.0
+uvicorn==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32
+httpx==0.28.1
+numpy==2.5.3
+scipy==1.18.1
+soundfile==0.14.0
+pillow==12.3.0
+psutil==7.2.2
+skia-python==144.1
+onnxruntime==1.29.0
+kokoro-onnx==0.6.1
+espeakng-loader==0.2.4
+imageio-ffmpeg==0.6.0

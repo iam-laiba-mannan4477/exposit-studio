@@ -1,0 +1,65 @@
+{
+  "gate": "final",
+  "passed": true,
+  "criteria": [
+    {
+      "name": "Dimensions",
+      "passed": true,
+      "detail": "1920 x 1080"
+    },
+    {
+      "name": "Frame rate",
+      "passed": true,
+      "detail": "30.0 fps"
+    },
+    {
+      "name": "Duration",
+      "passed": true,
+      "detail": "61.6 s (target 60 s, tolerance 5 s)"
+    },
+    {
+      "name": "No black stretches",
+      "passed": true,
+      "detail": "None found"
+    },
+    {
+      "name": "No frozen picture over 5 s",
+      "passed": true,
+      "detail": "None found"
+    },
+    {
+      "name": "No silence over 3 s",
+      "passed": true,
+      "detail": "None found"
+    },
+    {
+      "name": "Audio does not clip",
+      "passed": true,
+      "detail": "Peak -1.5 dB, mean -18.9 dB"
+    },
+    {
+      "name": "Plays outside the studio",
+      "passed": true,
+      "detail": "h264 video, aac audio, MP4"
+    },
+    {
+      "name": "No paid service was used",
+      "passed": true,
+      "detail": "Job log shows local tools only"
+    }
+  ],
+  "treatments": [
+    "cutaway",
+    "flow2d",
+    "isometric",
+    "kinetic"
+  ],
+  "mix": {
+    "duration": 61.817,
+    "peak": 0.8805299855983785,
+    "music": true,
+    "sfx": true
+  },
+  "decided": "automatically",
+  "at": 1794844441.6719081
+}

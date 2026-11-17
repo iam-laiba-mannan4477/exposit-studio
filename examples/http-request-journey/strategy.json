@@ -1,0 +1,176 @@
+{
+ "audience_profile": "Developers who deploy to Kubernetes but have not traced a request end to end. They know HTTP, IP addresses and containers; those are not explained.",
+ "learning_objective": "After watching, the viewer can name the four decisions that route a request from the browser to a pod, in order, and knows that a Service is a name and not a running program.",
+ "creative_concept": "One request is the protagonist. A single map is revealed left to right; the camera enters the AWS box as an isometric scene and the cluster as a cutaway, then pulls back to the whole map.",
+ "treatments": [
+  {
+   "name": "A. Follow the request",
+   "shape": "One request travels through four decisions, left to right, with one misconception beat at the Service.",
+   "engagement": "strong",
+   "teaching_fit": "strong",
+   "accuracy_risk": "low",
+   "feasibility": "Fits: CPU rendering, no paid service",
+   "verdict": "Chosen. The subject is a path, so the path is the story."
+  },
+  {
+   "name": "B. Misconception throughout",
+   "shape": "Open with 'the load balancer has no idea your app exists' and rebuild the true picture.",
+   "engagement": "strong",
+   "teaching_fit": "medium",
+   "accuracy_risk": "medium",
+   "feasibility": "Fits",
+   "verdict": "Not chosen: needs more than 60 seconds to rebuild the picture honestly. Its best beat is borrowed for the Service scene."
+  },
+  {
+   "name": "C. Failure story",
+   "shape": "Trace a 502 error backwards to its cause.",
+   "engagement": "strong",
+   "teaching_fit": "weak",
+   "accuracy_risk": "medium",
+   "feasibility": "Fits",
+   "verdict": "Not chosen: teaches the broken path before the working one. A good sequel."
+  }
+ ],
+ "chosen": "A. Follow the request",
+ "hook": "You press Enter. Before the page appears, four decisions are made about where your request goes.",
+ "narrative_structure": "Follow the request: hook with a count, then one scene per decision (address, node, Service, pod), a misconception beat at the Service, and a recap that returns to the opening line.",
+ "visual_direction": "Three treatments, each where its form carries meaning: a 2D network-flow map as the spine; an isometric scene for the load balancer, because zones and health are spatial; a cutaway for the cluster, because it has an inside. Dark premium-technical theme, one accent colour, the request as a glowing token.",
+ "narration_approach": "Calm, present tense, second person. About 150 words. One idea per sentence. Kokoro voice am_michael on the local machine.",
+ "scene_breakdown": [
+  {
+   "title": "Hook",
+   "treatment": "kinetic",
+   "seconds": 7,
+   "purpose": "State the question and the count of four"
+  },
+  {
+   "title": "DNS",
+   "treatment": "flow2d",
+   "seconds": 9,
+   "purpose": "Decision one: which address"
+  },
+  {
+   "title": "AWS load balancer",
+   "treatment": "isometric",
+   "seconds": 11,
+   "purpose": "Decision two: which healthy node"
+  },
+  {
+   "title": "NGINX ingress",
+   "treatment": "cutaway",
+   "seconds": 11,
+   "purpose": "Decision three: which Service"
+  },
+  {
+   "title": "Service to pod",
+   "treatment": "cutaway",
+   "seconds": 12,
+   "purpose": "The surprise: a Service is not a program. Decision four: which pod"
+  },
+  {
+   "title": "Response and recap",
+   "treatment": "flow2d",
+   "seconds": 10,
+   "purpose": "Return trip and the whole route in one frame"
+  }
+ ],
+ "tools": [
+  "Skia scene renderer (local)",
+  "Kokoro (local)",
+  "FFmpeg (local)"
+ ],
+ "decisions": [
+  {
+   "key": "Audience",
+   "choice": "Intermediate developers who deploy to Kubernetes",
+   "reason": "From the brief. Basics such as what an IP address is are skipped.",
+   "tier": "preference"
+  },
+  {
+   "key": "Hook",
+   "choice": "A concrete action plus a count: four decisions before the page appears",
+   "reason": "A count gives the viewer a structure to track, and the video keeps the promise.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "Structure",
+   "choice": "Follow the request, with one misconception beat",
+   "reason": "The path supplies the order; the misconception supplies the one surprise.",
+   "tier": "observation"
+  },
+  {
+   "key": "Visual treatments",
+   "choice": "2D flow map, isometric AWS scene, Kubernetes cutaway",
+   "reason": "You asked for three treatments. Each sits where its form teaches: a path as a line, zones as plates, a cluster as an opened box.",
+   "tier": "preference"
+  },
+  {
+   "key": "Use of 3D",
+   "choice": "Isometric projection drawn in 2D; no 3D engine",
+   "reason": "Depth is only needed to show zones side by side. A flat projection renders as fast as any 2D scene on this laptop.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "Pacing",
+   "choice": "A visual change every 2 to 4 seconds; about 150 words",
+   "reason": "Dense enough for this audience, with room for the surprise to land.",
+   "tier": "observation"
+  },
+  {
+   "key": "Where the surprise goes",
+   "choice": "At the Service, two thirds through",
+   "reason": "That is where attention is most likely to sag, and it is the idea most viewers hold wrongly.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "Ending",
+   "choice": "Return trip, then echo the opening line over the whole map",
+   "reason": "Answers the opening question and leaves a frame worth pausing on.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "Narration",
+   "choice": "Second person, present tense, local Kokoro voice",
+   "reason": "Explains as to a capable colleague; costs nothing.",
+   "tier": "preference"
+  },
+  {
+   "key": "Tools",
+   "choice": "Local renderer, Kokoro, FFmpeg; no paid service",
+   "reason": "The budget for paid services is zero and nothing here needs a GPU.",
+   "tier": "preference"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "DNS, around 8 seconds",
+   "why": "Viewers who know DNS may leave.",
+   "countermeasure": "The step marker shows this is one of four."
+  },
+  {
+   "where": "NGINX, around 30 seconds",
+   "why": "Risk of a text-heavy stretch.",
+   "countermeasure": "Three short lines of rule, highlighted as they are spoken."
+  },
+  {
+   "where": "Before the Service scene",
+   "why": "Mid-video sag.",
+   "countermeasure": "The scene opens on the word 'But' and a struck-through assumption."
+  }
+ ],
+ "experiment": "The count from the hook stays on screen as a step marker (1 of 4 to 4 of 4).",
+ "recipes_used": [
+  "fw-follow-request",
+  "fw-misconception-first",
+  "hk-count",
+  "en-progress-marker",
+  "an-packet-flow",
+  "an-highlight-dim",
+  "an-isometric-zones",
+  "an-cutaway",
+  "an-code-reveal",
+  "tr-enter-box",
+  "vc-final-frame",
+  "ex-one-arrangement"
+ ]
+}

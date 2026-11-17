@@ -1,0 +1,41 @@
+# Exposit Studio on a server, behind Caddy (automatic HTTPS + a password).
+# Status: written and reviewed, NOT yet run. See docs/DEPLOY-AWS.md.
+#
+#   cd deploy
+#   cp server.env.example server.env    # then edit it
+#   docker compose --env-file server.env up -d --build
+#
+# The studio has no sign-in of its own, so it is never published directly: only Caddy is reachable,
+# and Caddy asks for the user name and password set in server.env.
+services:
+  exposit:
+    build: ..
+    restart: unless-stopped
+    env_file: ../.env          # optional keys (EXPOSIT_LLM_API_KEY, EXPOSIT_GITHUB_TOKEN, ...); create it even if empty
+    environment:
+      EXPOSIT_HOST: 0.0.0.0
+      EXPOSIT_PORT: "8600"
+      EXPOSIT_DATA: /data
+    volumes:
+      - exposit-data:/data     # productions, library, Scout results, renders
+    expose: ["8600"]           # internal network only
+    mem_limit: 3g              # one render job uses about 0.6 GB; this protects the host
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [exposit]
+    ports: ["80:80", "443:443"]
+    environment:
+      EXPOSIT_DOMAIN: ${EXPOSIT_DOMAIN}
+      EXPOSIT_USER: ${EXPOSIT_USER}
+      EXPOSIT_PASSWORD_HASH: ${EXPOSIT_PASSWORD_HASH}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  exposit-data:
+  caddy-data:
+  caddy-config:

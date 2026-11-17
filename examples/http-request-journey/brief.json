@@ -1,0 +1,16 @@
+{
+ "title": "How an HTTP request reaches a Kubernetes app",
+ "topic": "How an HTTP request travels through DNS, an AWS load balancer, NGINX and a Kubernetes application.",
+ "audience": "intermediate",
+ "duration": 60,
+ "format": "16:9",
+ "quality": "1080p",
+ "fps": 30,
+ "language": "en",
+ "style": "decide",
+ "theme": "premium-technical",
+ "voice": "am_michael",
+ "voice_speed": 1.06,
+ "review_mode": "final_only",
+ "budget_paid_usd": 0
+}

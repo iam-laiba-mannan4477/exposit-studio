@@ -1,0 +1,10 @@
+.env
+.venv
+data
+models/*.onnx
+models/*.bin
+web/node_modules
+web/dist
+**/__pycache__
+.pytest_cache
+examples/*/output

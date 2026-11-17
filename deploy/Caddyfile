@@ -1,0 +1,10 @@
+# HTTPS certificates are obtained automatically for EXPOSIT_DOMAIN (its DNS must point at this server).
+{$EXPOSIT_DOMAIN} {
+	basic_auth {
+		{$EXPOSIT_USER} {$EXPOSIT_PASSWORD_HASH}
+	}
+	request_body {
+		max_size 700MB
+	}
+	reverse_proxy exposit:8600
+}

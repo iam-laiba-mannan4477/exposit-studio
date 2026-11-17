@@ -1,0 +1,241 @@
+{
+  "scenes": [
+    {
+      "id": "s1",
+      "title": "Hook",
+      "audio_hash": "1e25cf0d01baba21",
+      "clip_hash": "b5e3cbf92d9a6287",
+      "start": 0.0,
+      "duration": 8.333,
+      "pad_start": 0.5,
+      "treatment": "kinetic",
+      "events": [
+        {
+          "t": 0.15,
+          "action": "type"
+        },
+        {
+          "t": 1.099,
+          "action": "enter"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "DNS",
+      "audio_hash": "05b94032252b7347",
+      "clip_hash": "3bca98ff09a39630",
+      "start": 8.333,
+      "duration": 10.167,
+      "pad_start": 0.4,
+      "treatment": "flow2d",
+      "events": [
+        {
+          "t": 2.56,
+          "action": "packet"
+        },
+        {
+          "t": 3.288,
+          "action": "highlight"
+        },
+        {
+          "t": 4.285,
+          "action": "packet"
+        },
+        {
+          "t": 4.611,
+          "action": "note"
+        },
+        {
+          "t": 5.201,
+          "action": "frame"
+        },
+        {
+          "t": 6.18,
+          "action": "show"
+        },
+        {
+          "t": 7.932,
+          "action": "count"
+        },
+        {
+          "t": 8.41,
+          "action": "packet"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "AWS load balancer",
+      "audio_hash": "16e9a42f305a031f",
+      "clip_hash": "c0636e2fa6c5d150",
+      "start": 18.5,
+      "duration": 11.567,
+      "pad_start": 0.4,
+      "treatment": "isometric",
+      "events": [
+        {
+          "t": 1.081,
+          "action": "packet"
+        },
+        {
+          "t": 2.454,
+          "action": "highlight"
+        },
+        {
+          "t": 4.611,
+          "action": "pulse"
+        },
+        {
+          "t": 7.315,
+          "action": "packet"
+        },
+        {
+          "t": 8.368,
+          "action": "callout"
+        },
+        {
+          "t": 8.938,
+          "action": "highlight"
+        },
+        {
+          "t": 10.615,
+          "action": "count"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "NGINX ingress",
+      "audio_hash": "9f8c0c22fe3bf858",
+      "clip_hash": "9c54e7cfd01c66c9",
+      "start": 30.067,
+      "duration": 11.7,
+      "pad_start": 0.4,
+      "treatment": "cutaway",
+      "events": [
+        {
+          "t": 2.403,
+          "action": "packet"
+        },
+        {
+          "t": 2.872,
+          "action": "highlight"
+        },
+        {
+          "t": 5.96,
+          "action": "code"
+        },
+        {
+          "t": 6.679,
+          "action": "code"
+        },
+        {
+          "t": 8.734,
+          "action": "code"
+        },
+        {
+          "t": 9.883,
+          "action": "count"
+        },
+        {
+          "t": 10.645,
+          "action": "show"
+        },
+        {
+          "t": 10.645,
+          "action": "highlight"
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Service to pod",
+      "audio_hash": "f1a919ff77405f2c",
+      "clip_hash": "a2ea01f892711e12",
+      "start": 41.767,
+      "duration": 10.267,
+      "pad_start": 0.4,
+      "treatment": "cutaway",
+      "events": [
+        {
+          "t": 0.772,
+          "action": "highlight"
+        },
+        {
+          "t": 1.723,
+          "action": "strike"
+        },
+        {
+          "t": 3.029,
+          "action": "callout"
+        },
+        {
+          "t": 5.753,
+          "action": "lookup"
+        },
+        {
+          "t": 7.719,
+          "action": "highlight"
+        },
+        {
+          "t": 8.059,
+          "action": "packet"
+        },
+        {
+          "t": 9.277,
+          "action": "count"
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Response and recap",
+      "audio_hash": "a8ff46ff32f8e4d0",
+      "clip_hash": "7f3a4c5def6bf95f",
+      "start": 52.034,
+      "duration": 9.533,
+      "pad_start": 0.4,
+      "treatment": "flow2d",
+      "events": [
+        {
+          "t": 0.664,
+          "action": "highlight"
+        },
+        {
+          "t": 1.963,
+          "action": "packet"
+        },
+        {
+          "t": 2.476,
+          "action": "packet"
+        },
+        {
+          "t": 2.933,
+          "action": "packet"
+        },
+        {
+          "t": 4.387,
+          "action": "count"
+        },
+        {
+          "t": 5.277,
+          "action": "callout"
+        }
+      ]
+    }
+  ],
+  "duration": 61.567,
+  "settings": {
+    "w": 1920,
+    "h": 1080,
+    "fps": 30,
+    "theme": "premium-technical",
+    "captions": true,
+    "voice": "am_michael",
+    "speed": 1.06,
+    "music": true,
+    "sfx": true
+  },
+  "final_hash": "4167b3821c2dfc61"
+}

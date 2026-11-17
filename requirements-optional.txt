@@ -1,0 +1,2 @@
+# Optional: speech recognition for reference videos (CPU, int8). Downloads a model from Hugging Face on first use (~150 MB for "base").
+faster-whisper

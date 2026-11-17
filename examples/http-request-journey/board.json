@@ -1,0 +1,710 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Hook",
+   "treatment": "kinetic",
+   "objective": "Pose the question and promise four decisions",
+   "ui": {
+    "url": "https://shop.example.com/cart"
+   },
+   "lines": [
+    {
+     "text": "Before the page appears,",
+     "at": {
+      "word": "Before",
+      "occurrence": 1
+     },
+     "size": 64
+    },
+    {
+     "text": "four decisions",
+     "at": {
+      "word": "four",
+      "occurrence": 1
+     },
+     "accent": true,
+     "size": 128,
+     "keep": true
+    },
+    {
+     "text": "decide where your request goes.",
+     "at": {
+      "word": "where",
+      "occurrence": 1
+     },
+     "size": 64
+    }
+   ],
+   "cues": [
+    {
+     "action": "type",
+     "at": 0.15
+    },
+    {
+     "action": "enter",
+     "at": {
+      "word": "Enter",
+      "occurrence": 1
+     }
+    }
+   ],
+   "camera": {
+    "exit": "push_in"
+   },
+   "pad_start": 0.5,
+   "pad_end": 0.5,
+   "reason": "Kinetic type suits a hook: the only thing to look at is the promise.",
+   "tier": "hypothesis",
+   "recipes": [
+    "mg-kinetic",
+    "hk-count"
+   ]
+  },
+  {
+   "id": "s2",
+   "title": "DNS",
+   "treatment": "flow2d",
+   "objective": "Decision one: the name becomes an address",
+   "heading": "The journey, in order",
+   "elements": [
+    {
+     "id": "browser",
+     "kind": "browser",
+     "label": "Your browser",
+     "model_ref": "browser"
+    },
+    {
+     "id": "dns",
+     "kind": "dns",
+     "label": "DNS resolver",
+     "sub": "name to address",
+     "model_ref": "resolver"
+    },
+    {
+     "id": "lb",
+     "kind": "lb",
+     "label": "Load balancer",
+     "sub": "AWS NLB",
+     "model_ref": "nlb",
+     "hidden": true
+    },
+    {
+     "id": "nginx",
+     "kind": "nginx",
+     "label": "NGINX",
+     "sub": "ingress controller",
+     "model_ref": "nginx",
+     "hidden": true
+    },
+    {
+     "id": "pod",
+     "kind": "pod",
+     "label": "App pod",
+     "sub": "your code",
+     "model_ref": "pod",
+     "hidden": true
+    }
+   ],
+   "cues": [
+    {
+     "action": "packet",
+     "at": {
+      "word": "asks",
+      "occurrence": 1
+     },
+     "from": "browser",
+     "to": "dns"
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "resolver",
+      "occurrence": 1
+     },
+     "target": "dns",
+     "hold": 2.2
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "gets",
+      "occurrence": 1
+     },
+     "from": "dns",
+     "to": "browser"
+    },
+    {
+     "action": "note",
+     "at": {
+      "word": "back",
+      "occurrence": 1
+     },
+     "target": "dns",
+     "text": "shop.example.com = 203.0.113.10"
+    },
+    {
+     "action": "show",
+     "at": {
+      "word": "load",
+      "occurrence": 1
+     },
+     "target": "lb"
+    },
+    {
+     "action": "frame",
+     "at": {
+      "word": "addresses",
+      "occurrence": 1
+     },
+     "targets": [
+      "browser",
+      "dns",
+      "lb"
+     ]
+    },
+    {
+     "action": "count",
+     "at": {
+      "word": "decision",
+      "occurrence": 1
+     },
+     "n": 1,
+     "total": 4,
+     "label": "Which address"
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "one",
+      "occurrence": 1
+     },
+     "from": "browser",
+     "to": "lb",
+     "dur": 1.1
+    }
+   ],
+   "camera": {
+    "start": [
+     "browser",
+     "dns"
+    ],
+    "enter": "zoom_out",
+    "exit": "push_in",
+    "exit_focus": "lb"
+   },
+   "reason": "A path is best shown as a line; the map is revealed only as far as the story has gone.",
+   "tier": "observation",
+   "recipes": [
+    "an-packet-flow",
+    "an-highlight-dim",
+    "an-build-up"
+   ]
+  },
+  {
+   "id": "s3",
+   "title": "AWS load balancer",
+   "treatment": "isometric",
+   "objective": "Decision two: only a healthy node receives the request",
+   "heading": "Inside AWS",
+   "elements": [
+    {
+     "id": "lb",
+     "kind": "lb",
+     "label": "Network Load Balancer",
+     "sub": "AWS",
+     "model_ref": "nlb"
+    },
+    {
+     "id": "z1",
+     "kind": "zone",
+     "label": "Zone A"
+    },
+    {
+     "id": "z2",
+     "kind": "zone",
+     "label": "Zone B"
+    },
+    {
+     "id": "z3",
+     "kind": "zone",
+     "label": "Zone C"
+    },
+    {
+     "id": "n1",
+     "kind": "node",
+     "label": "Node 1",
+     "zone": "z1",
+     "state": "healthy",
+     "model_ref": "node"
+    },
+    {
+     "id": "n2",
+     "kind": "node",
+     "label": "Node 2",
+     "zone": "z2",
+     "state": "healthy",
+     "model_ref": "node"
+    },
+    {
+     "id": "n3",
+     "kind": "node",
+     "label": "Node 3",
+     "zone": "z3",
+     "state": "unhealthy",
+     "model_ref": "node"
+    }
+   ],
+   "cues": [
+    {
+     "action": "packet",
+     "at": {
+      "word": "balancer",
+      "occurrence": 1
+     },
+     "from": "_in",
+     "to": "lb"
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "Network",
+      "occurrence": 1
+     },
+     "target": "lb",
+     "hold": 2.0
+    },
+    {
+     "action": "pulse",
+     "at": {
+      "word": "checks",
+      "occurrence": 1
+     }
+    },
+    {
+     "action": "callout",
+     "at": {
+      "word": "only",
+      "occurrence": 1
+     },
+     "text": "Only healthy targets receive traffic",
+     "hold": 3.2
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "sends",
+      "occurrence": 1
+     },
+     "from": "lb",
+     "to": "n1",
+     "dur": 1.0
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "healthy",
+      "occurrence": 1
+     },
+     "target": "n1"
+    },
+    {
+     "action": "count",
+     "at": {
+      "word": "two",
+      "occurrence": 1
+     },
+     "n": 2,
+     "total": 4,
+     "label": "Which node"
+    }
+   ],
+   "camera": {
+    "enter": "zoom_out",
+    "exit": "push_in",
+    "exit_focus": "n1"
+   },
+   "reason": "Zones and health are spatial: three plates side by side with one node dimmed show the decision at a glance. Drawn as a flat isometric projection, so no 3D engine is needed.",
+   "tier": "hypothesis",
+   "recipes": [
+    "an-isometric-zones",
+    "an-packet-flow",
+    "mg-callout"
+   ]
+  },
+  {
+   "id": "s4",
+   "title": "NGINX ingress",
+   "treatment": "cutaway",
+   "objective": "Decision three: host and path select a Service",
+   "heading": "Inside the cluster",
+   "container_label": "Kubernetes cluster",
+   "elements": [
+    {
+     "id": "ng",
+     "kind": "nginx",
+     "label": "NGINX ingress controller",
+     "model_ref": "nginx"
+    },
+    {
+     "id": "svc",
+     "kind": "service",
+     "label": "Service: cart",
+     "model_ref": "service",
+     "hidden": true
+    },
+    {
+     "id": "p1",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.1.12",
+     "model_ref": "pod",
+     "hidden": true
+    },
+    {
+     "id": "p2",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.2.31",
+     "model_ref": "pod",
+     "hidden": true
+    },
+    {
+     "id": "p3",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.3.7",
+     "model_ref": "pod",
+     "hidden": true
+    }
+   ],
+   "code": [
+    "host: shop.example.com",
+    "path: /cart",
+    "backend: service cart, port 80"
+   ],
+   "cues": [
+    {
+     "action": "packet",
+     "at": {
+      "word": "reaches",
+      "occurrence": 1
+     },
+     "from": "_in",
+     "to": "ng",
+     "dur": 1.0
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "NGINX",
+      "occurrence": 1
+     },
+     "target": "ng",
+     "hold": 2.4
+    },
+    {
+     "action": "code",
+     "at": {
+      "word": "host",
+      "occurrence": 1
+     },
+     "lines": [
+      0
+     ]
+    },
+    {
+     "action": "code",
+     "at": {
+      "word": "path",
+      "occurrence": 1
+     },
+     "lines": [
+      1
+     ]
+    },
+    {
+     "action": "code",
+     "at": {
+      "word": "rule",
+      "occurrence": 1
+     },
+     "lines": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "action": "show",
+     "at": {
+      "word": "Service",
+      "occurrence": 1
+     },
+     "target": "svc"
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "Service",
+      "occurrence": 1
+     },
+     "target": "svc"
+    },
+    {
+     "action": "count",
+     "at": {
+      "word": "three",
+      "occurrence": 1
+     },
+     "n": 3,
+     "total": 4,
+     "label": "Which Service"
+    }
+   ],
+   "camera": {
+    "enter": "zoom_out"
+   },
+   "reason": "The cluster has an inside. Rule matching is textual, so the rule is shown as three short lines highlighted as they are spoken.",
+   "tier": "hypothesis",
+   "recipes": [
+    "an-cutaway",
+    "an-code-reveal",
+    "tr-enter-box"
+   ]
+  },
+  {
+   "id": "s5",
+   "title": "Service to pod",
+   "treatment": "cutaway",
+   "objective": "A Service is a name, not a program; decision four picks a pod",
+   "heading": "Inside the cluster",
+   "container_label": "Kubernetes cluster",
+   "elements": [
+    {
+     "id": "ng",
+     "kind": "nginx",
+     "label": "NGINX ingress controller",
+     "model_ref": "nginx"
+    },
+    {
+     "id": "svc",
+     "kind": "service",
+     "label": "Service: cart",
+     "model_ref": "service"
+    },
+    {
+     "id": "p1",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.1.12",
+     "model_ref": "pod"
+    },
+    {
+     "id": "p2",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.2.31",
+     "model_ref": "pod"
+    },
+    {
+     "id": "p3",
+     "kind": "pod",
+     "label": "Pod",
+     "sub": "10.0.3.7",
+     "model_ref": "pod"
+    }
+   ],
+   "code": [
+    "host: shop.example.com",
+    "path: /cart",
+    "backend: service cart, port 80"
+   ],
+   "cues": [
+    {
+     "action": "highlight",
+     "at": {
+      "word": "Service",
+      "occurrence": 1
+     },
+     "target": "svc",
+     "hold": 3.4
+    },
+    {
+     "action": "strike",
+     "at": {
+      "word": "program",
+      "occurrence": 1
+     },
+     "text": "a program?"
+    },
+    {
+     "action": "callout",
+     "at": {
+      "word": "stable",
+      "occurrence": 1
+     },
+     "text": "A Service is a stable name, not a process",
+     "hold": 3.4
+    },
+    {
+     "action": "lookup",
+     "at": {
+      "word": "looks",
+      "occurrence": 1
+     }
+    },
+    {
+     "action": "highlight",
+     "at": {
+      "word": "picks",
+      "occurrence": 1
+     },
+     "target": "p2"
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "one",
+      "occurrence": 1
+     },
+     "from": "ng",
+     "to": "p2",
+     "dur": 1.0
+    },
+    {
+     "action": "count",
+     "at": {
+      "word": "four",
+      "occurrence": 1
+     },
+     "n": 4,
+     "total": 4,
+     "label": "Which pod"
+    }
+   ],
+   "camera": {},
+   "reason": "The same cutaway continues, so the viewer keeps their bearings while the one surprising idea lands.",
+   "tier": "hypothesis",
+   "recipes": [
+    "fw-misconception-first",
+    "an-cutaway",
+    "an-packet-flow"
+   ]
+  },
+  {
+   "id": "s6",
+   "title": "Response and recap",
+   "treatment": "flow2d",
+   "objective": "Return trip and the complete route",
+   "heading": "The whole journey",
+   "elements": [
+    {
+     "id": "browser",
+     "kind": "browser",
+     "label": "Your browser",
+     "model_ref": "browser"
+    },
+    {
+     "id": "dns",
+     "kind": "dns",
+     "label": "DNS resolver",
+     "sub": "name to address",
+     "model_ref": "resolver"
+    },
+    {
+     "id": "lb",
+     "kind": "lb",
+     "label": "Load balancer",
+     "sub": "AWS NLB",
+     "model_ref": "nlb"
+    },
+    {
+     "id": "nginx",
+     "kind": "nginx",
+     "label": "NGINX",
+     "sub": "ingress controller",
+     "model_ref": "nginx"
+    },
+    {
+     "id": "pod",
+     "kind": "pod",
+     "label": "App pod",
+     "sub": "your code",
+     "model_ref": "pod"
+    }
+   ],
+   "cues": [
+    {
+     "action": "highlight",
+     "at": {
+      "word": "pod",
+      "occurrence": 1
+     },
+     "target": "pod",
+     "hold": 1.6
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "response",
+      "occurrence": 1
+     },
+     "from": "pod",
+     "to": "nginx",
+     "dur": 0.7
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "travels",
+      "occurrence": 1
+     },
+     "from": "nginx",
+     "to": "lb",
+     "dur": 0.7
+    },
+    {
+     "action": "packet",
+     "at": {
+      "word": "back",
+      "occurrence": 1
+     },
+     "from": "lb",
+     "to": "browser",
+     "dur": 1.0
+    },
+    {
+     "action": "count",
+     "at": {
+      "word": "One",
+      "occurrence": 1
+     },
+     "n": 4,
+     "total": 4,
+     "label": "Decisions"
+    },
+    {
+     "action": "callout",
+     "at": {
+      "word": "Four",
+      "occurrence": 1
+     },
+     "text": "One request. Four decisions.",
+     "hold": 4.0
+    }
+   ],
+   "camera": {
+    "enter": "zoom_out"
+   },
+   "pad_end": 1.2,
+   "reason": "The final frame shows the whole route, uncropped, as the opening line returns.",
+   "tier": "observation",
+   "recipes": [
+    "vc-final-frame",
+    "an-packet-flow",
+    "tr-match-token"
+   ]
+  }
+ ]
+}

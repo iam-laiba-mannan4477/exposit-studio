@@ -1,0 +1,112 @@
+1
+00:00:00,530 --> 00:00:01,642
+You press Enter.
+
+2
+00:00:01,842 --> 00:00:04,583
+Before the page appears, four decisions are
+
+3
+00:00:04,433 --> 00:00:06,637
+made about where your request goes.
+
+4
+00:00:06,837 --> 00:00:07,879
+Let's follow it.
+
+5
+00:00:08,763 --> 00:00:09,790
+First, the name.
+
+6
+00:00:09,990 --> 00:00:13,094
+Your computer asks a DNS resolver, and gets
+
+7
+00:00:12,944 --> 00:00:15,629
+back the addresses of a load balancer.
+
+8
+00:00:15,829 --> 00:00:18,041
+That is decision one: which address.
+
+9
+00:00:18,930 --> 00:00:22,032
+The load balancer is an AWS Network Load
+
+10
+00:00:21,882 --> 00:00:22,739
+Balancer.
+
+11
+00:00:22,939 --> 00:00:25,433
+It checks the health of every node behind
+
+12
+00:00:25,283 --> 00:00:28,029
+it, and sends your request only to a healthy
+
+13
+00:00:27,879 --> 00:00:28,308
+one.
+
+14
+00:00:28,508 --> 00:00:29,608
+Decision two.
+
+15
+00:00:30,497 --> 00:00:33,089
+Inside the cluster, the request reaches
+
+16
+00:00:32,939 --> 00:00:35,109
+NGINX, the ingress controller.
+
+17
+00:00:35,308 --> 00:00:37,958
+It reads the host and the path, and matches
+
+18
+00:00:37,808 --> 00:00:39,279
+them to a routing rule.
+
+19
+00:00:39,479 --> 00:00:41,333
+Decision three: which Service.
+
+20
+00:00:42,197 --> 00:00:44,131
+But a Service is not a program.
+
+21
+00:00:44,331 --> 00:00:46,696
+It is a stable name for a set of pods.
+
+22
+00:00:46,896 --> 00:00:49,636
+So NGINX looks up the pods behind it, and
+
+23
+00:00:49,486 --> 00:00:50,260
+picks one.
+
+24
+00:00:50,460 --> 00:00:51,588
+Decision four.
+
+25
+00:00:52,464 --> 00:00:55,117
+The pod answers, and the response travels
+
+26
+00:00:54,967 --> 00:00:56,221
+back the same way.
+
+27
+00:00:56,421 --> 00:00:58,550
+One request. Four decisions.
+
+28
+00:00:58,750 --> 00:01:00,418
+All before the page appears.
+

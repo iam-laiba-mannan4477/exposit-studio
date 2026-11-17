@@ -4,7 +4,9 @@ A local studio that turns a technical topic into a narrated, captioned, animated
 
 It runs on your laptop at **http://127.0.0.1:8600**. No paid service is needed: narration (Kokoro), animation (a Skia scene renderer) and encoding (FFmpeg) all run on your processor. The AI roles that research, plan and write each video are answered by a model **you** choose: by default a coding agent you already use (for example Claude Code) through the "agent bridge", at no API cost.
 
-The included 60-second sample, *How an HTTP request reaches a Kubernetes app*, is in `examples/http-request-journey/output/video.mp4`.
+The included 60-second sample, *How an HTTP request reaches a Kubernetes app*, is in `examples/http-request-journey/output/`: `video.mp4` (16:9, YouTube) and `video-vertical-9x16.mp4` (9:16, Instagram Reels and YouTube Shorts).
+
+**Formats:** 16:9 landscape and 9:16 vertical. Choose one when you create a production, or switch an existing production on its **Export** tab: only the pictures are re-rendered; the narration and the AI's work are reused, and switching back is instant because the other shape's clips are kept.
 
 ---
 
@@ -110,7 +112,7 @@ Every setting is optional. `install.ps1` creates `.env` from `.env.example`, whi
 .\.venv\Scripts\python -m pytest                 # about 3 minutes: two complete productions at 540p, edits, undo, references
 ```
 
-Result on the development machine: **32 passed**. The end-to-end tests drive a complete production through the agent bridge, with a stand-in agent answering each role, then really narrate, render, mix and check it.
+Result on the development machine: **41 passed**. The end-to-end tests drive a complete production through the agent bridge, with a stand-in agent answering each role, then really narrate, render, mix and check it.
 
 ## 10. Performance on modest hardware
 
@@ -122,6 +124,8 @@ Measured on the development machine (Linux, 2 virtual CPUs, 8 GB RAM, no GPU) bu
 | Rendering (1,847 frames) | 106 s (about 17 frames a second) |
 | Join, mix, encode, checks | 13 s |
 | **Total** | **239 s** |
+
+The same sample in 9:16 at 1080x1920 took **271 s**.
 
 Peak memory: **520 MB** for the studio, **715 MB** including FFmpeg. With the studio idle, about 150–350 MB. Only one job runs at a time, and the narration model is unloaded before rendering starts.
 
@@ -170,6 +174,6 @@ npm run build                   # writes web\dist, which the studio serves
 
 ## 13. What is built and what is not
 
-See **[docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md)**: every feature with its status and how it was checked. In short, these are not built: 9:16 and 1:1 formats, 3D scenes, Urdu narration, split/merge of scenes, publishing, learning from your channel analytics, cloud rendering and a written trend interpretation. Each appears in the interface labelled **Planned**.
+See **[docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md)**: every feature with its status and how it was checked. In short, these are not built: the 1:1 square format, 3D scenes, Urdu narration, split/merge of scenes, publishing, learning from your channel analytics, cloud rendering and a written trend interpretation. Each appears in the interface labelled **Planned**.
 
 Deployment to a server: [docs/DEPLOY-AWS.md](docs/DEPLOY-AWS.md).

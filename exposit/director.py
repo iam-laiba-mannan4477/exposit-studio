@@ -274,7 +274,8 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
                                       progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None)
             tmp.replace(clip)
             store.job_log(ctx.job_id, f"Rendered {s['id']}: {info['frames']} frames in {time.time() - t_start:.1f} s") if ctx.job_id else None
-        (d / "storyboard" / f"{s['id']}.png").write_bytes(engine.render_still(s["spec"], s["timing"], theme=rs["theme"]))
+        sw, sh = (540, 960) if rs["h"] > rs["w"] else (960, 540)
+        (d / "storyboard" / f"{s['id']}.png").write_bytes(engine.render_still(s["spec"], s["timing"], None, sw, sh, theme=rs["theme"]))
         sc = engine.Scene(s["spec"], s["timing"], rs["theme"])
         man_scenes.append({"id": s["id"], "title": s["title"], "audio_hash": s["audio_hash"], "clip_hash": s["clip_hash"], "start": round(t0, 3),
                            "duration": round(round(sc.dur * rs["fps"]) / rs["fps"], 3), "pad_start": sc.pad0, "treatment": s["spec"].get("treatment"),

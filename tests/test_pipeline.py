@@ -96,6 +96,26 @@ def test_instruction_edit_is_a_proposal_until_accepted(client, fake_agent):
     client.post(f"/api/productions/{pid}/undo")
 
 
+def test_switch_to_vertical_reuses_narration(client):
+    pid = state["pid"]
+    plan = client.put(f"/api/productions/{pid}/brief", json={"format": "9:16"}).json()["plan"]
+    assert plan["renders"] == 6 and plan["narrations"] == 0, "a new shape re-renders pictures only; voice and AI work are reused"
+    r = client.post(f"/api/productions/{pid}/rebuild").json()
+    j = wait_job(client, r["job"])
+    assert j["state"] == "done", j["log"]
+    p = get(client)
+    assert (p["manifest"]["settings"]["w"], p["manifest"]["settings"]["h"]) == (540, 960)
+    g = p["gates"]["final"]
+    assert g["passed"], [c for c in g["criteria"] if not c["passed"]]
+    from PIL import Image
+    import io
+    assert Image.open(io.BytesIO(client.get(f"/api/productions/{pid}/media/still/s2").content)).size == (540, 960)
+    # and back: the 16:9 clips are still cached, so nothing renders
+    plan = client.put(f"/api/productions/{pid}/brief", json={"format": "16:9"}).json()["plan"]
+    assert plan["renders"] == 0 and plan["rejoin"]
+    assert wait_job(client, client.post(f"/api/productions/{pid}/rebuild").json()["job"])["state"] == "done"
+
+
 def test_versions_override_and_final_approval(client):
     pid = state["pid"]
     v = client.post(f"/api/productions/{pid}/versions", json={"label": "Before reorder"}).json()

@@ -143,16 +143,23 @@ async def create_production(req: Request):
              "format": b.get("format", "16:9"), "quality": b.get("quality", "1080p"), "fps": 30, "language": "en", "style": b.get("style", "decide"),
              "theme": b.get("theme", "premium-technical"), "voice": b.get("voice") or s["voice"], "voice_speed": float(b.get("voice_speed") or s["voice_speed"]),
              "review_mode": b.get("review_mode", s.get("default_review_mode", "final_only")), "budget_paid_usd": 0, "objective": b.get("objective", "")}
-    if brief["format"] != "16:9":
-        raise HTTPException(400, "Only 16:9 is implemented. Vertical and square formats are planned.")
+    if brief["format"] not in ("16:9", "9:16"):
+        raise HTTPException(400, "16:9 (landscape) and 9:16 (vertical, for Reels and Shorts) are implemented. 1:1 square is planned.")
     p = store.create_production(brief)
     job = store.add_job("pipeline", p["id"], {"start": "research"}) if b.get("start", True) else None
     return {"id": p["id"], "job": job}
 
 
 @app.post("/api/productions/from-example")
-def from_example():
-    pid = guard(lambda: cli.create_from_example())
+async def from_example(req: Request):
+    try:
+        b = await req.json()
+    except Exception:
+        b = {}
+    fmt = (b or {}).get("format", "16:9")
+    if fmt not in ("16:9", "9:16"):
+        raise HTTPException(400, "Format must be 16:9 or 9:16.")
+    pid = guard(lambda: cli.create_from_example(fmt=fmt))
     job = store.add_job("pipeline", pid, {"start": "produce"})
     return {"id": pid, "job": job}
 
@@ -179,9 +186,11 @@ async def put_brief(pid: str, req: Request):
     need(pid)
     b = await req.json()
     brief = store.read_json(pid, "brief.json", {})
-    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title"):
+    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format"):
         if k in b:
             brief[k] = b[k]
+    if brief.get("format", "16:9") not in ("16:9", "9:16"):
+        raise HTTPException(400, "Format must be 16:9 or 9:16. 1:1 square is planned.")
     if brief.get("quality") not in ("1080p", "720p", "540p"):
         raise HTTPException(400, "Quality must be 1080p, 720p or 540p. 4K is not offered on this hardware.")
     store.write_json(pid, "brief.json", brief)

@@ -15,7 +15,7 @@ export const nextTab = p => p.has_video ? 'export' : (STAGES.find(s => p.stages?
 function Thumb({ p }) {
   const [bad, setBad] = useState(false)
   if (bad) return <div className="thumb ph">No frame yet</div>
-  return <img className="thumb" alt="" src={`/api/productions/${p.id}/media/still/s3`} onError={() => setBad(true)} />
+  return <img className="thumb" alt="" style={p.brief.format === '9:16' ? { objectFit: 'contain' } : undefined} src={`/api/productions/${p.id}/media/still/s3`} onError={() => setBad(true)} />
 }
 
 function StartButtons() {
@@ -24,7 +24,9 @@ function StartButtons() {
   return <div className="row">
     <Btn kind="primary" onClick={() => nav('/new')}>New production</Btn>
     <Btn busy={busy === 'ex'} title="Builds the 60-second sample from prepared role outputs. Narration and rendering run on this machine."
-      onClick={() => act('ex', () => api('/productions/from-example', { method: 'POST' })).then(r => r && nav(`/p/${r.id}/produce`))}>Create from example</Btn>
+      onClick={() => act('ex', () => api('/productions/from-example', { method: 'POST', body: { format: '16:9' } })).then(r => r && nav(`/p/${r.id}/produce`))}>Create from example</Btn>
+    <Btn busy={busy === 'exv'} title="The same sample, laid out for Instagram Reels and YouTube Shorts (9:16)."
+      onClick={() => act('exv', () => api('/productions/from-example', { method: 'POST', body: { format: '9:16' } })).then(r => r && nav(`/p/${r.id}/produce`))}>Vertical example</Btn>
   </div>
 }
 
@@ -50,7 +52,7 @@ export function Home() {
               <div className="col grow">
                 <span className="label">Continue</span>
                 <div style={{ fontSize: 20, lineHeight: '28px', fontWeight: 600 }}>{last.title}</div>
-                <span className="muted">{last.brief.format} · {last.brief.quality} · {last.brief.duration} seconds · English · Review mode: {last.brief.review_mode === 'final_only' ? 'final only' : 'every gate'}</span>
+                <span className="muted">{last.brief.format === '9:16' ? '9:16 vertical' : '16:9'} · {last.brief.quality} · {last.brief.duration} seconds · English · Review mode: {last.brief.review_mode === 'final_only' ? 'final only' : 'every gate'}</span>
                 <div className="row" style={{ gap: 8 }}><Badge tone={stageOf(last)[0]}>{stageOf(last)[1]}</Badge>{last.duration && <Badge>{fmtDur(last.duration)} rendered</Badge>}</div>
                 <div className="row" style={{ gap: 8 }}><Link className="btn primary" to={`/p/${last.id}/${nextTab(last)}`}>Open</Link><Link className="btn" to={`/p/${last.id}/strategy`}>See the strategy</Link></div>
               </div>
@@ -84,7 +86,7 @@ export function Home() {
             <Line k="Free disk">{h.disk_free_gb} GB</Line></> : <Loading rows={2} />}
         </Card>
         <Card title="Not built yet" style={{ flex: '1 1 320px' }}>
-          <Line k="Vertical and square formats"><Planned /></Line><Line k="Publishing to a channel"><Planned /></Line>
+          <Line k="Square 1:1 format"><Planned /></Line><Line k="Publishing to a channel"><Planned /></Line>
           <Line k="Cloud rendering"><Planned>Optional, paid · off</Planned></Line><Line k="Brand kits"><Planned /></Line>
         </Card>
       </div>
@@ -100,9 +102,9 @@ export function Productions() {
       <div className="row between"><h1>Productions</h1><StartButtons /></div>
       <ErrorBox error={error} retry={reload} />
       {loading ? <Loading /> : !data?.length ? <Empty title="No productions yet">Create one from a topic, or build the example.</Empty> :
-        <Card><div className="tablebox"><table><thead><tr><th>Title</th><th>Status</th><th>Length</th><th>Review mode</th><th>Updated</th><th></th></tr></thead>
+        <Card><div className="tablebox"><table><thead><tr><th>Title</th><th>Status</th><th>Length</th><th>Format · review</th><th>Updated</th><th></th></tr></thead>
           <tbody>{data.map(p => <tr key={p.id}><td><Link to={`/p/${p.id}/${nextTab(p)}`}>{p.title}</Link></td><td><Badge tone={stageOf(p)[0]}>{stageOf(p)[1]}</Badge></td>
-            <td className="mono">{p.duration ? fmtDur(p.duration) : `${p.brief.duration}s target`}</td><td>{p.brief.review_mode === 'final_only' ? 'Final only' : 'Every gate'}</td><td className="muted">{fmtTime(p.updated)}</td>
+            <td className="mono">{p.duration ? fmtDur(p.duration) : `${p.brief.duration}s target`}</td><td>{p.brief.format === '9:16' ? '9:16 vertical' : '16:9'} · {p.brief.review_mode === 'final_only' ? 'final only' : 'every gate'}</td><td className="muted">{fmtTime(p.updated)}</td>
             <td><Btn sm kind="ghost danger" onClick={() => window.confirm(`Delete "${p.title}" and all of its files? This cannot be undone.`) && act('d', () => api(`/productions/${p.id}`, { method: 'DELETE' }), 'Production deleted').then(reload)}>Delete</Btn></td></tr>)}</tbody></table></div></Card>}
     </div>
   </Shell>
@@ -138,8 +140,8 @@ export function NewProduction() {
         </Card>
         <Card title="3. Format and look">
           <span className="label">Format</span>
-          <div className="row"><button type="button" className="choice on"><b>16:9 landscape</b><span>YouTube, courses, presentations</span></button>
-            <button type="button" className="choice" disabled><div className="row between"><b>9:16 vertical</b><Planned /></div><span>Shorts, Reels</span></button>
+          <div className="row"><button type="button" className={'choice ' + (f.format === '16:9' ? 'on' : '')} onClick={() => set('format', '16:9')}><b>16:9 landscape</b><span>YouTube, courses, presentations</span></button>
+            <button type="button" className={'choice ' + (f.format === '9:16' ? 'on' : '')} onClick={() => set('format', '9:16')}><b>9:16 vertical</b><span>Instagram Reels, YouTube Shorts, TikTok</span></button>
             <button type="button" className="choice" disabled><div className="row between"><b>1:1 square</b><Planned /></div><span>Social feeds</span></button></div>
           <div className="row"><div className="grow"><Field label="Resolution" hint="4K is not offered: it is impractical on this hardware.">
             <Seg value={f.quality} onChange={v => set('quality', v)} options={[{ value: '1080p', label: '1080p' }, { value: '720p', label: '720p, faster' }, { value: '540p', label: '540p, draft' }]} /></Field></div>
@@ -167,7 +169,7 @@ export function NewProduction() {
       <div style={{ flex: '1 1 300px', position: 'sticky', top: 0 }}>
         <Card title="Summary">
           <Line k="Audience">{f.audience === 'decide' ? 'Creative Director decides' : f.audience}</Line><Line k="Length">{f.duration} seconds</Line>
-          <Line k="Format">16:9 · {f.quality} · 30 fps</Line><Line k="Narration">English · {voice}</Line>
+          <Line k="Format">{f.format} · {f.quality} · 30 fps</Line><Line k="Narration">English · {voice}</Line>
           <Line k="Review mode">{f.review_mode === 'final_only' ? 'Final only' : 'Every gate'}</Line>
           <Line k="AI provider">{prov ? prov.provider : '…'}</Line>
           {prov && <span className="muted">{prov.ready ? prov.note : 'Not ready: ' + prov.note}</span>}

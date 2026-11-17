@@ -27,3 +27,11 @@ Only draw what the facts establish. Give every element a model_ref when the syst
 
 Output shape
 {"scenes": [{"id": "s1", "title": "...", "treatment": "flow2d", "objective": "...", "elements": [...], "cues": [...], "camera": {}, "reason": "...", "tier": "hypothesis", "recipes": []}]}
+
+
+## Vertical videos (brief.format "9:16", for Reels and Shorts)
+The renderer lays every treatment out for a tall phone screen: flows run top to bottom, isometric zones form a
+zig-zag column, cutaways stack ingress, Service and pods. Plan for that:
+- At most 5 elements in a flow2d scene, and labels of about 28 characters or fewer, so they fit the narrower boxes.
+- Kinetic lines wrap to the width, so keep each line to a few words; use 2 or 3 lines per hook.
+- One idea per scene and shorter scenes (5 to 10 seconds). The first scene must show something within the first second.

@@ -18,11 +18,14 @@ def example_dir(name: str = "http-request-journey") -> Path:
     return config.ROOT / "examples" / name
 
 
-def create_from_example(name: str = "http-request-journey") -> str:
+def create_from_example(name: str = "http-request-journey", fmt: str = "16:9") -> str:
     d = example_dir(name)
     load = lambda f: json.loads((d / f).read_text(encoding="utf-8"))
     knowledge.seed()
-    p = store.create_production(load("brief.json"))
+    brief = load("brief.json")
+    if fmt == "9:16":
+        brief.update(format="9:16", title=brief["title"] + " (vertical)")
+    p = store.create_production(brief)
     director.import_artifacts(p["id"], load("facts.json"), load("strategy.json"), load("script.json"), load("board.json"),
                               by="Claude, during development (examples/%s)" % name)
     return p["id"]

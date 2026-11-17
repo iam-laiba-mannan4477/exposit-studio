@@ -1,6 +1,6 @@
 # Feature-status register
 
-Last updated 17 November 2026. Every line says what was actually checked.
+Last updated 17 November 2026 (9:16 vertical added). Every line says what was actually checked.
 
 **Status key.**
 - **Tested**: implemented, and an automated test or a recorded manual check exercised it.
@@ -76,7 +76,8 @@ Last updated 17 November 2026. Every line says what was actually checked.
 | Regenerate only changed scenes; clips cached by content hash | Tested | Undo restores from cache without rendering |
 | Show what will be rebuilt before running | Tested | |
 | 720p and 540p output | Tested (540p in tests) | |
-| 9:16 and 1:1 formats | Planned | Refused with a clear message |
+| 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) | Tested | Every treatment has its own tall layout (flows top to bottom, zig-zag isometric column, stacked cutaway); text kept inside the area those apps leave uncovered. Full 1080x1920 sample rendered and checked; switching an existing production between 16:9 and 9:16 re-renders pictures only (test). 16:9 output is byte-identical to before |
+| 1:1 square | Planned | Refused with a clear message |
 | 4K | Not offered | Impractical on the target hardware |
 | Cloud rendering | Planned | Optional, paid; off |
 

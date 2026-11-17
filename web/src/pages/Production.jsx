@@ -120,17 +120,17 @@ function Script({ p, run, reload }) {
 }
 
 // ------------------------------------------------------------------ Storyboard
-function Still({ pid, sid, v }) {
+function Still({ pid, sid, v, tall }) {
   const [bad, setBad] = useState(false)
   useEffect(() => setBad(false), [v])
-  return bad ? <div className="thumb ph">Rendered when the scene is produced</div> : <img className="thumb" alt="" src={`/api/productions/${pid}/media/still/${sid}?v=${v}`} onError={() => setBad(true)} />
+  return bad ? <div className="thumb ph">Rendered when the scene is produced</div> : <img className={'thumb' + (tall ? ' tall' : '')} alt="" src={`/api/productions/${pid}/media/still/${sid}?v=${v}`} onError={() => setBad(true)} />
 }
 function Storyboard({ p, run, reload }) {
   if (!p.board) return <div className="pad"><Waiting stage="storyboard" p={p} run={run} /></div>
   return <><GateBanner p={p} stage="storyboard" reload={reload} label="Storyboard" />
     <div className="pad"><div className="row between"><h2>Storyboard</h2><Btn onClick={() => run('storyboard')}>Plan again</Btn></div>
       <div className="row">{p.board.scenes.map((s, i) => <Card key={s.id} style={{ flex: '1 1 340px' }}>
-        <Still pid={p.id} sid={s.id} v={p.updated} />
+        <Still pid={p.id} sid={s.id} v={p.updated} tall={p.brief.format === '9:16'} />
         <div className="row between"><b style={{ fontWeight: 600 }}>{i + 1} · {s.title}</b><Badge tone="accent">{TREAT[s.treatment] || s.treatment}</Badge></div>
         <span className="sec">{s.objective}</span>
         <div><Line k="Elements">{(s.elements || []).length}</Line><Line k="Cues tied to words">{(s.cues || []).length + (s.lines || []).length}</Line></div>
@@ -163,7 +163,7 @@ function Produce({ p, run, reload }) {
     <PlanBox p={p} reload={reload} />
     <div className="row">{p.board.scenes.map((s, i) => { const m = man?.scenes.find(x => x.id === s.id); const stale = p.plan?.scenes.find(x => x.scene === s.id)
       return <Card key={s.id} style={{ flex: '1 1 340px' }} title={`${i + 1} · ${s.title}`} right={<Badge tone={!m ? 'muted' : stale ? 'warn' : 'ok'}>{!m ? 'Not rendered' : stale ? 'Stale' : 'Rendered'}</Badge>}>
-        {m ? <video className="thumb" controls preload="none" poster={`/api/productions/${p.id}/media/still/${s.id}?v=${p.updated}`} src={`/api/productions/${p.id}/media/clip/${s.id}?v=${m.clip_hash}`} /> : <div className="thumb ph">No clip yet</div>}
+        {m ? <video className={'thumb' + (p.brief.format === '9:16' ? ' tall' : '')} controls preload="none" poster={`/api/productions/${p.id}/media/still/${s.id}?v=${p.updated}`} src={`/api/productions/${p.id}/media/clip/${s.id}?v=${m.clip_hash}`} /> : <div className="thumb ph">No clip yet</div>}
         <div><Line k="Treatment">{TREAT[s.treatment] || s.treatment}</Line><Line k="Duration">{m ? m.duration.toFixed(1) + ' s' : 'after narration'}</Line><Line k="Clip id"><span className="mono">{m?.clip_hash || 'none'}</span></Line></div>
         {m && <audio controls preload="none" src={`/api/productions/${p.id}/media/audio/${s.id}?v=${m.audio_hash}`} style={{ width: '100%' }} />}</Card> })}</div>
   </div>
@@ -209,7 +209,7 @@ function Editor({ p, reload }) {
         <span className="muted" style={{ marginTop: 8 }}>Split and merge scenes <Planned /></span>
       </aside>
       <div className="stagebox">
-        {src ? <video ref={vid} key={src} controls preload="metadata" poster={`/api/productions/${p.id}/media/still/${spec.id}?v=${p.updated}`} src={src} onTimeUpdate={e => setT(e.target.currentTime)} /> : <div className="novideo">{mode === 'video' ? 'The video appears here after the first export' : 'This scene has not been rendered yet'}</div>}
+        {src ? <video ref={vid} key={src} className={p.brief.format === '9:16' ? 'tall' : ''} controls preload="metadata" poster={`/api/productions/${p.id}/media/still/${spec.id}?v=${p.updated}`} src={src} onTimeUpdate={e => setT(e.target.currentTime)} /> : <div className="novideo">{mode === 'video' ? 'The video appears here after the first export' : 'This scene has not been rendered yet'}</div>}
         <div className="row between" style={{ width: '100%', maxWidth: 860 }}>
           <div className="seg" style={{ width: 260 }}><button className={mode === 'video' ? 'on' : ''} onClick={() => { setMode('video'); setT(0) }}>Whole video</button><button className={mode === 'scene' ? 'on' : ''} onClick={() => { setMode('scene'); setT(0) }}>This scene</button></div>
           <span className="mono">{fmtDur(abs)} / {fmtDur(total)}</span>
@@ -291,14 +291,19 @@ function Export({ p, reload }) {
     {p.final === 'approved' && <div className="banner ok" style={{ borderRadius: 8, border: 0 }}><b>You approved this video on {fmtTime(p.approved_at)}.</b></div>}
     <div className="row" style={{ alignItems: 'flex-start' }}>
       <div className="col" style={{ flex: '2 1 520px' }}>
-        {p.has_video ? <video className="thumb" controls preload="metadata" poster={`/api/productions/${p.id}/media/still/${p.board?.scenes[2]?.id || 's1'}`} src={`/api/productions/${p.id}/media/video?v=${p.manifest?.final_hash}`} /> : <div className="thumb ph">No video yet. Run production from the Scenes tab.</div>}
+        {p.has_video ? <video className={'thumb' + (p.brief.format === '9:16' ? ' tall' : '')} controls preload="metadata" poster={`/api/productions/${p.id}/media/still/${p.board?.scenes[2]?.id || 's1'}`} src={`/api/productions/${p.id}/media/video?v=${p.manifest?.final_hash}`} /> : <div className="thumb ph">No video yet. Run production from the Scenes tab.</div>}
         {g ? <GateCard gate={g} title="Automated checks on the final video" /> : <Card title="Automated checks"><span className="sec">Checks run after the video is encoded.</span></Card>}
       </div>
       <div className="col" style={{ flex: '1 1 320px' }}>
         <Card title="Output settings">
           <Field label="Resolution" hint="Changing this re-renders every clip."><select value={p.brief.quality} onChange={e => setBrief({ quality: e.target.value })}><option>1080p</option><option>720p</option><option>540p</option></select></Field>
           <Field label="Theme"><select value={p.brief.theme} onChange={e => setBrief({ theme: e.target.value })}><option>premium-technical</option><option>midnight-blue</option><option>minimal-mono</option></select></Field>
-          <Line k="Aspect ratio">16:9 <Planned>9:16 and 1:1 planned</Planned></Line><Line k="Frame rate">30 fps</Line><Line k="Subtitles">SRT and VTT files; also drawn in the picture if enabled in Settings</Line>
+          <Field label="Format" hint="Switching re-renders every scene in the new shape. Narration and the AI's work are reused; no new tasks.">
+            <select value={p.brief.format || '16:9'} onChange={e => setBrief({ format: e.target.value })}>
+              <option value="16:9">16:9 landscape: YouTube, courses</option>
+              <option value="9:16">9:16 vertical: Instagram Reels, YouTube Shorts, TikTok</option>
+            </select></Field>
+          <Line k="1:1 square"><Planned /></Line><Line k="Frame rate">30 fps</Line><Line k="Subtitles">SRT and VTT files; also drawn in the picture if enabled in Settings</Line>
           <Line k="Render on this machine"><Badge tone="ok">In use · $0</Badge></Line><Line k="Cloud rendering"><Planned>Optional, paid · off</Planned></Line>
         </Card>
         <PlanBox p={p} reload={reload} />

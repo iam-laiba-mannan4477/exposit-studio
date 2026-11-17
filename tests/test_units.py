@@ -102,3 +102,30 @@ def test_chart_treatment_renders():
     png = engine.render_still(spec, {"duration": 3, "sentences": [], "words": []}, 2.5, 640, 360, "premium-technical", False)
     a = np.asarray(Image.open(io.BytesIO(png)).convert("RGB"))
     assert a.std() > 4
+
+
+@pytest.mark.parametrize("idx", range(6))
+def test_every_example_scene_renders_vertically(idx):
+    import io
+    from PIL import Image
+    spec = example("board.json")["scenes"][idx]
+    sents = [s["text"] for s in example("script.json")["scenes"][idx]["sentences"]]
+    words, t = [], 0.5
+    for si, s in enumerate(sents):
+        for w in s.split():
+            words.append({"w": w, "s": t, "e": t + 0.3, "si": si}); t += 0.35
+    timing = {"duration": t + 0.5, "sentences": [], "words": words}
+    tr = engine.build(spec, timing, portrait=True)
+    assert tr.portrait and tr.CX == 540.0
+    for k in tr.pos.values():                       # every laid-out element is inside the 1080-wide frame
+        assert -40 <= k[0] and k[0] + k[2] <= 1120, (spec["treatment"], k)
+    png = engine.render_still(spec, timing, timing["duration"] * 0.8, 540, 960, "premium-technical", True)
+    im = Image.open(io.BytesIO(png))
+    assert im.size == (540, 960)
+    assert np.asarray(im.convert("RGB")).std() > 4
+
+
+def test_wrap_respects_width():
+    f = engine.font(46, "SemiBold")
+    rows = engine.wrap("Before the page appears, four decisions are made about where your request goes", f, 600)
+    assert len(rows) > 1 and all(f.measureText(r) <= 600 for r in rows)

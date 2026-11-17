@@ -62,6 +62,17 @@ def test_reference_rejects_unknown_file_and_url_is_not_fetched(client):
     assert any("did not fetch" in n for n in ref["analysis"]["notes"])
 
 
+def test_formats(client):
+    r = client.post("/api/productions", json={"topic": "Vertical test", "format": "9:16", "start": False})
+    assert r.status_code == 200
+    pid = r.json()["id"]
+    assert client.get(f"/api/productions/{pid}").json()["brief"]["format"] == "9:16"
+    assert client.put(f"/api/productions/{pid}/brief", json={"format": "1:1"}).status_code == 400
+    assert client.put(f"/api/productions/{pid}/brief", json={"format": "16:9"}).json()["brief"]["format"] == "16:9"
+    assert client.post("/api/productions", json={"topic": "Square", "format": "1:1", "start": False}).status_code == 400
+    client.delete(f"/api/productions/{pid}")
+
+
 def test_unknown_routes(client):
     assert client.get("/api/productions/nope").status_code == 404
     assert client.get("/api/nothing").status_code == 404

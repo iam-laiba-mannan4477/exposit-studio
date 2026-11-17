@@ -23,3 +23,9 @@ Output shape
  "scene_breakdown": [{"title": "Hook", "treatment": "kinetic", "seconds": 6, "purpose": "..."}],
  "tools": ["Exposit renderer", "Kokoro voice"], "decisions": [{"key": "hook", "choice": "...", "reason": "...", "tier": "hypothesis"}],
  "dropoff": [{"where": "...", "why": "...", "countermeasure": "..."}], "experiment": "...", "recipes_used": ["recipe ids"]}
+
+
+## Vertical videos (brief.format "9:16")
+A vertical video is watched on a phone, often without sound at first, in a feed where it competes with everything else.
+Weigh treatments for that: a hook visible and readable in the first second, captions carrying the meaning, fewer
+elements per scene, and a pace of one idea every few seconds. Say in your decisions how the format changed your choices.

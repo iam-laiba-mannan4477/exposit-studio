@@ -127,6 +127,8 @@ pre { margin: 0; font: 12px/18px var(--mono); white-space: pre-wrap; word-break:
 .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--text-primary); pointer-events: none; z-index: 5; }
 .ruler { display: flex; position: relative; height: 22px; background: var(--bg-raised); } .ruler span { position: absolute; top: 2px; font: 11px var(--mono); color: var(--text-secondary); border-left: 1px solid var(--border-strong); padding-left: 4px; height: 18px; }
 .thumb { width: 100%; aspect-ratio: 16/9; border-radius: 6px; background: #0E0E14; border: 1px solid var(--border-subtle); object-fit: cover; display: block; }
+.thumb.tall { aspect-ratio: 9/16; max-height: 560px; width: auto; max-width: 100%; margin: 0 auto; object-fit: contain; }
+.stagebox video.tall { aspect-ratio: 9/16; width: auto; height: 100%; max-height: 62vh; max-width: 100%; }
 .thumb.ph { display: grid; place-items: center; color: var(--text-muted); font-size: 12px; }
 .swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border-strong); display: inline-block; }
 @media (max-width: 1100px) { .inspector { flex-basis: 280px; } .scenes { flex-basis: 190px; } }

@@ -13,3 +13,9 @@ Rules
 
 Output shape
 {"scenes": [{"id": "s1", "title": "Hook", "sentences": [{"text": "...", "claims": ["c1"]}], "terms": []}]}
+
+
+## Vertical videos (brief.format "9:16", for Reels and Shorts)
+Viewers decide in the first one or two seconds. Open with the question or the surprising fact in the first sentence,
+with no greeting or setup. Keep sentences short (under 14 words) because captions are large and show few words at a time.
+End on the answer to the opening question; do not ask viewers to like or subscribe.

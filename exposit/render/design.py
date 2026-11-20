@@ -334,6 +334,7 @@ def soft_shadow(c, x: float, y: float, w: float, h: float, r: float, color: str,
 # Text instrumentation for tests: when TEXT_LOG is a list, every string drawn is recorded with its device-space box
 # and colour; when HIDE_TEXT[0] is True, text is measured and logged but not painted (to sample what it sits on).
 TEXT_LOG: list | None = None
+CARD_LOG: list | None = None             # device-space rectangles of cards drawn (tests: text stays inside its card)
 HIDE_TEXT = [False]
 
 
@@ -642,6 +643,9 @@ def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.
     (never so far that text on it loses contrast)."""
     if a <= 0.01:
         return
+    if CARD_LOG is not None:
+        r_ = c.getTotalMatrix().mapRect(skia.Rect.MakeXYWH(x, y, w, h))
+        CARD_LOG.append((r_.left(), r_.top(), r_.right(), r_.bottom()))
     cs, T = tpl.card, tpl.T
     alpha = a * (1 - DIM * dim * (1 - hl))
     r = cs["radius"] if radius is None else radius

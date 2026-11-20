@@ -145,3 +145,52 @@ def test_portrait_content_band_follows_the_caption_setting(captions, limit):
         lowest.append(bottom)
     if not captions:
         assert max(lowest) > 1340, "without captions the band below 1340 is used"
+
+
+@pytest.mark.parametrize("template", sorted(design.TEMPLATES))
+def test_every_treatment_renders_in_every_template_and_format(template):
+    for s in SCENES:
+        for portrait in (False, True):
+            png = gallery.render(s, template, portrait, 0.1)
+            px = np.asarray(Image.open(io.BytesIO(png)).convert("RGB"))
+            assert px.shape[0] > px.shape[1] if portrait else px.shape[1] > px.shape[0]
+            assert px.std() > 3, f"{s['id']} / {template} draws something"
+
+
+@pytest.mark.parametrize("sid,template,portrait", CASES, ids=[f"{a}-{b}-{'9x16' if c else '16x9'}" for a, b, c in CASES])
+def test_text_never_leaves_its_card(sid, template, portrait):
+    """A string that starts inside a card ends inside it too (2 px tolerance at this scale)."""
+    scene = next(s for s in SCENES if s["id"] == sid)
+    design.TEXT_LOG, design.CARD_LOG = [], []
+    try:
+        gallery.render(scene, template, portrait, 0.5)
+        texts, cards = design.TEXT_LOG, design.CARD_LOG
+    finally:
+        design.TEXT_LOG = design.CARD_LOG = None
+    out = []
+    for it in texts:
+        x0, y0, x1, y1 = it["rect"]
+        for (cx0, cy0, cx1, cy1) in cards:
+            if cx0 <= x0 <= cx1 and cy0 <= (y0 + y1) / 2 <= cy1:          # starts in this card
+                if x1 > cx1 + 2 or y1 > cy1 + 2 or y0 < cy0 - 2:
+                    out.append((it["text"], [round(v) for v in it["rect"]], [round(v) for v in (cx0, cy0, cx1, cy1)]))
+                break
+    assert not out, out[:4]
+
+
+@pytest.mark.slow
+def test_frames_stay_under_80_ms_after_the_cache_build():
+    """Every treatment x template x format at full resolution: the 95th percentile of frame draw times after the cache
+    build must stay under 80 ms (one sampled frame in six across the timeline)."""
+    import bench_frames
+    for s in SCENES:                                     # process warm-up (fonts, icons), paid once per render job
+        for tp in TEMPLATES:
+            gallery.render(s, tp, False, 0.1)
+    slow = []
+    for s in SCENES:
+        for tp in TEMPLATES:
+            for portrait in (False, True):
+                _, p95, _ = bench_frames.bench(s, tp, portrait, 6)
+                if p95 > 80:
+                    slow.append((s["id"], tp, portrait, round(p95, 1)))
+    assert not slow, slow

@@ -62,6 +62,14 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 
 | Capability | Status | Notes |
 |---|---|---|
+| Templates as design systems: noir-network, paper, blueprint, sketch, premium-technical (plus midnight-blue, minimal-mono) | Tested | noir-network and paper are polished and reviewed on the style gallery; blueprint and sketch render every treatment and pass the same tests but had no further polish. One template per video, chosen by the Creative Director with a reason, or by you (New production, Export: re-renders pictures only) |
+| Phone-first size system: headings 72-88 px, labels 44, body 36, nothing under 30 px; icons 150 px (9:16) / 120 px (16:9); 6-8 px connectors | Tested | Enforced in the font code; tests check every string of every gallery tile for size and for 4.5:1 contrast against the pixels it sits on, and that text never leaves its card |
+| Icon flow (badges, connectors with arrowheads, label chips, dashed returns, packets on the real path) | Tested | |
+| World map (real lat/lon, great-circle arcs, glowing halftone land on noir-network and blueprint, light-points, legend, stat strip) | Tested | Places are examples unless the facts say otherwise. The stat strip shows a number only when it names the fact behind it |
+| Sequence diagram (lifelines, messages, self-loops, activation bars) | Tested | |
+| Title and benefit cards | Tested | |
+| Hit versus miss (framed middle tier, check and x chips, dashed returns, benefits footer) | Tested | The footer is dropped in 9:16 when the band is too short |
+| Stat (one sourced number that counts up) | Tested | |
 | Kinetic typography | Tested | |
 | 2D network flow (nodes, arrows, travelling packets, highlights) | Tested | |
 | Isometric architecture scene | Tested | Generic: any front component (load balancer, CDN cache, gateway, primary database) sending to members grouped in zones, with topic-specific state labels |
@@ -73,12 +81,15 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 | Captions burned in + SRT and VTT files | Tested | |
 | Caption style: Phrase (default) or Word highlight (2 to 4 words, large bold, spoken word in the accent colour), 16:9 and 9:16 | Tested | Unit tests on stills; Phrase frames checked byte-identical to the previous engine. Not watched in a full rendered video by a person. Word timing within a sentence is estimated, so the highlight can lead or lag a word slightly. In the Mono theme (white accent) the other words are drawn grey instead |
 | Sound design: generated ambient bed, ducking, blips/whooshes on cues | Tested | Not listened to by a person (see limitations) |
-| Transitions: fade, pull-back in, push-in out | Tested | |
+| Transitions: fade, crossfade, slide, push, match cut (chosen per scene); camera pull-back in, push-in out | Tested | Rendered inside the incoming scene's opening pause from the previous scene's last frame, so narration timing is unchanged. The match cut carries the whole scene so that the shared element starts where it was (it does not morph one element alone) |
+| Motion: draw-on connectors and arcs, spring icons, staggered cards, popping chips, counting numbers, focus (others dim to 35%, active one glows) | Tested | Text is never dimmed |
+| Frame time under 80 ms at 1080p | Tested | Every treatment x template x format, after the cache build (slow test and scripts/bench_frames.py) |
+| Storyboard gate: unknown icons, templates or transitions fail | Tested | |
 | Automated final checks: size, frame rate, duration, black, frozen, silence, clipping, codec, no paid service | Tested | |
 | Regenerate only changed scenes; clips cached by content hash | Tested | Undo restores from cache without rendering |
 | Show what will be rebuilt before running | Tested | |
 | 720p and 540p output | Tested (540p in tests) | |
-| 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) | Tested | Every treatment has its own tall layout (flows top to bottom, zig-zag isometric column, stacked cutaway); text kept inside the area those apps leave uncovered. Full 1080x1920 sample rendered and checked; switching an existing production between 16:9 and 9:16 re-renders pictures only (test). 16:9 output is byte-identical to before |
+| 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) | Tested | Every treatment has its own tall layout (flows top to bottom, zig-zag isometric column, stacked cutaway); content fills y 260-1500, or stops at y 1340 when burned-in captions are on (tested). Full 1080x1920 sample rendered and checked; switching an existing production between 16:9 and 9:16 re-renders pictures only (test). 16:9 output is byte-identical to before |
 | 1:1 square | Planned | Refused with a clear message |
 | 4K | Not offered | Impractical on the target hardware |
 | Cloud rendering | Planned | Optional, paid; off |

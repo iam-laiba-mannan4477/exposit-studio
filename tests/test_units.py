@@ -12,7 +12,7 @@ def test_example_role_outputs_match_schemas():
     assert len(s.treatments) >= 3 and s.chosen in [t.name for t in s.treatments]
     schemas.Script.model_validate(example("script.json"))
     b = schemas.Storyboard.model_validate(example("board.json"))
-    assert {"flow2d", "isometric", "cutaway"} <= {sc.treatment for sc in b.scenes}
+    assert {"iconflow", "isometric", "cutaway", "sequence"} <= {sc.treatment for sc in b.scenes}
 
 
 def test_gates_pass_on_example_and_catch_faults():

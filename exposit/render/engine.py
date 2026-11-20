@@ -1057,6 +1057,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
         f = font(40, "SemiBold")
         wd = f.measureText(co.get("text", ""))
         r = skia.Rect.MakeXYWH(960 - wd / 2 - 34, 836 + (1 - k) * 16, wd + 68, 80)
+        canvas.drawRoundRect(r, 16, 16, paint(col(T["bg0"] if sc.tpl.dark else "#FFFFFF", 0.96 * k)))   # opaque: it overlays content
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], 0.20 * k)))
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], k), 2))
         text(canvas, co.get("text", ""), 960, r.top() + 53, f, col(T["text"], k), "center")
@@ -1128,6 +1129,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
         rows = wrap(co.get("text", ""), f, 900)
         wd = max(f.measureText(r) for r in rows)
         r = skia.Rect.MakeXYWH(540 - wd / 2 - 34, 1278 + (1 - k) * 16, wd + 68, 34 + 54 * len(rows))
+        canvas.drawRoundRect(r, 16, 16, paint(col(T["bg0"] if sc.tpl.dark else "#FFFFFF", 0.96 * k)))
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], 0.20 * k)))
         canvas.drawRoundRect(r, 16, 16, paint(col(T["accent"], k), 2))
         for j, row in enumerate(rows):

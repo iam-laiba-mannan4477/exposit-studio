@@ -104,6 +104,22 @@ Every setting is optional. `install.ps1` creates `.env` from `.env.example`, whi
 .\.venv\Scripts\python -m exposit.cli models        # (re)download the narration model, checksum-verified
 ```
 
+## 8a. Templates, treatments and licences
+
+- **Templates** (one per video): `noir-network` (dark, glowing; the default for 9:16 Reels and Shorts), `paper` (light;
+  the default for 16:9), `blueprint`, `sketch`, `premium-technical`. Choose one in New production (or let the Creative
+  Director choose and say why) and change it later in Export: that re-renders pictures only.
+- **Treatments**: iconflow, map, sequence, cards (title or benefits), compare (hit versus miss), stat, kinetic, flow2d,
+  isometric, cutaway, chart. `exposit/skills/visual_planner.md` documents each with an example specification.
+- **Transitions** per scene: fade, crossfade, slide, push, match cut.
+- **Style gallery**: `python scripts/render_gallery.py [--thumbs]` renders every treatment in every template, both
+  formats, into `docs/style-gallery/`; `python scripts/combine_references.py` puts it beside the reference images;
+  `python scripts/bench_frames.py` measures frame times.
+- **Licences** of everything vendored are in `exposit/assets/LICENSES.md` with the licence texts in
+  `exposit/assets/licenses/`: Lucide icons (ISC), Kubernetes icons (CC-BY-4.0, with attribution), world map data (Natural Earth via
+  world-atlas, public domain / ISC), Inter, JetBrains Mono and Caveat fonts (SIL Open Font License). A test fails if
+  any icon file lacks a licence entry.
+
 ## 9. Tests
 
 ```powershell

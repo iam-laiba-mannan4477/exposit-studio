@@ -172,7 +172,7 @@ PORTRAIT_BOTTOM_WITH_CAPTIONS = 1340.0     # with burned-in captions on, content
 PORTRAIT_X = (60.0, 1020.0)
 MAX_PORTRAIT_ENTITIES = 5
 MIN_STROKE = 6.0                          # connectors
-DIM = 0.28                                # how far focus dims the rest (text keeps its contrast)
+DIM = 0.65                                # focus dims the other shapes to 35% (text keeps full contrast)
 
 
 def band_bottom(sc=None) -> float:

@@ -1028,6 +1028,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
             px, py = tr.center(cam.get("exit_focus", "")) if cam.get("exit_focus") else (fx, fy)
             s, fx, fy = s * lerp(1.0, 1.9, k), lerp(fx, px, k), lerp(fy, py, k)
     canvas.save()
+    canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))   # match-cut carry (transitions)
     canvas.translate(960, 540)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
@@ -1070,7 +1071,8 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
                 canvas.drawRoundRect(r, 12, 12, paint(col("#000000", 0.62)))
                 text(canvas, cp["text"], 960, 989, f, col("#FFFFFF"), "center")
                 break
-    fade = min(clamp(t / 0.3), clamp((sc.dur - t) / 0.3))
+    fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
+               clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
         design.sprite(canvas, ("fade", T["bg0"]), 0, 0, 1920, 1080, lambda cc: cc.drawColor(col(T["bg0"])), 1 - fade)   # cached, blitted
     canvas.restore()
@@ -1099,6 +1101,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     background(canvas, sc, 1080, 1920)
     s, fx, fy = stage_camera(tr, t)
     canvas.save()
+    canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))
     canvas.translate(tr.CX, tr.CY)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
@@ -1142,7 +1145,8 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
                 for j, row in enumerate(rows):
                     text(canvas, row, 540, r.top() + 60 + j * 58, f, col("#FFFFFF"), "center")
                 break
-    fade = min(clamp(t / 0.3), clamp((sc.dur - t) / 0.3))
+    fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
+               clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
         design.sprite(canvas, ("fade", T["bg0"]), 0, 0, 1080, 1920, lambda cc: cc.drawColor(col(T["bg0"])), 1 - fade)
     canvas.restore()
@@ -1172,13 +1176,87 @@ def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960,
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 90))
 
 
+# ------------------------------------------------------------------ transitions between scenes
+# A scene's spec may name how it enters: {"transition": "fade" | "crossfade" | "slide" | "push" | "match"}.
+# "fade" (the default) fades in from the background. The others need the previous scene's last frame and run inside
+# the incoming scene's opening padding, so narration timing is unchanged; the previous scene then does not fade out.
+# "match" carries the scene so that an element present in both (same id) starts where it was and eases into place.
+TRANSITIONS = ("fade", "crossfade", "slide", "push", "match")
+TRANSITION_SECONDS = 0.45
+
+
+def needs_prev(spec: dict) -> bool:
+    return spec.get("transition", "fade") in TRANSITIONS[1:]
+
+
+def last_frame(tr: Treatment, w: int, h: int, captions: bool) -> skia.Image:
+    """The previous scene's final frame (it does not fade out when the next scene transitions from it)."""
+    tr.fade_out = False
+    surf = skia.Surface(w, h)
+    draw_frame(surf.getCanvas(), tr, max(0.0, tr.sc.dur - 1 / 30), w, h, captions)
+    return surf.makeImageSnapshot()
+
+
+def _match_shift(tr: Treatment, prev: Treatment, w: int, h: int) -> tuple[float, float]:
+    """Logical-space offset that puts the first shared element where it was in the previous scene."""
+    shared = [i for i in tr.pos if not i.startswith("_") and i in getattr(prev, "pos", {})]
+    if not shared:
+        return 0.0, 0.0
+    (x1, y1), (x0, y0) = tr.center(shared[0]), prev.center(shared[0])
+    return x0 - x1, y0 - y1
+
+
+def transition_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool,
+                     prev_img: skia.Image | None, kind: str, shift: tuple[float, float] = (0.0, 0.0),
+                     scratch: skia.Surface | None = None) -> None:
+    """Draws frame t of `tr`, composited with the previous scene's last frame while the transition runs."""
+    k = ease_io(clamp(t / TRANSITION_SECONDS))
+    if prev_img is None or kind not in TRANSITIONS[1:] or k >= 1:
+        tr.shift = (0.0, 0.0)
+        draw_frame(canvas, tr, t, w, h, captions)
+        return
+    tr.fade_in = False
+    if kind == "match":
+        tr.shift = (shift[0] * (1 - k), shift[1] * (1 - k))
+        draw_frame(canvas, tr, t, w, h, captions)
+        canvas.drawImage(prev_img, 0, 0, skia.SamplingOptions(), skia.Paint(Alphaf=clamp(1 - k * 1.8)))
+        return
+    tr.shift = (0.0, 0.0)
+    if kind == "crossfade":
+        draw_frame(canvas, tr, t, w, h, captions)
+        canvas.drawImage(prev_img, 0, 0, skia.SamplingOptions(), skia.Paint(Alphaf=1 - k))
+        return
+    scratch = scratch or skia.Surface(w, h)
+    draw_frame(scratch.getCanvas(), tr, t, w, h, captions)
+    cur = scratch.makeImageSnapshot()
+    canvas.clear(skia.ColorBLACK)
+    if kind == "slide":                                   # the new scene slides in over the old one
+        canvas.drawImage(prev_img, 0, 0)
+        canvas.drawImage(cur, w * (1 - k), 0)
+    else:                                                 # push: the new scene pushes the old one out
+        canvas.drawImage(prev_img, -w * k, 0)
+        canvas.drawImage(cur, w * (1 - k), 0)
+
+
 def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, h: int = config.HEIGHT,
                 fps: int = config.FPS, theme: str = "premium-technical", captions: bool = True,
-                progress: Callable[[float], None] | None = None, caption_style: str = "phrase") -> dict:
-    """Render one scene to a silent H.264 clip. Returns duration and frame count."""
+                progress: Callable[[float], None] | None = None, caption_style: str = "phrase",
+                prev: dict | None = None, fade_out: bool = True) -> dict:
+    """Render one scene to a silent H.264 clip. Returns duration and frame count.
+    `prev` ({"spec", "timing"}) is the previous scene, used when this scene's transition needs its last frame;
+    `fade_out=False` when the next scene transitions from this one."""
     tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style, captions=captions)
+    tr.fade_out = fade_out
+    kind = spec.get("transition", "fade")
+    prev_img, shift = None, (0.0, 0.0)
+    if prev and needs_prev(spec):
+        ptr = build(prev["spec"], prev["timing"], theme, portrait=h > w, caption_style=caption_style, captions=captions)
+        prev_img = last_frame(ptr, w, h, captions)
+        shift = _match_shift(tr, ptr, w, h)
+        design.set_active(tr.sc.tpl)
     n = max(1, int(round(tr.sc.dur * fps)))
     surf = skia.Surface(w, h)                             # native pixel order: cached layers blit without conversion
+    scratch = skia.Surface(w, h) if prev_img is not None else None
     canvas = surf.getCanvas()
     frame = np.zeros((h, w, 4), dtype=np.uint8)
     rgba = skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType)
@@ -1188,7 +1266,7 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         for i in range(n):
-            draw_frame(canvas, tr, i / fps, w, h, captions)
+            transition_frame(canvas, tr, i / fps, w, h, captions, prev_img, kind, shift, scratch)
             surf.readPixels(rgba, frame)                  # one conversion to RGBA per frame (about 3 ms at 1080p)
             proc.stdin.write(memoryview(frame))
             if progress and i % 15 == 0:

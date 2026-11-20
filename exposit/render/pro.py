@@ -75,6 +75,9 @@ class ProTreatment:
 
 
 # ================================================================== iconflow
+CHIP_GAP = 32 * 1.8 + 2 * 22 + 2 * 18          # a chip and clear space above and below it, between badge rows
+
+
 class IconFlow(ProTreatment):
     """Entities as icon badges with labels under them, joined by orthogonal or curved connectors with rounded elbows,
     arrowheads, solid or dashed (return) styles and label chips; packets travel the real connector path."""
@@ -100,9 +103,15 @@ class IconFlow(ProTreatment):
         self.cell_w = (x1 - x0) / max(1, cols)
         self.side = self.portrait and cols == 1
         self.r = max(self.S["icon"] / 2, min(95.0, 0.22 * self.cell_w, 0.2 * (y1 - y0) / max(1, rows)))
+        self.no_subs = False
         lab_h = max((self._lab_h(e["id"]) for e in els), default=0.0)
         block = 2 * self.r + (0 if self.side else lab_h)   # badge + label; rows spread with equal gaps
-        gap = max(24.0, (y1 - y0 - rows * block) / max(1, rows - 1)) if rows > 1 else 0.0
+        need_gap = (CHIP_GAP if self._has_chips() and not self.portrait else 70.0)
+        if rows > 1 and rows * block + (rows - 1) * need_gap > y1 - y0 and not self.side:
+            self.no_subs = True                           # short band (captions on): sub-lines are optional, gaps are not
+            lab_h = max((self._lab_h(e["id"]) for e in els), default=0.0)
+            block = 2 * self.r + lab_h
+        gap = max(need_gap, (y1 - y0 - rows * block) / max(1, rows - 1)) if rows > 1 else 0.0
         oy = y0 + max(0.0, (y1 - y0 - rows * block - (rows - 1) * gap) / 2)
         for eid, (cx_i, ry_i) in grid.items():
             cx = 120.0 + self.r if self.side else x0 + (cx_i + 0.5) * (x1 - x0) / cols
@@ -142,7 +151,21 @@ class IconFlow(ProTreatment):
         if getattr(self, "side", False):
             return 0.0
         e = self.sc.els[eid]
-        return 16 + D.label_block_h(e.get("label", eid), self._maxw(), self.S["label"], e.get("sub"))
+        return 16 + D.label_block_h(e.get("label", eid), self._maxw(), self.S["label"], self._sub(e))
+
+    def _gap_mid(self, l, y):
+        """For a vertical link, the middle of the clear gap between the upper label block and the lower badge."""
+        a, b = self.center(l["from"]), self.center(l["to"])
+        up, lo = (l["from"], l["to"]) if a[1] < b[1] else (l["to"], l["from"])
+        y0 = self.center(up)[1] + self.r + self._lab_h(up)
+        y1 = self.center(lo)[1] - self.r
+        return (y0 + y1) / 2 if y1 > y0 else y
+
+    def _sub(self, e):
+        return None if getattr(self, "no_subs", False) else e.get("sub")
+
+    def _has_chips(self):
+        return bool(self.sc.events_of("chip")) or any(isinstance(l, dict) and l.get("label") for l in self.sc.spec.get("links") or [])
 
     def _route(self, l):
         ax, ay = self.center(l["from"])
@@ -188,7 +211,7 @@ class IconFlow(ProTreatment):
             tone = l.get("tone")
             colr = D.role_color(tpl, tone) if tone in ("success", "fail", "info") else None
             hl = max(sc.highlight(l["from"], t), sc.highlight(l["to"], t)) if dim else 1.0
-            D.stroke(c, tpl, l["path"], (1 - 0.4 * dim * (1 - hl)), k, dashed=bool(l.get("dashed")), color=colr,
+            D.stroke(c, tpl, l["path"], (1 - D.DIM * dim * (1 - hl)), k, dashed=bool(l.get("dashed")), color=colr,
                      seed=l["i"], flow=t if l.get("dashed") else None)
         for eid in sc.order:
             e = sc.els[eid]
@@ -203,8 +226,8 @@ class IconFlow(ProTreatment):
             if self.side:
                 self._label_side(c, e, cx, cy, ease_out(k), hl, dim)
             else:
-                a = ease_out((k - 0.2) / 0.8) * (1 - D.DIM * dim * (1 - hl))
-                yb = D.label_under(c, tpl, e.get("label", eid), cx, cy + self.r + 16, self._maxw(), self.S["label"], a, e.get("sub"), hl=hl)
+                a = ease_out((k - 0.2) / 0.8)                  # labels are never dimmed
+                yb = D.label_under(c, tpl, e.get("label", eid), cx, cy + self.r + 16, self._maxw(), self.S["label"], a, self._sub(e), hl=hl)
                 nt = sc.note(eid, t)
                 if nt:
                     D.draw_text(c, D.ellipsize(nt[0], self._maxw(), 30, mono=True), cx, yb + 40, 30,
@@ -217,9 +240,13 @@ class IconFlow(ProTreatment):
             if l is None:
                 continue
             kk = clamp((t - e["t"]) / 0.45)
-            x, y, _, _ = D.point_at(l["path"], float(e.get("pos", 0.5)))
+            x, y, tx, ty = D.point_at(l["path"], float(e.get("pos", 0.5)))
             if self.side:
                 x = max(x, 60 + 170)
+            elif self.portrait and abs(ty) > 0.9:          # vertical link: the chip sits beside it, clear of labels
+                cw, _ = D.chip_size(tpl, e.get("text", ""), e.get("icon") or "check", chip_sz, 440)
+                x = x - cw / 2 - 26 if x - cw - 26 >= SAFE_PORTRAIT[0] else x + cw / 2 + 26
+                y = self._gap_mid(l, y)
             D.chip(c, tpl, x, y + float(e.get("dy", 0)), e.get("text", ""), e.get("icon") or {"success": "check", "fail": "x"}.get(e.get("tone", "")),
                    e.get("tone", "neutral"), ease_out(kk), spring(kk), chip_sz, max_w=420 if not self.portrait else 440)
         for l in self.links:                              # static chips declared on the link itself
@@ -239,7 +266,7 @@ class IconFlow(ProTreatment):
 
     def _label_side(self, c, e, cx, cy, k, hl, dim):
         tpl = self.tpl
-        a = k * (1 - D.DIM * dim * (1 - hl))
+        a = k
         x = cx + self.r + 32
         maxw = SAFE_PORTRAIT[2] - x
         rows, sz = D.fit_block(e.get("label", e["id"]), maxw, 2, self.S["label"], 36, "SemiBold")
@@ -450,7 +477,7 @@ class MapScene(ProTreatment):
                 continue
             x, y = self.center(e["id"])
             hl = sc.highlight(e["id"], t)
-            al = ease_out(k) * (1 - 0.4 * dim * (1 - hl))
+            al = ease_out(k) * (1 - D.DIM * dim * (1 - hl))
             colr = D.role_color(tpl, e["tone"]) if e.get("tone") else None
             kind = e.get("kind", "edge")
             if kind in ("hub", "region", "origin", "datacenter"):

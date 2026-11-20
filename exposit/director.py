@@ -226,6 +226,17 @@ def scene_hashes(pid: str) -> list[dict]:
         ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
                       *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))   # Phrase hashes unchanged
         out.append({"id": spec["id"], "title": spec.get("title", ""), "audio_hash": ah, "clip_hash": ch, "sentences": sentences, "spec": spec})
+    # Transitions: a scene that enters from the previous one depends on that scene's picture, and a scene the next one
+    # transitions from does not fade out. Only those clips get extra hash inputs, so other hashes are unchanged.
+    base = [o["clip_hash"] for o in out]
+    for i, o in enumerate(out):
+        extra = []
+        if i > 0 and engine.needs_prev(o["spec"]):
+            extra.append(("prev", base[i - 1]))
+        if i + 1 < len(out) and engine.needs_prev(out[i + 1]["spec"]):
+            extra.append(("no_fade_out",))
+        if extra:
+            o["clip_hash"] = store.sha("clip+", base[i], extra)
     return out
 
 
@@ -280,9 +291,11 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             ctx.say(f"Animation Producer: rendering scene {i + 1} of {n} ({s['spec'].get('treatment')})", base)
             t_start = time.time()
             tmp = clip.with_suffix(".part.mp4")
+            prev = {"spec": cur[i - 1]["spec"], "timing": cur[i - 1]["timing"]} if i > 0 else None
+            fade_out = not (i + 1 < n and engine.needs_prev(cur[i + 1]["spec"]))
             info = engine.render_clip(s["spec"], s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
                                       progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None,
-                                      caption_style=rs["caption_style"])
+                                      caption_style=rs["caption_style"], prev=prev, fade_out=fade_out)
             tmp.replace(clip)
             store.job_log(ctx.job_id, f"Rendered {s['id']}: {info['frames']} frames in {time.time() - t_start:.1f} s") if ctx.job_id else None
         sw, sh = (540, 960) if rs["h"] > rs["w"] else (960, 540)

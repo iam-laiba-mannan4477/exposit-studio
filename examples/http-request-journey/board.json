@@ -518,12 +518,16 @@
     {
      "from": "svc",
      "to": "p2",
-     "dashed": true
+     "dashed": true,
+     "style": "curve",
+     "bend": 0.12
     },
     {
      "from": "svc",
      "to": "p3",
-     "dashed": true
+     "dashed": true,
+     "style": "curve",
+     "bend": 0.2
     },
     {
      "from": "ng",

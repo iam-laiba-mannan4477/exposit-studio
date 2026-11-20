@@ -172,6 +172,7 @@ PORTRAIT_BOTTOM_WITH_CAPTIONS = 1340.0     # with burned-in captions on, content
 PORTRAIT_X = (60.0, 1020.0)
 MAX_PORTRAIT_ENTITIES = 5
 MIN_STROKE = 6.0                          # connectors
+K8S_BADGE = "#EEF4FF"                       # light badge behind Kubernetes icons, which keep their own colours
 DIM = 0.65                                # focus dims the other shapes to 35% (text keeps full contrast)
 
 
@@ -728,6 +729,21 @@ def _badge_body(c, tpl: Template, icon, cx: float, cy: float, r: float, tone, se
     """The badge itself, fully opaque and without focus effects (badge() adds those)."""
     st, T = tpl.icon, tpl.T
     tone_col = role_color(tpl, tone) if tone else None
+    name = assets.resolve(icon)
+    if name and assets.icon_names().get(name) == "k8s" and st["style"] in ("solid", "badge"):
+        # Kubernetes icons are filled shapes with an inner glyph: recoloured white on a coloured badge they read as a
+        # plain hexagon. They keep their own colours on a light rounded badge instead.
+        rr = r * 0.30
+        rect = skia.Rect.MakeXYWH(cx - r, cy - r, 2 * r, 2 * r)
+        edge = tone_col or st["badge"]
+        if tpl.glow:
+            halo(c, cx, cy, r * 1.55, edge, 0.35)
+        elif tpl.card.get("shadow"):
+            soft_shadow(c, cx - r, cy - r + 8, 2 * r, 2 * r, rr, "#0B1F3A", 0.20, 12)
+        c.drawRoundRect(rect, rr, rr, paint(col(K8S_BADGE)))
+        c.drawRoundRect(rect, rr, rr, paint(col(edge), 3.0))
+        assets.draw_icon(c, name, cx, cy, r * 1.45, assets.K8S_BLUE, 1.0, st["stroke"], glyph="#FFFFFF")
+        return
     if st["style"] == "solid":
         fill = tone_col or st["badge"]
         rr = r * 0.30

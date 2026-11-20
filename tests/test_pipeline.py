@@ -48,17 +48,46 @@ def test_exports_are_real_files(client):
     assert client.get(f"/api/productions/{pid}/file/../../exposit.db").status_code in (400, 404)
 
 
+def transition_dependents(board_scenes: list[dict], order: list[str], changed: set[str]) -> set[str]:
+    """Scenes whose clip changes when `changed` scenes change, through transitions: a scene that enters from its
+    predecessor depends on that scene's picture, and a scene does not fade out when its successor transitions from it."""
+    from exposit.render import engine
+    by = {s["id"]: s for s in board_scenes}
+    out = set(changed)
+    for i, sid in enumerate(order):
+        if i > 0 and order[i - 1] in changed and engine.needs_prev(by[sid]):
+            out.add(sid)
+    return out
+
+
+def reorder_dependents(board_scenes: list[dict], before: list[str], after: list[str]) -> set[str]:
+    from exposit.render import engine
+    by = {s["id"]: s for s in board_scenes}
+
+    def deps(order):
+        d = {}
+        for i, sid in enumerate(order):
+            prev = order[i - 1] if i > 0 and engine.needs_prev(by[sid]) else None
+            nofade = i + 1 < len(order) and engine.needs_prev(by[order[i + 1]])
+            d[sid] = (prev, nofade)
+        return d
+    a, b = deps(before), deps(after)
+    return {sid for sid in after if a.get(sid) != b.get(sid)}
+
+
 def test_scene_edit_rebuilds_only_that_scene(client):
     pid = state["pid"]
     before = {s["id"]: s["clip_hash"] for s in get(client)["manifest"]["scenes"]}
+    board = get(client)["board"]["scenes"]
+    expect = transition_dependents(board, [s["id"] for s in board], {"s2"})     # s2, and a scene entering from it
     plan = client.put(f"/api/productions/{pid}/scenes/s2", json={"patch": {"pad_end": 1.2}, "label": "Longer hold"}).json()
-    assert plan["renders"] == 1 and plan["narrations"] == 0 and [s["scene"] for s in plan["scenes"]] == ["s2"]
+    assert plan["renders"] == len(expect) and plan["narrations"] == 0 and {s["scene"] for s in plan["scenes"]} == expect
     assert client.put(f"/api/productions/{pid}/scenes/s2", json={"patch": {"treatment": "hologram"}}).status_code == 400
     r = client.post(f"/api/productions/{pid}/rebuild").json()
     assert wait_job(client, r["job"])["state"] == "done"
     p = get(client)
     after = {s["id"]: s["clip_hash"] for s in p["manifest"]["scenes"]}
-    assert [k for k in before if before[k] != after[k]] == ["s2"]
+    assert {k for k in before if before[k] != after[k]} == expect
     assert p["plan"]["rejoin"] is False
     assert p["final"] == "awaiting_approval"
     state["edited_hash"] = after["s2"]; state["orig_hash"] = before["s2"]
@@ -67,7 +96,7 @@ def test_scene_edit_rebuilds_only_that_scene(client):
 def test_undo_restores_from_cache_without_rendering(client):
     pid = state["pid"]
     plan = client.post(f"/api/productions/{pid}/undo").json()
-    assert plan["renders"] == 0 and plan["scenes"][0]["clip"] == "restore from cache"
+    assert plan["renders"] == 0 and plan["scenes"] and all(x["clip"] == "restore from cache" for x in plan["scenes"])
     plan = client.post(f"/api/productions/{pid}/redo").json()
     assert plan["rejoin"] is False
     p = get(client)
@@ -92,7 +121,8 @@ def test_instruction_edit_is_a_proposal_until_accepted(client, fake_agent):
     assert prop["changed"] == ["pad_end"]
     assert get(client)["board"] == board_before, "nothing changes until the proposal is accepted"
     plan = client.post(f"/api/productions/{pid}/scenes/s4/proposal/apply").json()
-    assert [s["scene"] for s in plan["scenes"]] == ["s4"] and plan["narrations"] == 0
+    board = get(client)["board"]["scenes"]
+    assert {s["scene"] for s in plan["scenes"]} == transition_dependents(board, [s["id"] for s in board], {"s4"}) and plan["narrations"] == 0
     client.post(f"/api/productions/{pid}/undo")
 
 
@@ -119,9 +149,13 @@ def test_switch_to_vertical_reuses_narration(client):
 def test_versions_override_and_final_approval(client):
     pid = state["pid"]
     v = client.post(f"/api/productions/{pid}/versions", json={"label": "Before reorder"}).json()
-    ids = [s["id"] for s in get(client)["board"]["scenes"]]
-    plan = client.post(f"/api/productions/{pid}/reorder", json={"ids": ids[:4] + [ids[5], ids[4]]}).json()
-    assert plan["renders"] == 0 and plan["rejoin"]
+    board = get(client)["board"]["scenes"]
+    ids = [s["id"] for s in board]
+    new = ids[:4] + [ids[5], ids[4]]
+    moved = reorder_dependents(board, ids, new)        # only scenes whose transition neighbours changed re-render
+    plan = client.post(f"/api/productions/{pid}/reorder", json={"ids": new}).json()
+    assert plan["renders"] == len([x for x in plan["scenes"] if x["clip"] == "render"]) and plan["rejoin"]
+    assert {x["scene"] for x in plan["scenes"] if x["clip"] in ("render", "restore from cache")} == moved
     client.post(f"/api/productions/{pid}/versions/{v['id']}/restore")
     assert [s["id"] for s in get(client)["board"]["scenes"]] == ids
     assert client.post(f"/api/productions/{pid}/reorder", json={"ids": ids[:3]}).status_code == 400

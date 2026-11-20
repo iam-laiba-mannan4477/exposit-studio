@@ -2,7 +2,8 @@
 from __future__ import annotations
 import re, statistics
 from . import schemas
-from .render.engine import norm_word, Scene, TREATMENTS
+from .render.engine import norm_word, Scene, TREATMENTS, TRANSITIONS
+from .render import assets, design
 
 WPS = 2.45  # words per second at a natural narration pace
 
@@ -92,10 +93,39 @@ def script_gate(script: dict, facts: dict, strategy: dict | None, target_seconds
     return {"gate": "script", "passed": all(c["passed"] for c in crit), "criteria": crit, "engagement": eng, "review": review}
 
 
+def max_run(xs: list) -> int:
+    """The longest run of equal neighbours."""
+    best = run = 0
+    prev = object()
+    for x in xs:
+        run = run + 1 if x == prev else 1
+        best, prev = max(best, run), x
+    return best
+
+
+def spec_icons(spec: dict) -> list[str]:
+    """Every icon name a scene spec asks for (elements, items, steps, panel, client, origin, strip, footer)."""
+    out = []
+    pools = [spec.get("elements", []), spec.get("items", []), spec.get("footer", []),
+             (spec.get("strip") or {}).get("items", []), (spec.get("legend") or {}).get("items", [])]
+    for lane in spec.get("lanes", []):
+        pools.append(lane.get("steps", []))
+        pools.append([lane] + ([lane["result"]] if isinstance(lane.get("result"), dict) else []))
+    pools.append([spec.get(k) for k in ("panel", "client", "origin") if isinstance(spec.get(k), dict)])
+    pools.append([c for c in spec.get("cues", []) if c.get("action") == "chip"])
+    for pool in pools:
+        out += [str(x["icon"]) for x in pool if isinstance(x, dict) and x.get("icon")]
+    if spec.get("icon"):
+        out.append(str(spec["icon"]))
+    return out
+
+
 def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
     comps = {c["id"] for c in facts.get("model", {}).get("components", [])}
     sids = [s["id"] for s in script.get("scenes", [])]
-    problems, sparse, refs = [], [], []
+    problems, sparse, refs, unknown_names = [], [], [], []
+    if board.get("template") and board["template"] not in design.TEMPLATES:
+        unknown_names.append(f"unknown template {board['template']}")
     for spec in board.get("scenes", []):
         sc_script = next((s for s in script["scenes"] if s["id"] == spec["id"]), None)
         if sc_script is None:
@@ -103,6 +133,13 @@ def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
             continue
         if spec.get("treatment") not in TREATMENTS:
             problems.append(f"{spec['id']}: unknown treatment {spec.get('treatment')}")
+        bad_icons = sorted({i for i in spec_icons(spec) if assets.resolve(i) is None})
+        if bad_icons:
+            unknown_names.append(f"{spec['id']}: unknown icon {', '.join(bad_icons)}")
+        if spec.get("theme") and spec["theme"] not in design.TEMPLATES:
+            unknown_names.append(f"{spec['id']}: unknown template {spec['theme']}")
+        if spec.get("transition", "fade") not in TRANSITIONS:
+            unknown_names.append(f"{spec['id']}: unknown transition {spec.get('transition')}")
         spoken = {norm_word(w) for s in sc_script["sentences"] for w in words(s["text"])}
         eids = {e["id"] for e in spec.get("elements", [])} | {"_in"}
         for c in spec.get("cues", []) + (spec.get("lines") or []):
@@ -125,6 +162,7 @@ def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
         _crit("Cues point at spoken words and known elements", not problems, "; ".join(problems[:6])),
         _crit("Drawn elements map to the system model", not refs, "; ".join(refs[:6])),
         _crit("A visual change at least every 6 seconds", not sparse, "; ".join(sparse)),
+        _crit("Icons, templates and transitions are all known", not unknown_names, "; ".join(unknown_names[:6])),
         _crit("Every treatment is supported on this machine", all(s.get("treatment") in TREATMENTS for s in board.get("scenes", []))),
         _crit("No paid service required", True, "Local renderer"),
     ]

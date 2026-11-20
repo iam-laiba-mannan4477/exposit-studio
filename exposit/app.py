@@ -145,6 +145,8 @@ async def create_production(req: Request):
              "format": b.get("format", "16:9"), "quality": b.get("quality", "1080p"), "fps": 30, "language": "en", "style": b.get("style", "decide"),
              "theme": b.get("theme", "premium-technical"), "voice": b.get("voice") or s["voice"], "voice_speed": float(b.get("voice_speed") or s["voice_speed"]),
              "review_mode": b.get("review_mode", s.get("default_review_mode", "final_only")), "budget_paid_usd": 0, "objective": b.get("objective", "")}
+    if brief["theme"] != "auto" and brief["theme"] not in director.engine.design.TEMPLATES:
+        raise HTTPException(400, f"Unknown template {brief['theme']}.")
     if brief["format"] not in ("16:9", "9:16"):
         raise HTTPException(400, "16:9 (landscape) and 9:16 (vertical, for Reels and Shorts) are implemented. 1:1 square is planned.")
     p = store.create_production(brief)
@@ -193,6 +195,8 @@ async def put_brief(pid: str, req: Request):
             brief[k] = b[k]
     if brief.get("format", "16:9") not in ("16:9", "9:16"):
         raise HTTPException(400, "Format must be 16:9 or 9:16. 1:1 square is planned.")
+    if brief.get("theme", "auto") != "auto" and brief.get("theme") not in director.engine.design.TEMPLATES:
+        raise HTTPException(400, f"Unknown template {brief.get('theme')}.")
     if brief.get("quality") not in ("1080p", "720p", "540p"):
         raise HTTPException(400, "Quality must be 1080p, 720p or 540p. 4K is not offered on this hardware.")
     store.write_json(pid, "brief.json", brief)

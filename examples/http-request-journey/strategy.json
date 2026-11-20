@@ -45,7 +45,7 @@
   },
   {
    "title": "DNS",
-   "treatment": "flow2d",
+   "treatment": "iconflow",
    "seconds": 9,
    "purpose": "Decision one: which address"
   },
@@ -63,13 +63,13 @@
   },
   {
    "title": "Service to pod",
-   "treatment": "cutaway",
+   "treatment": "iconflow",
    "seconds": 12,
    "purpose": "The surprise: a Service is not a program. Decision four: which pod"
   },
   {
    "title": "Response and recap",
-   "treatment": "flow2d",
+   "treatment": "sequence",
    "seconds": 10,
    "purpose": "Return trip and the whole route in one frame"
   }
@@ -172,5 +172,7 @@
   "tr-enter-box",
   "vc-final-frame",
   "ex-one-arrangement"
- ]
+ ],
+ "template": "noir-network",
+ "template_reason": "A dark, glowing network look reads well on a phone feed and suits a path-through-infrastructure story; paper would suit the 16:9 course cut."
 }

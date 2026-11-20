@@ -1,0 +1,694 @@
+{
+ "about": "One scene per treatment, rendered in every template and both formats by scripts/render_gallery.py. Content follows the CDN research (AWS CloudFront docs, MDN HTTP caching): no invented counts, latencies or places. City coordinates are real; they mark example locations, not a provider's actual footprint.",
+ "scenes": [
+  {
+   "id": "iconflow",
+   "narration": "Your browser asks the nearest edge. On a hit the edge answers. On a miss it asks the regional cache and then the origin.",
+   "spec": {
+    "id": "iconflow",
+    "treatment": "iconflow",
+    "heading": "Request path",
+    "elements": [
+     {
+      "id": "user",
+      "kind": "user",
+      "label": "Browser",
+      "sub": "HTTPS GET /app.js",
+      "col": 0,
+      "row": 0
+     },
+     {
+      "id": "edge",
+      "kind": "edge",
+      "icon": "server",
+      "label": "Edge location",
+      "sub": "PoP cache",
+      "col": 1,
+      "row": 0
+     },
+     {
+      "id": "regional",
+      "kind": "cache",
+      "icon": "database-zap",
+      "label": "Regional edge cache",
+      "col": 1,
+      "row": 1
+     },
+     {
+      "id": "origin",
+      "kind": "origin",
+      "icon": "server-cog",
+      "label": "Origin",
+      "sub": "S3 or HTTP server",
+      "col": 2,
+      "row": 1
+     }
+    ],
+    "links": [
+     {
+      "from": "user",
+      "to": "edge"
+     },
+     {
+      "from": "edge",
+      "to": "user",
+      "dashed": true,
+      "tone": "success"
+     },
+     {
+      "from": "edge",
+      "to": "regional"
+     },
+     {
+      "from": "regional",
+      "to": "origin"
+     }
+    ],
+    "cues": [
+     {
+      "at": {
+       "word": "nearest"
+      },
+      "action": "packet",
+      "from": "user",
+      "to": "edge"
+     },
+     {
+      "at": {
+       "word": "hit"
+      },
+      "action": "chip",
+      "from": "edge",
+      "to": "user",
+      "text": "Cache hit",
+      "tone": "success",
+      "icon": "check"
+     },
+     {
+      "at": {
+       "word": "miss"
+      },
+      "action": "chip",
+      "from": "edge",
+      "to": "regional",
+      "text": "Cache miss",
+      "tone": "fail",
+      "icon": "x"
+     },
+     {
+      "at": {
+       "word": "origin",
+       "occurrence": 1
+      },
+      "action": "packet",
+      "from": "regional",
+      "to": "origin"
+     },
+     {
+      "at": {
+       "word": "origin",
+       "occurrence": 1
+      },
+      "action": "highlight",
+      "target": "origin",
+      "hold": 1.0
+     }
+    ]
+   }
+  },
+  {
+   "id": "map",
+   "narration": "Edge locations sit close to users on every continent. A miss travels to the origin in one region.",
+   "spec": {
+    "id": "map",
+    "treatment": "map",
+    "heading": "Where requests are answered",
+    "style": "solid",
+    "elements": [
+     {
+      "id": "origin",
+      "kind": "origin",
+      "label": "Origin (us-east-1)",
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     {
+      "id": "fra",
+      "kind": "hub",
+      "label": "Frankfurt",
+      "lat": 50.1,
+      "lon": 8.7
+     },
+     {
+      "id": "sin",
+      "kind": "hub",
+      "label": "Singapore",
+      "lat": 1.35,
+      "lon": 103.8
+     },
+     {
+      "id": "gru",
+      "kind": "hub",
+      "label": "São Paulo",
+      "lat": -23.5,
+      "lon": -46.6
+     },
+     {
+      "id": "syd",
+      "kind": "hub",
+      "label": "Sydney",
+      "lat": -33.9,
+      "lon": 151.2
+     },
+     {
+      "id": "lhr",
+      "kind": "edge",
+      "label": "London",
+      "lat": 51.5,
+      "lon": -0.1,
+      "show_label": false
+     },
+     {
+      "id": "bom",
+      "kind": "edge",
+      "label": "Mumbai",
+      "lat": 19.1,
+      "lon": 72.9,
+      "show_label": false
+     },
+     {
+      "id": "nrt",
+      "kind": "edge",
+      "label": "Tokyo",
+      "lat": 35.7,
+      "lon": 139.7,
+      "show_label": false
+     },
+     {
+      "id": "jnb",
+      "kind": "edge",
+      "label": "Johannesburg",
+      "lat": -26.2,
+      "lon": 28.0,
+      "show_label": false
+     },
+     {
+      "id": "sfo",
+      "kind": "edge",
+      "label": "San Francisco",
+      "lat": 37.6,
+      "lon": -122.4,
+      "show_label": false
+     }
+    ],
+    "arcs": [
+     {
+      "from": "fra",
+      "to": "origin"
+     },
+     {
+      "from": "gru",
+      "to": "origin"
+     },
+     {
+      "from": "sin",
+      "to": "origin"
+     },
+     {
+      "from": "syd",
+      "to": "origin"
+     }
+    ],
+    "legend": {
+     "title": "Legend",
+     "items": [
+      {
+       "mark": "hub",
+       "label": "Regional edge cache",
+       "sub": "Larger cache behind edges"
+      },
+      {
+       "mark": "light",
+       "label": "Edge location",
+       "sub": "Answers nearby users"
+      },
+      {
+       "mark": "dash",
+       "label": "Miss path",
+       "sub": "Fetched from the origin"
+      }
+     ]
+    },
+    "cues": [
+     {
+      "at": {
+       "word": "miss"
+      },
+      "action": "packet",
+      "from": "fra",
+      "to": "origin"
+     },
+     {
+      "at": {
+       "word": "origin"
+      },
+      "action": "card",
+      "target": "origin",
+      "title": "Origin",
+      "text": "One region; reached only on a miss"
+     },
+     {
+      "at": {
+       "word": "origin"
+      },
+      "action": "highlight",
+      "target": "origin",
+      "hold": 2
+     }
+    ],
+    "auto_arcs": "nearest-hub",
+    "strip": {
+     "items": [
+      {
+       "icon": "server",
+       "label": "Edge locations"
+      },
+      {
+       "icon": "database-zap",
+       "label": "Regional caches"
+      },
+      {
+       "icon": "server-cog",
+       "label": "One origin"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "sequence",
+   "narration": "The browser requests the file. The edge has no copy. It fetches from the origin, stores it, and answers.",
+   "spec": {
+    "id": "sequence",
+    "treatment": "sequence",
+    "heading": "Cache miss, step by step",
+    "elements": [
+     {
+      "id": "user",
+      "kind": "user",
+      "label": "Browser"
+     },
+     {
+      "id": "edge",
+      "kind": "edge",
+      "icon": "server",
+      "label": "Edge server"
+     },
+     {
+      "id": "origin",
+      "kind": "origin",
+      "icon": "server-cog",
+      "label": "Origin server"
+     }
+    ],
+    "messages": [
+     {
+      "from": "user",
+      "to": "edge",
+      "text": "GET /app.js",
+      "at": {
+       "word": "requests"
+      }
+     },
+     {
+      "from": "edge",
+      "to": "edge",
+      "text": "Cache lookup",
+      "note": "Miss",
+      "tone": "fail",
+      "icon": "x",
+      "at": {
+       "word": "no"
+      }
+     },
+     {
+      "from": "edge",
+      "to": "origin",
+      "text": "GET /app.js",
+      "at": {
+       "word": "fetches"
+      }
+     },
+     {
+      "from": "origin",
+      "to": "edge",
+      "text": "200 OK + max-age",
+      "dashed": true,
+      "at": {
+       "word": "origin"
+      }
+     },
+     {
+      "from": "edge",
+      "to": "edge",
+      "text": "Store copy",
+      "at": {
+       "word": "stores"
+      }
+     },
+     {
+      "from": "edge",
+      "to": "user",
+      "text": "200 OK",
+      "dashed": true,
+      "tone": "success",
+      "at": {
+       "word": "answers"
+      }
+     }
+    ],
+    "cues": []
+   }
+  },
+  {
+   "id": "cards-title",
+   "narration": "How a CDN serves your site from nearby.",
+   "spec": {
+    "id": "cards-title",
+    "treatment": "cards",
+    "variant": "title",
+    "backdrop": "map",
+    "title": "CDN, explained",
+    "subtitle": "Edge caches, regional caches and the origin",
+    "items": [
+     {
+      "icon": "server",
+      "title": "Edge locations"
+     },
+     {
+      "icon": "database-zap",
+      "title": "Regional caches"
+     },
+     {
+      "icon": "map-pin",
+      "title": "Close to users"
+     }
+    ],
+    "cues": []
+   }
+  },
+  {
+   "id": "cards-benefits",
+   "narration": "A hit is answered nearby. Fewer requests reach the origin. Copies expire by Cache-Control.",
+   "spec": {
+    "id": "cards-benefits",
+    "treatment": "cards",
+    "variant": "benefits",
+    "title": "What the cache changes",
+    "items": [
+     {
+      "icon": "timer",
+      "title": "Shorter path",
+      "text": "A hit is answered by a nearby edge",
+      "at": {
+       "word": "hit"
+      }
+     },
+     {
+      "icon": "server-cog",
+      "title": "Less origin load",
+      "text": "Only misses reach the origin",
+      "at": {
+       "word": "fewer"
+      }
+     },
+     {
+      "icon": "clock",
+      "title": "Controlled freshness",
+      "text": "Cache-Control max-age and s-maxage set lifetimes",
+      "at": {
+       "word": "expire"
+      }
+     }
+    ],
+    "cues": []
+   }
+  },
+  {
+   "id": "compare",
+   "narration": "On a hit the edge answers at once. On a miss it fetches from the origin and keeps a copy.",
+   "spec": {
+    "id": "compare",
+    "treatment": "compare",
+    "heading": "Hit versus miss",
+    "client": {
+     "icon": "user",
+     "label": "Browser"
+    },
+    "panel": {
+     "title": "Edge",
+     "icon": "database-zap",
+     "label": "Edge cache"
+    },
+    "origin": {
+     "icon": "server-cog",
+     "label": "Origin"
+    },
+    "lanes": [
+     {
+      "title": "Cache hit",
+      "tone": "success"
+     },
+     {
+      "title": "Cache miss",
+      "tone": "fail",
+      "result": {
+       "label": "Copy stored",
+       "tone": "info",
+       "icon": "refresh-cw"
+      }
+     }
+    ],
+    "footer": [
+     {
+      "icon": "timer",
+      "label": "Shorter path"
+     },
+     {
+      "icon": "server-cog",
+      "label": "Less origin load"
+     },
+     {
+      "icon": "clock",
+      "label": "Controlled freshness"
+     }
+    ],
+    "cues": []
+   }
+  },
+  {
+   "id": "stat",
+   "narration": "A 304 Not Modified reply carries no body, so the stored copy is reused.",
+   "spec": {
+    "id": "stat",
+    "treatment": "stat",
+    "value": "304",
+    "icon": "refresh-cw",
+    "label": "Not Modified: no body, the stored copy is fresh again",
+    "source": "MDN, HTTP caching (developer.mozilla.org/en-US/docs/Web/HTTP/Caching)",
+    "at": {
+     "word": "304"
+    },
+    "cues": []
+   }
+  },
+  {
+   "id": "flow2d",
+   "narration": "DNS returns the address of the nearest edge.",
+   "spec": {
+    "id": "flow2d",
+    "treatment": "flow2d",
+    "heading": "DNS points to the edge",
+    "elements": [
+     {
+      "id": "b",
+      "kind": "browser",
+      "label": "Browser",
+      "sub": "Asks for the site"
+     },
+     {
+      "id": "d",
+      "kind": "dns",
+      "label": "DNS",
+      "sub": "Returns an edge address"
+     },
+     {
+      "id": "e",
+      "kind": "edge",
+      "label": "Edge location",
+      "sub": "Nearest to the user"
+     }
+    ],
+    "cues": [
+     {
+      "at": {
+       "word": "nearest"
+      },
+      "action": "highlight",
+      "target": "e"
+     }
+    ]
+   }
+  },
+  {
+   "id": "isometric",
+   "narration": "The regional cache serves edges in two regions.",
+   "spec": {
+    "id": "isometric",
+    "treatment": "isometric",
+    "heading": "One regional cache, two regions",
+    "elements": [
+     {
+      "id": "rc",
+      "kind": "cache",
+      "label": "Regional edge cache"
+     },
+     {
+      "id": "z1",
+      "kind": "region",
+      "label": "Europe"
+     },
+     {
+      "id": "z2",
+      "kind": "region",
+      "label": "Asia"
+     },
+     {
+      "id": "n1",
+      "kind": "edge",
+      "label": "Edge A",
+      "zone": "z1"
+     },
+     {
+      "id": "n2",
+      "kind": "edge",
+      "label": "Edge B",
+      "zone": "z2",
+      "state": "unhealthy"
+     }
+    ],
+    "state_labels": {
+     "healthy": "has a copy",
+     "unhealthy": "no copy yet"
+    },
+    "cues": [
+     {
+      "at": {
+       "word": "serves"
+      },
+      "action": "pulse"
+     }
+    ]
+   }
+  },
+  {
+   "id": "cutaway",
+   "narration": "Inside the edge, the cache looks up the key.",
+   "spec": {
+    "id": "cutaway",
+    "treatment": "cutaway",
+    "heading": "Inside an edge server",
+    "container_label": "Edge server",
+    "elements": [
+     {
+      "id": "p",
+      "kind": "edge",
+      "label": "HTTP front end"
+     },
+     {
+      "id": "c",
+      "kind": "cache",
+      "label": "Cache index"
+     },
+     {
+      "id": "s1",
+      "kind": "storage",
+      "label": "Disk",
+      "sub": "objects"
+     },
+     {
+      "id": "s2",
+      "kind": "storage",
+      "label": "Memory",
+      "sub": "hot objects"
+     }
+    ],
+    "code": [
+     "GET /app.js",
+     "Cache-Control: max-age=86400"
+    ],
+    "cues": [
+     {
+      "at": {
+       "word": "looks"
+      },
+      "action": "lookup"
+     }
+    ]
+   }
+  },
+  {
+   "id": "kinetic",
+   "narration": "Your request often never reaches the origin.",
+   "spec": {
+    "id": "kinetic",
+    "treatment": "kinetic",
+    "lines": [
+     {
+      "text": "Your request",
+      "at": 0.1
+     },
+     {
+      "text": "often never reaches",
+      "at": {
+       "word": "often"
+      }
+     },
+     {
+      "text": "the origin.",
+      "accent": true,
+      "at": {
+       "word": "origin"
+      }
+     }
+    ],
+    "cues": []
+   }
+  },
+  {
+   "id": "chart",
+   "narration": "HTTP status codes a cache sees.",
+   "spec": {
+    "id": "chart",
+    "treatment": "chart",
+    "title": "Example: responses served (illustrative, not measured)",
+    "data": [
+     {
+      "label": "From cache",
+      "value": 3
+     },
+     {
+      "label": "Revalidated (304)",
+      "value": 2
+     },
+     {
+      "label": "From origin",
+      "value": 1,
+      "accent": true
+     }
+    ],
+    "cues": []
+   }
+  }
+ ]
+}

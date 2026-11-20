@@ -12,7 +12,7 @@ def test_example_role_outputs_match_schemas():
     assert len(s.treatments) >= 3 and s.chosen in [t.name for t in s.treatments]
     schemas.Script.model_validate(example("script.json"))
     b = schemas.Storyboard.model_validate(example("board.json"))
-    assert {"flow2d", "isometric", "cutaway"} <= {sc.treatment for sc in b.scenes}
+    assert {"iconflow", "isometric", "cutaway", "sequence"} <= {sc.treatment for sc in b.scenes}
 
 
 def test_gates_pass_on_example_and_catch_faults():
@@ -224,3 +224,38 @@ def test_phrase_style_is_the_default_and_unchanged():
     assert default == engine.render_still(spec, timing, t, 960, 540, "premium-technical", True, caption_style="phrase")
     assert default == engine.render_still(spec, timing, t, 960, 540, "premium-technical", True, caption_style="bogus"), "unknown styles fall back to Phrase"
     assert store.DEFAULT_SETTINGS["caption_style"] == "phrase"
+
+
+@pytest.mark.parametrize("fault", ["icon", "template", "transition"])
+def test_storyboard_gate_rejects_unknown_icons_templates_and_transitions(fault):
+    facts, script, board = (example(f) for f in ("facts.json", "script.json", "board.json"))
+    bad = copy.deepcopy(board)
+    sc = bad["scenes"][1]
+    if fault == "icon":
+        (sc.setdefault("elements", []) or [{}])[0]["icon"] = "not-a-real-icon"
+    elif fault == "template":
+        sc["theme"] = "neon-dreams"
+    else:
+        sc["transition"] = "star-wipe"
+    g = gates.storyboard_gate(bad, script, facts)
+    crit = next(c for c in g["criteria"] if c["name"].startswith("Icons, templates and transitions"))
+    assert not g["passed"] and not crit["passed"] and fault in crit["detail"]
+
+
+def test_max_run_of_treatments():
+    assert gates.max_run(["kinetic", "map", "map", "iconflow"]) == 2
+    assert gates.max_run(["map", "map", "map"]) == 3
+
+
+def test_visual_planner_skill_documents_every_treatment_template_and_transition():
+    from exposit.render import engine, design
+    from exposit import schemas
+    text = (ROOT / "exposit" / "skills" / "visual_planner.md").read_text(encoding="utf-8") if "ROOT" in globals() else \
+        (__import__("pathlib").Path(__file__).resolve().parent.parent / "exposit" / "skills" / "visual_planner.md").read_text(encoding="utf-8")
+    for t in engine.TREATMENTS:
+        assert f"\n{t}:" in text, f"treatment {t} has no section"
+    for t in design.NEW_TEMPLATES:
+        assert t in text
+    for t in engine.TRANSITIONS:
+        assert f'"{t}"' in text
+    assert set(schemas.TREATMENTS) == set(engine.TREATMENTS), "the Creative Director is offered every treatment"

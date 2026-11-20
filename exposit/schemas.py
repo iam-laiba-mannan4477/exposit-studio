@@ -1,10 +1,11 @@
 """Schemas for every artefact a role produces. The Director rejects output that does not validate."""
 from __future__ import annotations
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 Tier = Literal["verified", "preference", "observation", "hypothesis", "experiment"]
-TREATMENTS = ["kinetic", "flow2d", "isometric", "cutaway", "chart"]
+TREATMENTS = ["iconflow", "map", "sequence", "cards", "compare", "stat",
+              "kinetic", "flow2d", "isometric", "cutaway", "chart"]
 
 
 class Source(BaseModel):
@@ -92,6 +93,8 @@ class Strategy(BaseModel):
     dropoff: list[Dropoff] = []
     experiment: str = ""
     recipes_used: list[str] = []
+    template: str = ""                 # one template for the whole video (design.TEMPLATES)
+    template_reason: str = ""
 
 
 class Sentence(BaseModel):
@@ -118,7 +121,7 @@ class SceneSpec(BaseModel):
     objective: str = ""
     heading: Optional[str] = None
     elements: list[dict[str, Any]] = []
-    links: Optional[list[list[str]]] = None
+    links: Optional[list[Union[list[str], dict[str, Any]]]] = None   # [from, to] or {"from", "to", "dashed", "tone", ...}
     cues: list[dict[str, Any]] = []
     lines: Optional[list[dict[str, Any]]] = None
     code: Optional[list[str]] = None

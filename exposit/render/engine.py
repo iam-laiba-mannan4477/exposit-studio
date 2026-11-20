@@ -12,18 +12,9 @@ import functools, math, re, subprocess
 from typing import Callable
 import skia
 from .. import config
+from . import assets, design
 
-THEMES = {
-    "premium-technical": dict(bg0="#0B0B0F", bg1="#14141C", grid="#1E1E2A", panel="#171720", line="#34343F",
-                              text="#EDEDF2", text2="#A3A3B2", accent="#7C6CF6", blue="#52A7F5", teal="#2FC7B5",
-                              green="#3DCB8C", amber="#F2B34A", red="#F0575C", pink="#E46AA6"),
-    "midnight-blue": dict(bg0="#070B16", bg1="#0E1730", grid="#182444", panel="#111B36", line="#2B3A63",
-                          text="#EAF0FF", text2="#9FB0D6", accent="#5B8CFF", blue="#6FC3FF", teal="#39D0C3",
-                          green="#44D39A", amber="#FFC25C", red="#FF6B6B", pink="#E88BD0"),
-    "minimal-mono": dict(bg0="#0E0E0E", bg1="#151515", grid="#1F1F1F", panel="#181818", line="#3A3A3A",
-                         text="#F2F2F2", text2="#A8A8A8", accent="#FFFFFF", blue="#D0D0D0", teal="#BDBDBD",
-                         green="#E6E6E6", amber="#CFCFCF", red="#8A8A8A", pink="#BDBDBD"),
-}
+THEMES = {name: tpl.T for name, tpl in design.TEMPLATES.items()}   # colour keys, for old callers
 KIND_COLOR = {"browser": "blue", "client": "blue", "dns": "teal", "lb": "accent", "nginx": "green", "ingress": "green",
               "service": "amber", "pod": "blue", "node": "text2", "zone": "line", "db": "pink", "queue": "amber",
               "hub": "accent", "gateway": "accent", "cdn": "teal", "edge": "teal", "cache": "amber", "router": "amber",
@@ -38,19 +29,9 @@ CUT_PANEL = ("nginx", "ingress", "panel", "component", "gateway", "cdn", "edge",
 CUT_ROUTER = ("service", "router", "cache", "switch", "queue", "balancer")
 CUT_WORKER = ("pod", "worker", "item", "replica", "storage", "db", "instance")
 
-_fonts: dict = {}
-
-
-def typeface(name: str) -> skia.Typeface:
-    if name not in _fonts:
-        _fonts[name] = skia.Typeface.MakeFromFile(str(config.ASSETS / "fonts" / name))
-    return _fonts[name]
-
-
 def font(size: float, weight: str = "Regular", mono: bool = False) -> skia.Font:
-    f = skia.Font(typeface("JetBrainsMono-Regular.ttf" if mono else f"Inter-{weight}.otf"), size)
-    f.setSubpixel(True)
-    return f
+    """Font for the active template (Inter by default; Caveat in sketch; mono labels in blueprint)."""
+    return design.make_font(size, weight, mono)
 
 
 def col(hex_: str, a: float = 1.0) -> int:
@@ -130,7 +111,8 @@ class Scene:
 
     def __init__(self, spec: dict, timing: dict, theme: str = "premium-technical"):
         self.spec, self.timing = spec, timing
-        self.T = THEMES.get(spec.get("theme") or theme, THEMES["premium-technical"])
+        self.tpl = design.template(spec.get("theme") or theme)
+        self.T = self.tpl.T
         self.pad0 = float(spec.get("pad_start", 0.4))
         self.pad1 = float(spec.get("pad_end", 0.5))
         self.dur = self.pad0 + float(timing.get("duration", 3.0)) + self.pad1
@@ -244,17 +226,25 @@ def text(c: skia.Canvas, s: str, x: float, y: float, f: skia.Font, color: int, a
     return w
 
 
-@functools.lru_cache(maxsize=4096)
 def fit_font(s: str, maxw: float, size: float, smallest: float, weight: str = "Regular", mono: bool = False) -> skia.Font:
-    """The largest size from `size` down to `smallest` at which `s` fits in `maxw`."""
+    """The largest size from `size` down to `smallest` at which `s` fits in `maxw` (cached per template font family)."""
+    return _fit_font(s, maxw, size, smallest, weight, mono, design.family_key())
+
+
+@functools.lru_cache(maxsize=4096)
+def _fit_font(s, maxw, size, smallest, weight, mono, fam) -> skia.Font:
     sz = size
     while sz > smallest and font(sz, weight, mono=mono).measureText(s) > maxw:
         sz -= 1
     return font(sz, weight, mono=mono)
 
 
-@functools.lru_cache(maxsize=4096)
 def fit(s: str, maxw: float, size: float, smallest: float, weight: str = "Regular", mono: bool = False) -> str:
+    return _fit(s, maxw, size, smallest, weight, mono, design.family_key())
+
+
+@functools.lru_cache(maxsize=4096)
+def _fit(s: str, maxw: float, size: float, smallest: float, weight: str, mono: bool, fam: str) -> str:
     """`s` itself if it fits at some size down to `smallest`; otherwise cut with an ellipsis so it never leaves its box."""
     f = fit_font(s, maxw, size, smallest, weight, mono)
     if f.measureText(s) <= maxw:
@@ -285,24 +275,42 @@ def glow(c: skia.Canvas, rect: skia.Rect, radius: float, color: int, sigma: floa
     c.drawRoundRect(rect, radius, radius, p)
 
 
-def box(c, sc: Scene, x, y, w, h, label, kind="node", a=1.0, hl=0.0, dim=0.0, sub=None, mono_sub=False, radius=18):
-    T = sc.T
+def box(c, sc: Scene, x, y, w, h, label, kind="node", a=1.0, hl=0.0, dim=0.0, sub=None, mono_sub=False, radius=18, icon=None):
+    """A component box. Legacy themes keep their original card with the kind's icon in place of the dot;
+    the new templates draw the template card with an icon badge."""
+    T, tpl = sc.T, sc.tpl
     alpha = a * (1 - 0.5 * dim * (1 - hl))
     if alpha <= 0.01:
         return
     kc = T[KIND_COLOR.get(kind, "text2")]
-    r = skia.Rect.MakeXYWH(x, y, w, h)
-    if hl > 0:
-        glow(c, r, radius, col(kc, 0.55 * hl * alpha), 22)
-    c.drawRoundRect(r, radius, radius, paint(col(T["panel"], alpha)))
-    c.drawRoundRect(r, radius, radius, paint(col(kc if hl > 0.05 else T["line"], alpha * (0.6 + 0.4 * hl)), 2 + 1.5 * hl))
-    c.drawCircle(x + 30, y + 34, 9, paint(col(kc, alpha)))
-    text(c, fit(label, w - 66, 27, 18, "SemiBold"), x + 50, y + 43, fit_font(label, w - 66, 27, 18, "SemiBold"), col(T["text"], alpha))
+    ic = assets.resolve(icon) or assets.icon_for({"kind": kind})
+    if tpl.legacy:
+        r = skia.Rect.MakeXYWH(x, y, w, h)
+        if hl > 0:
+            glow(c, r, radius, col(kc, 0.55 * hl * alpha), 22)
+        c.drawRoundRect(r, radius, radius, paint(col(T["panel"], alpha)))
+        c.drawRoundRect(r, radius, radius, paint(col(kc if hl > 0.05 else T["line"], alpha * (0.6 + 0.4 * hl)), 2 + 1.5 * hl))
+        if not (ic and assets.draw_icon(c, ic, x + 30, y + 34, 26, kc, alpha, 2.0)):
+            c.drawCircle(x + 30, y + 34, 9, paint(col(kc, alpha)))
+        text(c, fit(label, w - 66, 27, 18, "SemiBold"), x + 50, y + 43, fit_font(label, w - 66, 27, 18, "SemiBold"), col(T["text"], alpha))
+        if sub:
+            text(c, fit(sub, w - 52, 21, 15, mono=mono_sub), x + 28, y + h - 26, fit_font(sub, w - 52, 21, 15, mono=mono_sub), col(T["text2"], alpha))
+        return
+    seed = sum(map(ord, label)) % 97
+    design.card(c, tpl, x, y, w, h, alpha, hl, 0.0, radius=None, seed=seed)
+    br = min(26.0, h * 0.22)
+    tone = KIND_COLOR.get(kind, "accent")
+    design.badge(c, tpl, ic, x + 22 + br, y + 18 + br, br, alpha, hl, tone=tone if tpl.icon["style"] == "pastel" else None, seed=seed)
+    lx = x + 34 + 2 * br
+    text(c, fit(label, x + w - 18 - lx, 27, 17, "SemiBold"), lx, y + 18 + br + 10, fit_font(label, x + w - 18 - lx, 27, 17, "SemiBold"), col(T["text"], alpha))
     if sub:
-        text(c, fit(sub, w - 52, 21, 15, mono=mono_sub), x + 28, y + h - 26, fit_font(sub, w - 52, 21, 15, mono=mono_sub), col(T["text2"], alpha))
+        text(c, fit(sub, w - 44, 21, 14, mono=mono_sub), x + 22, y + h - 22, fit_font(sub, w - 44, 21, 14, mono=mono_sub), col(T["text2"], alpha))
 
 
 def packet_dot(c, sc: Scene, x, y, a=1.0):
+    if not sc.tpl.legacy:
+        design.node_dot(c, sc.tpl, x, y, 10, a)
+        return
     kc = sc.T["accent"]
     p = skia.Paint(AntiAlias=True, Color=col(kc, 0.7 * a))
     p.setMaskFilter(skia.MaskFilter.MakeBlur(skia.kNormal_BlurStyle, 14))
@@ -312,14 +320,8 @@ def packet_dot(c, sc: Scene, x, y, a=1.0):
 
 
 def background(c, sc: Scene, w, h):
-    T = sc.T
-    p = skia.Paint()
-    p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, 0), skia.Point(w, h)], [col(T["bg0"]), col(T["bg1"])]))
-    c.drawRect(skia.Rect.MakeWH(w, h), p)
-    gp = paint(col(T["grid"], 0.9))
-    for gx in range(60, int(w), 60):
-        for gy in range(60, int(h), 60):
-            c.drawCircle(gx, gy, 1.6, gp)
+    """The template's background (gradient, grid or dots, vignette), cached per size."""
+    design.background(c, sc.tpl, w, h)
 
 
 # ------------------------------------------------------------------ treatments
@@ -449,7 +451,7 @@ class Flow2D(Treatment):
             a = sc.vis(eid, t)
             nt = sc.note(eid, t)
             box(c, sc, x, y + (1 - a) * 24, w, h, e.get("label", eid), e.get("kind", "node"), a, sc.highlight(eid, t), dim,
-                sub=e.get("sub"))
+                sub=e.get("sub"), icon=e.get("icon"))
             if nt and self.portrait:                        # on a small plate, so the link line does not run through it
                 f = font(24, mono=True)
                 tw = f.measureText(nt[0])
@@ -906,6 +908,7 @@ def draw_word_captions(canvas: skia.Canvas, sc, t: float, cx: float, top: float,
 
 def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
     sc, T = tr.sc, tr.sc.T
+    design.set_active(sc.tpl)
     if tr.portrait:
         return draw_frame_portrait(canvas, tr, t, w, h, captions)
     canvas.save()

@@ -235,7 +235,7 @@ function Editor({ p, reload }) {
             <div className="row" style={{ gap: 8 }}><Btn sm kind="primary" onClick={() => act('ap', () => api(`/productions/${p.id}/scenes/${spec.id}/proposal/apply`, { method: 'POST' }), r => r.summary).then(() => { setProposal(null); setInstruction(''); reload() })}>Accept</Btn><Btn sm onClick={() => setProposal(null)}>Discard</Btn></div></div>}
         </>}
         {tab === 'style' && <>
-          <Field label="Theme for this scene" hint="Empty uses the production theme."><select value={spec.theme || ''} onChange={e => patch({ theme: e.target.value || null }, 'Changed scene theme')}><option value="">Production theme ({p.brief.theme})</option><option>premium-technical</option><option>midnight-blue</option><option>minimal-mono</option></select></Field>
+          <Field label="Theme for this scene" hint="Empty uses the production theme."><select value={spec.theme || ''} onChange={e => patch({ theme: e.target.value || null }, 'Changed scene theme')}><option value="">Production theme ({p.brief.theme})</option><option>premium-technical</option><option>noir-network</option><option>paper</option><option>blueprint</option><option>sketch</option><option>midnight-blue</option><option>minimal-mono</option></select></Field>
           <Field label="Small heading"><input type="text" defaultValue={spec.heading || ''} key={spec.id + 'h' + p.hpos} onBlur={e => e.target.value !== (spec.heading || '') && patch({ heading: e.target.value || null }, 'Changed heading')} /></Field>
           <span className="label">Labels</span>
           {(spec.elements || []).map((el, i) => <div className="row" key={el.id} style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'center' }}><span className="mono muted" style={{ flex: '0 0 56px' }}>{el.id}</span>
@@ -297,7 +297,7 @@ function Export({ p, reload }) {
       <div className="col" style={{ flex: '1 1 320px' }}>
         <Card title="Output settings">
           <Field label="Resolution" hint="Changing this re-renders every clip."><select value={p.brief.quality} onChange={e => setBrief({ quality: e.target.value })}><option>1080p</option><option>720p</option><option>540p</option></select></Field>
-          <Field label="Theme"><select value={p.brief.theme} onChange={e => setBrief({ theme: e.target.value })}><option>premium-technical</option><option>midnight-blue</option><option>minimal-mono</option></select></Field>
+          <Field label="Theme"><select value={p.brief.theme} onChange={e => setBrief({ theme: e.target.value })}><option>premium-technical</option><option>noir-network</option><option>paper</option><option>blueprint</option><option>sketch</option><option>midnight-blue</option><option>minimal-mono</option></select></Field>
           <Field label="Format" hint="Switching re-renders every scene in the new shape. Narration and the AI's work are reused; no new tasks.">
             <select value={p.brief.format || '16:9'} onChange={e => setBrief({ format: e.target.value })}>
               <option value="16:9">16:9 landscape: YouTube, courses</option>

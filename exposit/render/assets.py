@@ -82,7 +82,11 @@ def _dom(name: str, color: str, stroke: float, glyph: str):
         data = data.replace("currentColor", color).replace('stroke-width="2"', f'stroke-width="{stroke:g}"')
     dom = skia.SVGDOM.MakeFromStream(skia.MemoryStream(data.encode("utf-8"), True))
     sz = dom.containerSize()
-    return dom, max(sz.width(), sz.height())
+    native = max(sz.width(), sz.height())
+    rec = skia.PictureRecorder()
+    pc = rec.beginRecording(skia.Rect.MakeWH(native, native))
+    dom.render(pc)
+    return rec.finishRecordingAsPicture(), native
 
 
 def draw_icon(c: skia.Canvas, name: str | None, cx: float, cy: float, size: float, color: str,
@@ -91,16 +95,11 @@ def draw_icon(c: skia.Canvas, name: str | None, cx: float, cy: float, size: floa
     name = resolve(name)
     if not name or alpha <= 0.01 or size <= 1:
         return False
-    dom, native = _dom(name, color.upper(), round(stroke, 2), glyph.upper())
-    c.save()
-    if alpha < 0.999:
-        c.saveLayerAlpha(skia.Rect.MakeXYWH(cx - size, cy - size, 2 * size, 2 * size), int(alpha * 255))
-    c.translate(cx - size / 2, cy - size / 2)
-    c.scale(size / native, size / native)
-    dom.render(c)
-    if alpha < 0.999:
-        c.restore()
-    c.restore()
+    pic, native = _dom(name, color.upper(), round(stroke, 2), glyph.upper())
+    k = size / native
+    m = skia.Matrix.Translate(cx - size / 2, cy - size / 2)
+    m.preScale(k, k)
+    c.drawPicture(pic, m, skia.Paint(Alphaf=alpha) if alpha < 0.999 else None)
     return True
 
 
@@ -154,6 +153,7 @@ class MapProjection:
         bx0, bx1 = min(ax0, ax1), max(ax0, ax1)
         by0, by1 = min(ay0, ay1), max(ay0, ay1)
         x, y, w, h = rect
+        self.rect = rect
         s = min(w / (bx1 - bx0), h / (by1 - by0))
         self.s = s
         self.ox = x + (w - (bx1 - bx0) * s) / 2 - bx0 * s
@@ -177,11 +177,18 @@ def _land_path_cached(key) -> skia.Path:
     proj = MapProjection((x, y, w, h), kind, window)
     path = skia.Path()
     for ring in world()["rings"]:
-        pts = [proj(ring[i], ring[i + 1]) for i in range(0, len(ring), 2)]
-        path.moveTo(*pts[0])
-        for p in pts[1:]:
-            path.lineTo(*p)
-        path.close()
+        lons, lats = ring[0::2], ring[1::2]
+        un = [lons[0]]
+        for lo in lons[1:]:                      # unwrap so a ring crossing +-180 stays one shape
+            d = lo - un[-1]
+            un.append(lo - 360 if d > 180 else lo + 360 if d < -180 else lo)
+        shifts = [0.0] + ([-360.0] if max(un) > 180 else []) + ([360.0] if min(un) < -180 else [])
+        for sh in shifts:
+            pts = [proj(lo + sh, la) for lo, la in zip(un, lats)]
+            path.moveTo(*pts[0])
+            for q in pts[1:]:
+                path.lineTo(*q)
+            path.close()
     return path
 
 

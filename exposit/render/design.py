@@ -229,6 +229,84 @@ def blur(p: skia.Paint, sigma: float) -> skia.Paint:
     return p
 
 
+def halo(c, x: float, y: float, r: float, color: str, a: float) -> None:
+    """A soft glow disc drawn with a radial gradient: looks like a blur, costs a fraction of one."""
+    if a <= 0.01 or r <= 0.5:
+        return
+    r = max(2.0, round(r / 2) * 2)
+
+    def draw(cc):
+        p = skia.Paint(AntiAlias=True)
+        p.setShader(skia.GradientShader.MakeRadial(skia.Point(r, r), r, [col(color, 1.0), col(color, 0.35), col(color, 0.0)], [0.0, 0.45, 1.0]))
+        cc.drawCircle(r, r, r, p)
+    sprite(c, ("halo", color), x - r, y - r, 2 * r, 2 * r, draw, a)
+
+
+def glow_stroke(c, path: skia.Path, color: str, a: float, w: float) -> None:
+    """A glow along a path from three widening translucent strokes (no blur filter)."""
+    for mult, al in ((5.0, 0.07), (3.2, 0.12), (2.0, 0.20)):
+        c.drawPath(path, paint(col(color, al * a), w * mult))
+
+
+_sprite_cache: dict = {}
+
+
+def sprite(c, key, x: float, y: float, w: float, h: float, draw_fn, alpha: float = 1.0, pad: float = 0.0) -> None:
+    """Draws a static shape through an image cache. `draw_fn(cc)` paints it in local coordinates (0..w, 0..h);
+    the result is rendered once per key and canvas resolution and then blitted, with `alpha`, in one drawImage.
+    Large translucent anti-aliased shapes are far cheaper to blit than to rasterise every frame."""
+    if alpha <= 0.01:
+        return
+    s = cache_scale(c)
+    k = (key, round(w), round(h), round(pad), s, int(c.imageInfo().colorType()))
+    img = _sprite_cache.get(k)
+    if img is None:
+        surf = layer_surface(c, int((w + 2 * pad) * s) + 2, int((h + 2 * pad) * s) + 2)
+        cc = surf.getCanvas()
+        cc.clear(skia.ColorTRANSPARENT)
+        cc.scale(s, s)
+        cc.translate(pad, pad)
+        draw_fn(cc)
+        img = surf.makeImageSnapshot()
+        if len(_sprite_cache) > 512:
+            _sprite_cache.clear()
+        _sprite_cache[k] = img
+    c.save()
+    c.translate(x - pad, y - pad)
+    c.scale(1 / s, 1 / s)
+    c.drawImage(img, 0, 0, skia.SamplingOptions(skia.FilterMode.kLinear), skia.Paint(Alphaf=min(1.0, alpha)) if alpha < 0.999 else None)
+    c.restore()
+
+
+_shadow_cache: dict = {}
+
+
+def soft_shadow(c, x: float, y: float, w: float, h: float, r: float, color: str, a: float, sigma: float) -> None:
+    """A blurred rounded-rectangle shadow, rendered once per size and colour and reused as an image."""
+    if a <= 0.01:
+        return
+    s = cache_scale(c)
+    w, h, r = (max(4.0, round(v / 4) * 4) for v in (w, h, r))
+    key = (w, h, r, color, round(sigma), s, int(c.imageInfo().colorType()))
+    img = _shadow_cache.get(key)
+    pad = sigma * 3
+    if img is None:
+        pw, ph = int((w + 2 * pad) * s) + 2, int((h + 2 * pad) * s) + 2
+        surf = layer_surface(c, pw, ph)
+        cc = surf.getCanvas()
+        cc.scale(s, s)
+        cc.drawRoundRect(skia.Rect.MakeXYWH(pad, pad, w, h), r, r, blur(paint(col(color, 1.0)), sigma))
+        img = surf.makeImageSnapshot()
+        if len(_shadow_cache) > 256:
+            _shadow_cache.clear()
+        _shadow_cache[key] = img
+    c.save()
+    c.translate(x - pad, y - pad)
+    c.scale(1 / s, 1 / s)
+    c.drawImage(img, 0, 0, skia.SamplingOptions(skia.FilterMode.kLinear), skia.Paint(Alphaf=a))
+    c.restore()
+
+
 def draw_text(c, s: str, x: float, y: float, size: float, color: int, weight: str = "Regular", align: str = "left",
               mono: bool = False) -> float:
     f = make_font(size, weight, mono)
@@ -330,6 +408,24 @@ def sketchify(path: skia.Path, seed: int, amp: float, step: float = 14.0) -> ski
     return out
 
 
+# ------------------------------------------------------------------ cached layers
+def cache_scale(c: skia.Canvas, extra: float = 1.0) -> float:
+    """The resolution to cache a layer at: the canvas's current scale rounded UP to a quarter step, so a camera
+    drift or an animated scale reuses the same cached image instead of re-rendering it every frame."""
+    s = abs(c.getTotalMatrix().getScaleX()) * extra
+    return max(0.25, math.ceil(s * 4 - 1e-6) / 4)
+
+
+def layer_surface(c: skia.Canvas, pw: int, ph: int) -> skia.Surface:
+    """An offscreen surface in the same pixel format as `c`, so drawing its image back is a plain copy."""
+    s = None
+    try:
+        s = c.makeSurface(c.imageInfo().makeWH(max(1, pw), max(1, ph)))
+    except Exception:
+        s = None
+    return s or skia.Surface(max(1, pw), max(1, ph))
+
+
 # ------------------------------------------------------------------ backgrounds (cached per template and size)
 _bg_cache: dict = {}
 
@@ -338,11 +434,11 @@ def background(c: skia.Canvas, tpl: Template, W: float, H: float) -> None:
     """Draws the template's background into the logical W x H space; cached as an image at device resolution."""
     m = c.getTotalMatrix()
     s = m.getScaleX()
-    key = (tpl.name, int(W), int(H), round(s, 4))
+    key = (tpl.name, int(W), int(H), round(s, 4), int(c.imageInfo().colorType()))
     img = _bg_cache.get(key)
     if img is None:
         pw, ph = max(1, int(round(W * s))), max(1, int(round(H * s)))
-        surf = skia.Surface(pw, ph)
+        surf = layer_surface(c, pw, ph)
         cc = surf.getCanvas()
         cc.scale(s, s)
         _paint_background(cc, tpl, W, H)
@@ -422,28 +518,33 @@ def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.
     rect = skia.Rect.MakeXYWH(x, y, w, h)
     acc = accent or tpl.conn["active"]
     if cs.get("shadow", 0) > 0:
-        c.drawRoundRect(skia.Rect.MakeXYWH(x, y + 10, w, h), r, r, blur(paint(col(cs.get("shadow_color", "#000000"), cs["shadow"] * alpha)), 16))
+        soft_shadow(c, x, y + 10, w, h, r, cs.get("shadow_color", "#000000"), cs["shadow"] * alpha, 16)
     if hl > 0.02 and tpl.glow:
-        c.drawRoundRect(rect, r, r, blur(paint(col(acc, 0.45 * hl * alpha)), 22))
+        soft_shadow(c, x, y, w, h, r, acc, 0.45 * hl * alpha, 22)
     if tpl.jitter:
         p = skia.Path()
         p.addRRect(skia.RRect.MakeRectXY(rect, r, r))
         c.drawPath(p, paint(col(fill or cs["fill"], alpha)))
         c.drawPath(sketchify(p, seed + 7, tpl.jitter), paint(col(mix(cs["border"], acc, hl), alpha), cs["width"] + 0.6 * hl))
         return
-    c.drawRoundRect(rect, r, r, paint(col(fill or cs["fill"], alpha * (0.78 if cs.get("glass") else 1.0))))
-    if cs.get("glass"):
-        p = skia.Paint(AntiAlias=True)
-        p.setShader(skia.GradientShader.MakeLinear([skia.Point(x, y), skia.Point(x, y + h)],
-                                                   [col("#FFFFFF", 0.10 * alpha), col("#FFFFFF", 0.0)]))
-        c.drawRoundRect(rect, r, r, p)
-    border = mix(cs["border"], acc, hl) if hl > 0.02 else cs["border"]
-    c.drawRoundRect(rect, r, r, paint(col(border, alpha * (0.85 if tpl.dark else 1.0)), cs["width"] + 1.2 * hl))
-    if cs.get("ticks"):
-        tp = paint(col(cs["border"], alpha), 2)
-        for (px, py, dx, dy) in ((x, y, 1, 1), (x + w, y, -1, 1), (x, y + h, 1, -1), (x + w, y + h, -1, -1)):
-            c.drawLine(px - dx * 6, py, px + dx * 14, py, tp)
-            c.drawLine(px, py - dy * 6, px, py + dy * 14, tp)
+    hq = round(hl * 10) / 10
+    fill_c = fill or cs["fill"]
+
+    def body(cc):
+        rr = skia.Rect.MakeXYWH(0, 0, w, h)
+        cc.drawRoundRect(rr, r, r, paint(col(fill_c, 0.78 if cs.get("glass") else 1.0)))
+        if cs.get("glass"):
+            p = skia.Paint(AntiAlias=True)
+            p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, 0), skia.Point(0, h)], [col("#FFFFFF", 0.10), col("#FFFFFF", 0.0)]))
+            cc.drawRoundRect(rr, r, r, p)
+        border = mix(cs["border"], acc, hq) if hq > 0.02 else cs["border"]
+        cc.drawRoundRect(rr, r, r, paint(col(border, 0.85 if tpl.dark else 1.0), cs["width"] + 1.2 * hq))
+        if cs.get("ticks"):
+            tp = paint(col(cs["border"], 1.0), 2)
+            for (px, py, dx, dy) in ((0, 0, 1, 1), (w, 0, -1, 1), (0, h, 1, -1), (w, h, -1, -1)):
+                cc.drawLine(px - dx * 6, py, px + dx * 14, py, tp)
+                cc.drawLine(px, py - dy * 6, px, py + dy * 14, tp)
+    sprite(c, ("card", tpl.name, r, fill_c, acc, hq), x, y, w, h, body, alpha, pad=8)
 
 
 def role_color(tpl: Template, role: str) -> str:
@@ -462,13 +563,13 @@ def badge(c, tpl: Template, icon: str | None, cx: float, cy: float, r: float, a:
     st, T = tpl.icon, tpl.T
     tone_col = role_color(tpl, tone) if tone else None
     if hl > 0.02 and tpl.glow:
-        c.drawCircle(cx, cy, r * 1.25, blur(paint(col(tpl.conn["active"], 0.55 * hl * alpha)), r * 0.45))
+        halo(c, cx, cy, r * 1.9, tpl.conn["active"], 0.55 * hl * alpha)
     if st["style"] == "badge":
         fill = tone_col or st["badge"]
         if tpl.glow:
             c.drawCircle(cx, cy, r + 5, paint(col(st["ring"], 0.35 * alpha + 0.5 * hl * alpha), 2.0))
         elif tpl.card.get("shadow"):
-            c.drawCircle(cx, cy + 6, r, blur(paint(col("#0B1F3A", 0.16 * alpha)), 10))
+            soft_shadow(c, cx - r, cy - r + 6, 2 * r, 2 * r, r, "#0B1F3A", 0.16 * alpha, 10)
         c.drawCircle(cx, cy, r, paint(col(fill, alpha)))
         if tpl.glow:
             p = skia.Paint(AntiAlias=True)
@@ -514,9 +615,9 @@ def chip(c, tpl: Template, cx: float, cy: float, label: str, icon: str | None = 
     rect = skia.Rect.MakeXYWH(-w / 2, -h / 2, w, h)
     bg = tpl.T["bg0"] if tpl.dark else "#FFFFFF"
     if tpl.glow:
-        c.drawRoundRect(rect, h / 2, h / 2, blur(paint(col(colr, 0.35 * a)), 12))
+        soft_shadow(c, -w / 2, -h / 2, w, h, h / 2, colr, 0.35 * a, 12)
     elif not tpl.dark and not tpl.jitter:
-        c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2, -h / 2 + 4, w, h), h / 2, h / 2, blur(paint(col("#0B1F3A", 0.10 * a)), 8))
+        soft_shadow(c, -w / 2, -h / 2 + 4, w, h, h / 2, "#0B1F3A", 0.10 * a, 8)
     if tpl.jitter:
         p = skia.Path()
         p.addRRect(skia.RRect.MakeRectXY(rect, h / 2, h / 2))
@@ -587,7 +688,7 @@ def legend(c, tpl: Template, x: float, y: float, items: list[dict], a: float = 1
 def node_dot(c, tpl, x, y, r, a=1.0, colr=None, hl=0.0):
     colr = colr or tpl.conn["active"]
     if tpl.glow:
-        c.drawCircle(x, y, r * 2.6, blur(paint(col(colr, (0.45 + 0.4 * hl) * a)), r * 1.4))
+        halo(c, x, y, r * 4.2, colr, (0.55 + 0.4 * hl) * a)
     c.drawCircle(x, y, r, paint(col("#FFFFFF" if tpl.dark else colr, a)))
     if tpl.dark:
         c.drawCircle(x, y, r, paint(col(colr, a), max(1.5, r * 0.35)))
@@ -597,7 +698,7 @@ def hub(c, tpl, x, y, r, a=1.0, beat=0.0, colr=None):
     """A regional hub: concentric rings with a breathing outer ring."""
     colr = colr or tpl.conn["active"]
     if tpl.glow:
-        c.drawCircle(x, y, r * 2.2, blur(paint(col(colr, 0.35 * a)), r))
+        halo(c, x, y, r * 3.4, colr, 0.45 * a)
     c.drawCircle(x, y, r * (1.6 + 0.35 * beat), paint(col(colr, (0.45 - 0.3 * beat) * a), 2))
     c.drawCircle(x, y, r * 1.15, paint(col(colr, 0.85 * a), 2.5))
     c.drawCircle(x, y, r * 0.62, paint(col("#FFFFFF" if tpl.dark else colr, a)))
@@ -675,9 +776,7 @@ def stroke(c, tpl: Template, path: skia.Path, a: float = 1.0, progress: float = 
         d = tpl.conn["dash"]
         p.setPathEffect(skia.DashPathEffect.Make(list(d), -(flow or 0.0) * 40))
     if (tpl.glow if glow is None else glow):
-        g = paint(col(colr, 0.45 * a), w * 3.2)
-        blur(g, w * 1.8)
-        c.drawPath(seg, g)
+        glow_stroke(c, seg, colr, a, w)
     c.drawPath(seg, p)
     if arrow and progress > 0.97 and L > 30:
         x, y, tx, ty = point_at(path, 1.0)
@@ -691,12 +790,11 @@ def packet(c, tpl: Template, path: skia.Path, k: float, a: float = 1.0, color: s
     colr = color or tpl.conn["active"]
     tail, _ = trim(path, max(0.0, k - 0.16), k)
     if tail.countPoints():
-        tp = paint(col(colr, 0.55 * a), r * 0.9)
         if tpl.glow:
-            blur(tp, r * 0.6)
-        c.drawPath(tail, tp)
+            glow_stroke(c, tail, colr, a, r * 0.5)
+        c.drawPath(tail, paint(col(colr, 0.55 * a), r * 0.9))
     x, y, _, _ = point_at(path, k)
     if tpl.glow:
-        c.drawCircle(x, y, r * 2.4, blur(paint(col(colr, 0.7 * a)), r * 1.2))
+        halo(c, x, y, r * 3.6, colr, 0.75 * a)
     c.drawCircle(x, y, r, paint(col("#FFFFFF" if tpl.dark else colr, a)))
     c.drawCircle(x, y, r, paint(col(colr, a), 3))

@@ -5,11 +5,13 @@ No model-written code is executed: the specification only selects components and
 Drawing uses Skia on the CPU; frames are piped to ffmpeg. One scene in, one silent clip out.
 
 Treatments: kinetic (typography + UI bar), flow2d (network-flow map), isometric (zones and nodes),
-cutaway (inside a Kubernetes node), chart (bars).
+cutaway (inside a component), chart (bars), and the professional set in pro.py: iconflow, map, sequence, cards,
+compare, stat. Look and feel come from the template (design.py); icons and the map from assets.py.
 """
 from __future__ import annotations
 import functools, math, re, subprocess
 from typing import Callable
+import numpy as np
 import skia
 from .. import config
 from . import assets, design
@@ -374,12 +376,15 @@ class Flow2D(Treatment):
             return
         need = max([font(27, "SemiBold").measureText(self.sc.els[i].get("label", i)) + 66 for i in ids] +
                    [font(21).measureText(self.sc.els[i].get("sub") or "") + 56 for i in ids] + [250])
-        self.W = min(need, max(250.0, (1920 - 220 - (n - 1) * 60) / n), 420)
+        if not self.sc.tpl.legacy:                         # new templates: larger cards with room for the icon badge
+            self.H = 150
+            need = max(need + 40, 340)
+        self.W = min(need, max(250.0, (1920 - 220 - (n - 1) * 60) / n), 460)
         gap = min(140, (1920 - 220 - n * self.W) / max(1, n - 1)) if n > 1 else 0
         total = n * self.W + (n - 1) * gap
         x0 = (1920 - total) / 2
         for i, eid in enumerate(ids):
-            self.pos[eid] = (x0 + i * (self.W + gap), 474, self.W, self.H)
+            self.pos[eid] = (x0 + i * (self.W + gap), 540 - self.H / 2, self.W, self.H)
 
     def frame_for(self, targets):
         """Frame the targets; then widen until no other box is cut by the frame edge."""
@@ -753,10 +758,14 @@ class Cutaway(Treatment):
         sc, T = self.sc, self.sc.T
         a0 = ease(t / 0.5)
         shell = skia.Rect.MakeXYWH(50, 360, 980, 890) if self.portrait else skia.Rect.MakeXYWH(170, 150, 1600, 740)
-        c.drawRoundRect(shell, 28, 28, paint(col(T["panel"], 0.55 * a0)))
-        dash = paint(col(T["line"], a0), 3)
-        dash.setPathEffect(skia.DashPathEffect.Make([18, 12], 0))
-        c.drawRoundRect(shell, 28, 28, dash)
+
+        def shell_fn(cc, w=shell.width(), h=shell.height()):
+            rr = skia.Rect.MakeWH(w, h)
+            cc.drawRoundRect(rr, 28, 28, paint(col(T["panel"], 0.55)))
+            dash = paint(col(T["line"]), 3)
+            dash.setPathEffect(skia.DashPathEffect.Make([18, 12], 0))
+            cc.drawRoundRect(rr, 28, 28, dash)
+        design.sprite(c, ("shell", sc.tpl.name), shell.left(), shell.top(), shell.width(), shell.height(), shell_fn, a0, pad=4)
         lx, ly = (86, 412) if self.portrait else (206, 204)
         text(c, sc.spec.get("container_label", ""), lx, ly, font(28, "SemiBold"), col(T["text2"], a0))
         dim = sc.any_highlight(t)
@@ -864,6 +873,9 @@ class Chart(Treatment):
 
 
 TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cutaway": Cutaway, "chart": Chart}
+LEGACY_TREATMENTS = tuple(TREATMENTS)
+from .pro import PRO_TREATMENTS          # noqa: E402  (pro imports engine lazily)
+TREATMENTS.update(PRO_TREATMENTS)
 
 
 # ------------------------------------------------------------------ frame + clip
@@ -969,7 +981,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
                 break
     fade = min(clamp(t / 0.3), clamp((sc.dur - t) / 0.3))
     if fade < 1:
-        canvas.drawRect(skia.Rect.MakeWH(1920, 1080), paint(col(T["bg0"], 1 - fade)))
+        design.sprite(canvas, ("fade", T["bg0"]), 0, 0, 1920, 1080, lambda cc: cc.drawColor(col(T["bg0"])), 1 - fade)   # cached, blitted
     canvas.restore()
 
 
@@ -1042,7 +1054,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
                 break
     fade = min(clamp(t / 0.3), clamp((sc.dur - t) / 0.3))
     if fade < 1:
-        canvas.drawRect(skia.Rect.MakeWH(1080, 1920), paint(col(T["bg0"], 1 - fade)))
+        design.sprite(canvas, ("fade", T["bg0"]), 0, 0, 1080, 1920, lambda cc: cc.drawColor(col(T["bg0"])), 1 - fade)
     canvas.restore()
 
 
@@ -1069,8 +1081,10 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
     """Render one scene to a silent H.264 clip. Returns duration and frame count."""
     tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style)
     n = max(1, int(round(tr.sc.dur * fps)))
-    surf = skia.Surface(w, h)
+    surf = skia.Surface(w, h)                             # native pixel order: cached layers blit without conversion
     canvas = surf.getCanvas()
+    frame = np.zeros((h, w, 4), dtype=np.uint8)
+    rgba = skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType)
     cmd = [config.ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{w}x{h}",
            "-r", str(fps), "-i", "-", "-an", "-c:v", "libx264", "-preset", config.X264_PRESET, "-crf", config.X264_CRF,
            "-pix_fmt", "yuv420p", "-movflags", "+faststart", out_path]
@@ -1078,7 +1092,8 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
     try:
         for i in range(n):
             draw_frame(canvas, tr, i / fps, w, h, captions)
-            proc.stdin.write(surf.toarray(colorType=skia.kRGBA_8888_ColorType).tobytes())
+            surf.readPixels(rgba, frame)                  # one conversion to RGBA per frame (about 3 ms at 1080p)
+            proc.stdin.write(memoryview(frame))
             if progress and i % 15 == 0:
                 progress(i / n)
         proc.stdin.close()

@@ -118,3 +118,30 @@ def test_stat_strip_shows_numbers_only_with_a_source():
     finally:
         design.TEXT_LOG = None
     assert "600+" not in drawn and "24 h" in drawn
+
+
+@pytest.mark.parametrize("captions,limit", [(False, 1500.0), (True, 1340.0)])
+def test_portrait_content_band_follows_the_caption_setting(captions, limit):
+    """9:16 content may reach y 1500 with burned-in captions off and stops at y 1340 with them on: every drawn
+    string (captions themselves excluded) ends above the limit, and without captions the content really uses the
+    room below 1340."""
+    lowest = []
+    for s in SCENES:
+        tm = gallery.timing_for(s["narration"])
+        spec = dict(s["spec"], theme="paper")
+        tr = engine.build(spec, tm, "paper", portrait=True, captions=captions)
+        t = gallery.most_complete_t(spec, tm)
+        tr.sc.dur = max(tr.sc.dur, t + 0.4)
+        import skia
+        surf = skia.Surface(1080, 1920)
+        design.TEXT_LOG = []
+        try:
+            engine.draw_frame(surf.getCanvas(), tr, t, 1080, 1920, captions=False)
+            log = design.TEXT_LOG
+        finally:
+            design.TEXT_LOG = None
+        bottom = max(i["rect"][3] for i in log)
+        assert bottom <= limit + 2, f"{s['id']}: text reaches y {bottom:.0f} (limit {limit:.0f})"
+        lowest.append(bottom)
+    if not captions:
+        assert max(lowest) > 1340, "without captions the band below 1340 is used"

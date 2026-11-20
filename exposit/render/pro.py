@@ -33,7 +33,7 @@ class ProTreatment:
         self.W, self.H = (1080.0, 1920.0) if self.portrait else (1920.0, 1080.0)
         self.S = D.sizes(self.portrait)
         self.top = D.content_top(sc.spec, self.portrait)
-        self.bottom = D.PORTRAIT_BAND[1] - 10 if self.portrait else 1020.0
+        self.bottom = D.band_bottom(sc) - 10 if self.portrait else 1020.0
         self.pos: dict[str, tuple[float, float, float, float]] = {}
         self.layout()
 
@@ -94,7 +94,7 @@ class IconFlow(ProTreatment):
         if self.portrait:                                  # transpose: columns become rows, top to bottom
             grid = {k: (r, c) for k, (c, r) in grid.items()}
             cols, rows = rows, cols
-            x0, x1, y0, y1 = 80.0, 1000.0, self.top, self.bottom
+            x0, x1, y0, y1 = 80.0, 1000.0, self.top, self.bottom - 14
         else:
             x0, x1, y0, y1 = 100.0, 1820.0, self.top, self.bottom
         self.cell_w = (x1 - x0) / max(1, cols)
@@ -102,7 +102,7 @@ class IconFlow(ProTreatment):
         self.r = max(self.S["icon"] / 2, min(95.0, 0.22 * self.cell_w, 0.2 * (y1 - y0) / max(1, rows)))
         lab_h = max((self._lab_h(e["id"]) for e in els), default=0.0)
         block = 2 * self.r + (0 if self.side else lab_h)   # badge + label; rows spread with equal gaps
-        gap = max(60.0, (y1 - y0 - rows * block) / max(1, rows - 1)) if rows > 1 else 0.0
+        gap = max(24.0, (y1 - y0 - rows * block) / max(1, rows - 1)) if rows > 1 else 0.0
         oy = y0 + max(0.0, (y1 - y0 - rows * block - (rows - 1) * gap) / 2)
         for eid, (cx_i, ry_i) in grid.items():
             cx = 120.0 + self.r if self.side else x0 + (cx_i + 0.5) * (x1 - x0) / cols
@@ -296,11 +296,13 @@ class MapScene(ProTreatment):
             self.legend_items, self.legend_title = [dict(i, sub=None) for i in items], None
             lg_h = D.legend_row(None, self.tpl, 0, 0, 960, self.legend_items, 0.0) if items else 0.0
             self.card_h = 150.0 if sc.events_of("card") else 0.0
-            map_h = 1040 * aspect
-            parts = [h for h in (map_h, self.card_h, lg_h, self.strip_h) if h]
+            others = [h for h in (self.card_h, lg_h, self.strip_h) if h]
+            map_h = min(1040 * aspect, self.bottom - self.top - sum(others) - 20 * len(others))
+            map_w = map_h / aspect                          # the map gives way when the band is short (captions on)
+            parts = [map_h] + others
             gap = max(20.0, min(40.0, (self.bottom - self.top - sum(parts)) / max(1, len(parts) - 1)))
             y = self.top + max(0.0, (self.bottom - self.top - sum(parts) - gap * (len(parts) - 1)) / 2)
-            rect = (20.0, y, 1040.0, map_h)
+            rect = (540.0 - map_w / 2, y, map_w, map_h)
             y += map_h + gap
             self.card_slot = (60.0, y, 960.0, self.card_h)
             y += (self.card_h + gap) if self.card_h else 0
@@ -746,7 +748,7 @@ class Cards(ProTreatment):
         n = max(1, len(self.items))
         if self.portrait:
             R = 80.0
-            slots = [(80 + 920 * (i + 0.5) / n, 1290.0) for i in range(n)]
+            slots = [(80 + 920 * (i + 0.5) / n, self.bottom - 200) for i in range(n)]
             maxw = 920 / n - 20
         else:
             R = 66.0
@@ -882,7 +884,9 @@ class Compare(ProTreatment):
         if self.portrait:
             self.footer_h = D.stat_strip(None, self.tpl, 0, 0, 960, self.footer, 0.0, True) if self.footer else 0.0
             fixed = 2 * self.r + ph + 2 * self.r + (self.footer_h + 40 if self.footer else 0)
-            g = max(90.0, (self.bottom - self.top - fixed) / 2)
+            if self.footer and fixed + 80 > self.bottom - self.top:      # the optional footer gives way first
+                self.footer, fixed = [], fixed - self.footer_h - 40
+            g = max(40.0, (self.bottom - self.top - fixed) / 2)
             y = self.top
             self.client = (540.0, y + self.r)
             y += 2 * self.r + g

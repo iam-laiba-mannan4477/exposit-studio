@@ -371,7 +371,7 @@ class Flow2D(Treatment):
         top = design.content_top(self.sc.spec, self.portrait)
         if self.portrait:
             self.W = 900.0
-            bottom = design.PORTRAIT_BAND[1] - 20
+            bottom = design.band_bottom(self.sc) - 20
             gap = 96.0
             self.H = min(250.0, (bottom - top - (n - 1) * gap) / n)
             total = n * self.H + (n - 1) * gap
@@ -539,7 +539,7 @@ class Kinetic(Treatment):
             blocks.append((f, size, wrap(l["text"], f, 940)))
         total = sum(len(r) * size * 1.14 + 30 for _, size, r in blocks)
         top = 560.0 if ui else design.PORTRAIT_BAND[0]
-        y = top + (design.PORTRAIT_BAND[1] - top - total) / 2
+        y = top + (design.band_bottom(self.sc) - top - total) / 2
         if ui:
             a = ease(t / 0.5)
             r = skia.Rect.MakeXYWH(60, 330, 960, 104)
@@ -607,7 +607,7 @@ class Isometric(Treatment):
         y0, y1 = min(p[1] for p in pts), max(p[1] for p in pts)
         top = design.content_top(sc.spec, self.portrait)
         if self.portrait:
-            area = (60.0, top + 10, 560.0, design.PORTRAIT_BAND[1] - 60 - top - 10)     # labels go to the right
+            area = (60.0, top + 10, 560.0, design.band_bottom(self.sc) - 80 - top - 10)     # labels go to the right
         else:
             area = (140.0, top + 10, 1300.0, 1000 - top - 70)
         self.U = min(area[2] / (x1 - x0), area[3] / (y1 - y0), 120.0)
@@ -778,14 +778,17 @@ class Cutaway(Treatment):
         self.pods = [e for e in els if e.get("kind") in CUT_WORKER]
         top = design.content_top(sc.spec, self.portrait)
         if self.portrait:
-            self.shell = (60.0, top, 960.0, design.PORTRAIT_BAND[1] - 10 - top)
+            self.shell = (60.0, top, 960.0, design.band_bottom(self.sc) - 10 - top)
             y = top + 96
+            avail = top + self.shell[3] - 30 - y               # front end, index and stores share what is left
+            gap = 70.0 if avail > 1000 else 44.0
+            ng_h = min(360.0, (avail - 150 - 2 * gap) * 0.55)
             if self.ng:
-                self.pos[self.ng["id"]] = (100, y, 880, 360)
-            y += 360 + 70
+                self.pos[self.ng["id"]] = (100, y, 880, ng_h)
+            y += ng_h + gap
             if self.svc:
                 self.pos[self.svc["id"]] = (240, y, 600, 150)
-            y += 150 + 70
+            y += 150 + gap
             n = max(1, len(self.pods))
             pw = (880 - (n - 1) * 30) / n
             ph = min(300.0, top + self.shell[3] - 30 - y)
@@ -935,7 +938,7 @@ class Chart(Treatment):
             design.draw_heading(c, tpl, title, self.portrait, ease(t / 0.5))
         acc = T["accent"]
         if self.portrait:
-            x0, x1, base = 90.0, 990.0, design.PORTRAIT_BAND[1] - 150
+            x0, x1, base = 90.0, 990.0, design.band_bottom(self.sc) - 150
         else:
             x0, x1, base = 200.0, 1720.0, 900.0
         bw = min(220.0 if not self.portrait else 200.0, (x1 - x0) / n * 0.62)
@@ -1145,9 +1148,12 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     canvas.restore()
 
 
-def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase") -> Treatment:
+def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase",
+          captions: bool = False) -> Treatment:
+    """`captions`: burned-in captions will be drawn, so 9:16 content keeps clear of them (stops at y 1340)."""
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
+    sc.caption_band = bool(captions) and portrait
     design.set_active(sc.tpl)                              # layouts measure text in the template's fonts
     sc.caption_style = caption_style if caption_style in CAPTION_STYLES else "phrase"
     if portrait:                                           # shorter caption cues for a narrow frame
@@ -1156,8 +1162,11 @@ def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: 
 
 
 def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960, h: int = 540,
-                 theme: str = "premium-technical", captions: bool = False, caption_style: str = "phrase") -> bytes:
-    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style)
+                 theme: str = "premium-technical", captions: bool = False, caption_style: str = "phrase",
+                 caption_band: bool | None = None) -> bytes:
+    """`caption_band` lays out for burned-in captions without drawing them (storyboards); defaults to `captions`."""
+    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style,
+               captions=captions if caption_band is None else caption_band)
     surf = skia.Surface(w, h)
     draw_frame(surf.getCanvas(), tr, tr.sc.dur * 0.62 if t is None else t, w, h, captions)
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 90))
@@ -1167,7 +1176,7 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
                 fps: int = config.FPS, theme: str = "premium-technical", captions: bool = True,
                 progress: Callable[[float], None] | None = None, caption_style: str = "phrase") -> dict:
     """Render one scene to a silent H.264 clip. Returns duration and frame count."""
-    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style)
+    tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style, captions=captions)
     n = max(1, int(round(tr.sc.dur * fps)))
     surf = skia.Surface(w, h)                             # native pixel order: cached layers blit without conversion
     canvas = surf.getCanvas()

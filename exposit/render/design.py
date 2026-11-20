@@ -168,10 +168,16 @@ SIZES = {
     False: dict(heading=76, label=44, body=36, small=30, icon=120, stroke=6.5, arrow=24),   # 16:9
 }
 PORTRAIT_BAND = (260.0, 1500.0)          # 9:16: content fills this band (the platforms' own UI covers the rest)
+PORTRAIT_BOTTOM_WITH_CAPTIONS = 1340.0     # with burned-in captions on, content stops above them (they start at 1350)
 PORTRAIT_X = (60.0, 1020.0)
 MAX_PORTRAIT_ENTITIES = 5
 MIN_STROKE = 6.0                          # connectors
 DIM = 0.28                                # how far focus dims the rest (text keeps its contrast)
+
+
+def band_bottom(sc=None) -> float:
+    """Where 9:16 content ends: y 1500 without burned-in captions, y 1340 with them."""
+    return PORTRAIT_BOTTOM_WITH_CAPTIONS if getattr(sc, "caption_band", False) else PORTRAIT_BAND[1]
 
 
 def sizes(portrait: bool) -> dict:

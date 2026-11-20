@@ -224,7 +224,7 @@ def text(c: skia.Canvas, s: str, x: float, y: float, f: skia.Font, color: int, a
         x -= w / 2
     elif align == "right":
         x -= w
-    c.drawString(s, x, y, f, skia.Paint(AntiAlias=True, Color=color))
+    design.put_text(c, s, x, y, f, color)
     return w
 
 
@@ -257,7 +257,11 @@ def _fit(s: str, maxw: float, size: float, smallest: float, weight: str, mono: b
 
 
 def wrap(s: str, f: skia.Font, maxw: float) -> list[str]:
-    """Greedy word wrap to a pixel width."""
+    """Balanced word wrap to a pixel width (see design.wrap_font)."""
+    return design.wrap_font(s, f, maxw)
+
+
+def _wrap_greedy(s: str, f: skia.Font, maxw: float) -> list[str]:
     rows, cur = [], ""
     for w in s.split():
         t2 = (cur + " " + w).strip()
@@ -277,48 +281,44 @@ def glow(c: skia.Canvas, rect: skia.Rect, radius: float, color: int, sigma: floa
     c.drawRoundRect(rect, radius, radius, p)
 
 
-def box(c, sc: Scene, x, y, w, h, label, kind="node", a=1.0, hl=0.0, dim=0.0, sub=None, mono_sub=False, radius=18, icon=None):
-    """A component box. Legacy themes keep their original card with the kind's icon in place of the dot;
-    the new templates draw the template card with an icon badge."""
-    T, tpl = sc.T, sc.tpl
-    alpha = a * (1 - 0.5 * dim * (1 - hl))
+def box(c, sc: Scene, x, y, w, h, label, kind="node", a=1.0, hl=0.0, dim=0.0, sub=None, mono_sub=False, radius=18, icon=None,
+        R=None, vertical=None):
+    """A component card in the template's style with an icon badge on every node: badge on the left and the label
+    beside it, or (`vertical`, the default for tall cards) badge on top and the label centred under it."""
+    tpl, T = sc.tpl, sc.T
+    alpha = a * (1 - design.DIM * dim * (1 - hl))
     if alpha <= 0.01:
         return
-    kc = T[KIND_COLOR.get(kind, "text2")]
-    ic = assets.resolve(icon) or assets.icon_for({"kind": kind})
-    if tpl.legacy:
-        r = skia.Rect.MakeXYWH(x, y, w, h)
-        if hl > 0:
-            glow(c, r, radius, col(kc, 0.55 * hl * alpha), 22)
-        c.drawRoundRect(r, radius, radius, paint(col(T["panel"], alpha)))
-        c.drawRoundRect(r, radius, radius, paint(col(kc if hl > 0.05 else T["line"], alpha * (0.6 + 0.4 * hl)), 2 + 1.5 * hl))
-        if not (ic and assets.draw_icon(c, ic, x + 30, y + 34, 26, kc, alpha, 2.0)):
-            c.drawCircle(x + 30, y + 34, 9, paint(col(kc, alpha)))
-        text(c, fit(label, w - 66, 27, 18, "SemiBold"), x + 50, y + 43, fit_font(label, w - 66, 27, 18, "SemiBold"), col(T["text"], alpha))
-        if sub:
-            text(c, fit(sub, w - 52, 21, 15, mono=mono_sub), x + 28, y + h - 26, fit_font(sub, w - 52, 21, 15, mono=mono_sub), col(T["text2"], alpha))
-        return
+    ta = a                                                 # text keeps full contrast under focus dimming
+    ic = assets.resolve(icon) or assets.icon_for({"kind": kind}) or "box"
     seed = sum(map(ord, label)) % 97
-    design.card(c, tpl, x, y, w, h, alpha, hl, 0.0, radius=None, seed=seed)
-    br = min(26.0, h * 0.22)
-    tone = KIND_COLOR.get(kind, "accent")
-    design.badge(c, tpl, ic, x + 22 + br, y + 18 + br, br, alpha, hl, tone=tone if tpl.icon["style"] == "pastel" else None, seed=seed)
-    lx = x + 34 + 2 * br
-    text(c, fit(label, x + w - 18 - lx, 27, 17, "SemiBold"), lx, y + 18 + br + 10, fit_font(label, x + w - 18 - lx, 27, 17, "SemiBold"), col(T["text"], alpha))
-    if sub:
-        text(c, fit(sub, w - 44, 21, 14, mono=mono_sub), x + 22, y + h - 22, fit_font(sub, w - 44, 21, 14, mono=mono_sub), col(T["text2"], alpha))
+    design.card(c, tpl, x, y, w, h, alpha, hl, 0.0, radius=radius if tpl.legacy else None, seed=seed)
+    tone = KIND_COLOR.get(kind, "accent") if tpl.icon["style"] in ("pastel", "tint") else None
+    vertical = (h >= 1.15 * w or h > 250) if vertical is None else vertical
+    if vertical:
+        R = R or min(60.0, w * 0.2, h * 0.22)
+        by = y + 26 + R
+        design.badge(c, tpl, ic, x + w / 2, by, R, alpha, hl, tone=tone, seed=seed)
+        design.label_under(c, tpl, label, x + w / 2, by + R + 12, w - 40, 44, ta, sub, hl=hl)
+        return
+    R = R or min(60.0, (h - 36) / 2)
+    bx, by = x + 26 + R, y + h / 2
+    design.badge(c, tpl, ic, bx, by, R, alpha, hl, tone=tone, seed=seed)
+    lx = bx + R + 26
+    lw = x + w - 24 - lx
+    rows, sz = design.fit_block(label, lw, 2, 44, 36, "SemiBold")
+    srows, ss = design.fit_block(sub, lw, 2, 32, 30) if sub else ([], 0)
+    total = len(rows) * sz * 1.1 + (len(srows) * ss * 1.18 + 6 if sub else 0)
+    ty = by - total / 2 + sz * 0.86
+    for j, r in enumerate(rows):
+        design.draw_text(c, r, lx, ty + j * sz * 1.1, sz, col(T["text"], ta), "SemiBold")
+    for j, r in enumerate(srows):
+        design.draw_text(c, r, lx, ty + len(rows) * sz * 1.1 - sz * 0.1 + 6 + (j + 0.75) * ss * 1.18, ss,
+                         col(T["text2"], ta), mono=mono_sub)
 
 
 def packet_dot(c, sc: Scene, x, y, a=1.0):
-    if not sc.tpl.legacy:
-        design.node_dot(c, sc.tpl, x, y, 10, a)
-        return
-    kc = sc.T["accent"]
-    p = skia.Paint(AntiAlias=True, Color=col(kc, 0.7 * a))
-    p.setMaskFilter(skia.MaskFilter.MakeBlur(skia.kNormal_BlurStyle, 14))
-    c.drawCircle(x, y, 20, p)
-    c.drawCircle(x, y, 11, paint(col("#FFFFFF", a)))
-    c.drawCircle(x, y, 11, paint(col(kc, a), 3))
+    design.node_dot(c, sc.tpl, x, y, 13, a)
 
 
 def background(c, sc: Scene, w, h):
@@ -361,30 +361,32 @@ class Treatment:
 
 
 class Flow2D(Treatment):
-    W, H = 250, 132
+    """A chain of component cards (badge, label, sub-line) joined by connectors with arrowheads; packets run between
+    them. Landscape: a row; portrait: a column filling the band below the heading."""
+    W, H = 380, 300
 
     def layout(self):
         ids = self.sc.order
         n = max(1, len(ids))
-        if self.portrait:                                   # a vertical chain, top to bottom
-            self.W, self.H = 600, min(132.0, (880 - (n - 1) * 56) / n)
-            gap = min(110.0, (880 - n * self.H) / max(1, n - 1)) if n > 1 else 0
+        top = design.content_top(self.sc.spec, self.portrait)
+        if self.portrait:
+            self.W = 900.0
+            bottom = design.PORTRAIT_BAND[1] - 20
+            gap = 96.0
+            self.H = min(250.0, (bottom - top - (n - 1) * gap) / n)
             total = n * self.H + (n - 1) * gap
-            y0 = self.CY - total / 2
+            y0 = top + (bottom - top - total) / 2
             for i, eid in enumerate(ids):
-                self.pos[eid] = (540 - self.W / 2, y0 + i * (self.H + gap), self.W, self.H)
+                self.pos[eid] = (90.0, y0 + i * (self.H + gap), self.W, self.H)
             return
-        need = max([font(27, "SemiBold").measureText(self.sc.els[i].get("label", i)) + 66 for i in ids] +
-                   [font(21).measureText(self.sc.els[i].get("sub") or "") + 56 for i in ids] + [250])
-        if not self.sc.tpl.legacy:                         # new templates: larger cards with room for the icon badge
-            self.H = 150
-            need = max(need + 40, 340)
-        self.W = min(need, max(250.0, (1920 - 220 - (n - 1) * 60) / n), 460)
-        gap = min(140, (1920 - 220 - n * self.W) / max(1, n - 1)) if n > 1 else 0
+        gap = 110.0
+        self.W = min(520.0, (1920 - 200 - (n - 1) * gap) / n)
+        self.H = 420.0
         total = n * self.W + (n - 1) * gap
         x0 = (1920 - total) / 2
+        y = top + (1010 - top - self.H) / 2
         for i, eid in enumerate(ids):
-            self.pos[eid] = (x0 + i * (self.W + gap), 540 - self.H / 2, self.W, self.H)
+            self.pos[eid] = (x0 + i * (self.W + gap), y, self.W, self.H)
 
     def frame_for(self, targets):
         """Frame the targets; then widen until no other box is cut by the frame edge."""
@@ -392,7 +394,7 @@ class Flow2D(Treatment):
         for _ in range(len(self.pos) + 1):
             s, fx, fy = self._frame(targets)
             if self.portrait:
-                lo, hi, a, b = fy - 440 / s, fy + 440 / s, 1, 3
+                lo, hi, a, b = fy - 620 / s, fy + 620 / s, 1, 3
             else:
                 lo, hi, a, b = fx - 960 / s, fx + 960 / s, 0, 2
             cut = [i for i, p in self.pos.items() if i not in targets and p[a] < hi and p[a] + p[b] > lo
@@ -404,14 +406,13 @@ class Flow2D(Treatment):
 
     def _frame(self, targets):
         xs = [self.pos[i] for i in targets if i in self.pos]
-        if not xs:
+        if not xs or set(targets) >= set(self.pos):
             return 1.0, self.CX, self.CY
         if self.portrait:
             y0, y1 = min(p[1] for p in xs), max(p[1] + p[3] for p in xs)
-            return clamp(980 / (y1 - y0 + 300), 1.0, 1.6), 540.0, (y0 + y1) / 2
+            return clamp(1180 / (y1 - y0 + 200), 1.0, 1.4), 540.0, (y0 + y1) / 2
         x0, x1 = min(p[0] for p in xs), max(p[0] + p[2] for p in xs)
-        scale = clamp(1920 / (x1 - x0 + 520), 1.0, 1.7)
-        return scale, (x0 + x1) / 2, 540.0
+        return clamp(1920 / (x1 - x0 + 400), 1.0, 1.5), (x0 + x1) / 2, 540.0
 
     def camera(self, t):
         frames = [(0.0, self.frame_for(self.sc.spec.get("camera", {}).get("start") or self.sc.order))]
@@ -423,56 +424,68 @@ class Flow2D(Treatment):
             cur = tuple(lerp(a, b, k) for a, b in zip(cur, f))
         return cur
 
+    def _link_path(self, a, b):
+        ax, ay, aw, ah = self.pos[a]
+        bx, by, bw, bh = self.pos[b]
+        p = skia.Path()
+        if self.portrait:
+            p.moveTo(540, ay + ah + 12)
+            p.lineTo(540, by - 12)
+        else:
+            p.moveTo(ax + aw + 12, ay + ah / 2)
+            p.lineTo(bx - 12, by + bh / 2)
+        return p
+
     def draw(self, c, t):
-        sc, T = self.sc, self.sc.T
+        sc, tpl = self.sc, self.sc.tpl
         dim = sc.any_highlight(t)
         ids = sc.order
-        for a, b in sc.spec.get("links") or list(zip(ids, ids[1:])):
-            if a in self.pos and b in self.pos and self.portrait:
-                x = 540.0
-                ay = self.pos[a][1] + self.H
-                by = self.pos[b][1]
-                al = min(sc.vis(a, t), sc.vis(b, t)) * (1 - 0.5 * dim)
+        for i, (a, b) in enumerate(sc.spec.get("links") or list(zip(ids, ids[1:]))):
+            if a in self.pos and b in self.pos:
+                al = min(sc.vis(a, t), sc.vis(b, t))
                 k = ease((t - max(sc.show_at[a], sc.show_at[b])) / 0.5)
-                c.drawLine(x, ay + 8, x, lerp(ay + 8, by - 8, k), paint(col(T["line"], al), 3))
-                if k > 0.95:
-                    path = skia.Path()
-                    path.moveTo(x, by - 8); path.lineTo(x - 9, by - 24); path.lineTo(x + 9, by - 24); path.close()
-                    c.drawPath(path, paint(col(T["line"], al)))
-            elif a in self.pos and b in self.pos:
-                ax = self.pos[a][0] + self.W
-                bx = self.pos[b][0]
-                y = self.pos[a][1] + self.H / 2
-                al = min(sc.vis(a, t), sc.vis(b, t)) * (1 - 0.5 * dim)
-                k = ease((t - max(sc.show_at[a], sc.show_at[b])) / 0.5)
-                c.drawLine(ax + 10, y, lerp(ax + 10, bx - 10, k), y, paint(col(T["line"], al), 3))
-                if k > 0.95:
-                    path = skia.Path()
-                    path.moveTo(bx - 10, y); path.lineTo(bx - 26, y - 9); path.lineTo(bx - 26, y + 9); path.close()
-                    c.drawPath(path, paint(col(T["line"], al)))
+                design.stroke(c, tpl, self._link_path(a, b), al, k, seed=i)
         for eid in ids:
             e = sc.els[eid]
             x, y, w, h = self.pos[eid]
             a = sc.vis(eid, t)
             nt = sc.note(eid, t)
             box(c, sc, x, y + (1 - a) * 24, w, h, e.get("label", eid), e.get("kind", "node"), a, sc.highlight(eid, t), dim,
-                sub=e.get("sub"), icon=e.get("icon"))
-            if nt and self.portrait:                        # on a small plate, so the link line does not run through it
-                f = font(24, mono=True)
+                sub=e.get("sub"), icon=e.get("icon"), R=75.0)
+            if nt:
+                ny = y + h + (48 if self.portrait else 64)
+                f = font(32, mono=True)
                 tw = f.measureText(nt[0])
-                ny = y + h + 22
-                c.drawRoundRect(skia.Rect.MakeXYWH(540 - tw / 2 - 14, ny, tw + 28, 40), 10, 10, paint(col(T["bg0"], 0.92 * nt[1])))
-                text(c, nt[0], 540, ny + 29, f, col(T["teal"], nt[1]), "center")
-            elif nt:
-                text(c, nt[0], x + w / 2, y + h + 44, font(24, mono=True), col(T["teal"], nt[1]), "center")
+                cx = x + w / 2
+                bgc = T_bg(sc)
+                c.drawRoundRect(skia.Rect.MakeXYWH(cx - tw / 2 - 16, ny - 34, tw + 32, 48), 10, 10, paint(col(bgc, 0.95 * nt[1])))
+                text(c, nt[0], cx, ny, f, col(design.text_on(tpl, tpl.T["teal"], bgc), nt[1]), "center")
             if e.get("badge"):
                 bx, by = x + w - 26, y - 4
-                c.drawCircle(bx, by, 22, paint(col(T["accent"], a)))
-                text(c, str(e["badge"]), bx, by + 9, font(24, "Bold"), col("#FFFFFF", a), "center")
+                c.drawCircle(bx, by, 28, paint(col(tpl.T["accent"], a)))
+                text(c, str(e["badge"]), bx, by + 11, font(32, "Bold"), col("#FFFFFF", a), "center")
         self.draw_packets(c, t, self.center)
+
+    def draw_packets(self, c, t, endpoint):
+        for e, k in self.sc.packets(t):
+            if e.get("from") in self.pos and e.get("to") in self.pos:
+                a, b = e["from"], e["to"]
+                order = list(self.sc.order)
+                rev = a in order and b in order and order.index(a) > order.index(b)
+                p = self._link_path(b, a) if rev else self._link_path(a, b)
+                kk = ease_io(clamp(k))
+                design.packet(c, self.sc.tpl, p, 1 - kk if rev else kk, 1 - clamp((k - 1) / 0.4) if k > 1 else 1.0)
 
 
 class Kinetic(Treatment):
+    """Big typography, line by line. Earlier lines step back to the secondary text colour (never to a faint alpha)."""
+
+    def _line_color(self, l, older):
+        T = self.sc.T
+        if l.get("accent"):
+            return design.text_on(self.sc.tpl, T["accent"], T["bg0"] if self.sc.tpl.dark else T["bg0"])
+        return T["text2"] if older and not l.get("keep") else T["text"]
+
     def draw(self, c, t):
         if self.portrait:
             return self.draw_portrait(c, t)
@@ -481,34 +494,37 @@ class Kinetic(Treatment):
         y0 = 330
         if ui:
             a = ease(t / 0.5)
-            r = skia.Rect.MakeXYWH(360, 190, 1200, 96)
-            c.drawRoundRect(r, 48, 48, paint(col(T["panel"], a)))
-            c.drawRoundRect(r, 48, 48, paint(col(T["line"], a), 2))
-            c.drawCircle(420, 238, 12, paint(col(T["text2"], a), 3))
+            r = skia.Rect.MakeXYWH(360, 190, 1200, 104)
+            c.drawRoundRect(r, 52, 52, paint(col(T["panel"], a)))
+            c.drawRoundRect(r, 52, 52, paint(col(T["line"], a), 3))
+            c.drawCircle(424, 242, 14, paint(col(T["text2"], a), 4))
             ty = sc.latest("type", t)
             url = ui.get("url", "")
             n = int(len(url) * clamp((t - ty["t"]) / (1.1 * sc.motion))) if ty else 0
-            f = font(38, mono=True)
-            wdt = text(c, url[:n], 460, 252, f, col(T["text"], a))
+            f = font(40, mono=True)
+            wdt = text(c, url[:n], 466, 256, f, col(T["text"], a))
             if int(t * 2.4) % 2 == 0 or (ty and n < len(url)):
-                c.drawRect(skia.Rect.MakeXYWH(464 + wdt, 218, 3, 42), paint(col(T["accent"], a)))
+                c.drawRect(skia.Rect.MakeXYWH(470 + wdt, 220, 4, 46), paint(col(T["accent"], a)))
             en = sc.latest("enter", t)
             if en:
                 k = clamp((t - en["t"]) / 0.5)
-                c.drawRoundRect(r, 48, 48, paint(col(T["accent"], (1 - k) * 0.9), 4 + 10 * k))
+                c.drawRoundRect(r, 52, 52, paint(col(T["accent"], (1 - k) * 0.9), 4 + 10 * k))
             y0 = 380
         lines = sc.spec.get("lines", [])
         times = [sc.cue_time(l.get("at")) or 0.0 for l in lines]
+        sizes = [max(84, l.get("size", 104)) for l in lines]
+        total = sum(s * 1.22 + 26 for s in sizes)
+        if not ui:
+            y0 = 540 - total / 2
         for i, l in enumerate(lines):
             if t < times[i]:
                 continue
             k = ease((t - times[i]) / 0.45)
-            later = [tt for tt in times[i + 1:] if t >= tt]
-            a = k * (0.38 if later and not l.get("keep") else 1.0)
-            size = l.get("size", 84)
+            older = any(t >= tt for tt in times[i + 1:])
+            size = sizes[i]
             f = font(size, "Bold" if l.get("accent") else "SemiBold")
-            y = y0 + sum(ll.get("size", 84) * 1.22 + 26 for ll in lines[:i]) + size * 0.82 + (1 - k) * 36
-            text(c, l["text"], 960, y, f, col(T["accent"] if l.get("accent") else T["text"], a), "center")
+            y = y0 + sum(s * 1.22 + 26 for s in sizes[:i]) + size * 0.82 + (1 - k) * 36
+            text(c, l["text"], 960, y, f, col(self._line_color(l, older), k), "center")
 
     def draw_portrait(self, c, t):
         sc, T = self.sc, self.sc.T
@@ -517,97 +533,127 @@ class Kinetic(Treatment):
         times = [sc.cue_time(l.get("at")) or 0.0 for l in lines]
         blocks = []
         for l in lines:                                     # each line wraps to the 940 px column
-            size = min(l.get("size", 84), 92)
-            f = font(size, "Bold" if l.get("accent") else "SemiBold")
+            wt = "Bold" if l.get("accent") else "SemiBold"
+            size = design.fit_size(l["text"], 940, max(96, min(l.get("size", 120), 132)), 84, wt)
+            f = font(size, wt)
             blocks.append((f, size, wrap(l["text"], f, 940)))
-        total = sum(len(r) * size * 1.18 + 26 for _, size, r in blocks)
-        y = 520.0 if ui else self.CY - total / 2
+        total = sum(len(r) * size * 1.14 + 30 for _, size, r in blocks)
+        top = 560.0 if ui else design.PORTRAIT_BAND[0]
+        y = top + (design.PORTRAIT_BAND[1] - top - total) / 2
         if ui:
             a = ease(t / 0.5)
-            r = skia.Rect.MakeXYWH(60, 330, 960, 92)
-            c.drawRoundRect(r, 46, 46, paint(col(T["panel"], a)))
-            c.drawRoundRect(r, 46, 46, paint(col(T["line"], a), 2))
-            c.drawCircle(112, 376, 11, paint(col(T["text2"], a), 3))
+            r = skia.Rect.MakeXYWH(60, 330, 960, 104)
+            c.drawRoundRect(r, 52, 52, paint(col(T["panel"], a)))
+            c.drawRoundRect(r, 52, 52, paint(col(T["line"], a), 3))
+            c.drawCircle(116, 382, 14, paint(col(T["text2"], a), 4))
             ty = sc.latest("type", t)
             url = ui.get("url", "")
             n = int(len(url) * clamp((t - ty["t"]) / (1.1 * sc.motion))) if ty else 0
-            f = font(34, mono=True)
-            wdt = text(c, url[:n], 146, 388, f, col(T["text"], a))
+            f = font(38, mono=True)
+            wdt = text(c, url[:n], 152, 396, f, col(T["text"], a))
             if int(t * 2.4) % 2 == 0 or (ty and n < len(url)):
-                c.drawRect(skia.Rect.MakeXYWH(150 + wdt, 356, 3, 40), paint(col(T["accent"], a)))
+                c.drawRect(skia.Rect.MakeXYWH(156 + wdt, 360, 4, 44), paint(col(T["accent"], a)))
             en = sc.latest("enter", t)
             if en:
                 k = clamp((t - en["t"]) / 0.5)
-                c.drawRoundRect(r, 46, 46, paint(col(T["accent"], (1 - k) * 0.9), 4 + 10 * k))
+                c.drawRoundRect(r, 52, 52, paint(col(T["accent"], (1 - k) * 0.9), 4 + 10 * k))
         for i, (l, (f, size, rows)) in enumerate(zip(lines, blocks)):
             if t >= times[i]:
                 k = ease((t - times[i]) / 0.45)
-                later = [tt for tt in times[i + 1:] if t >= tt]
-                a = k * (0.38 if later and not l.get("keep") else 1.0)
+                older = any(t >= tt for tt in times[i + 1:])
                 for j, row in enumerate(rows):
-                    text(c, row, 540, y + j * size * 1.18 + size * 0.82 + (1 - k) * 36, f,
-                         col(T["accent"] if l.get("accent") else T["text"], a), "center")
-            y += len(rows) * size * 1.18 + 26
+                    text(c, row, 540, y + j * size * 1.14 + size * 0.82 + (1 - k) * 36, f, col(self._line_color(l, older), k), "center")
+            y += len(rows) * size * 1.14 + 30
 
 
 class Isometric(Treatment):
+    """Zones as plates, members as blocks, a hub block above them; an icon badge on every node and the hub. The
+    whole drawing is scaled to fill the content area below the heading."""
     U = 66.0
 
     def iso(self, gx, gy, gz=0.0):
         return (self.ox + (gx - gy) * self.U * 0.866, self.oy + (gx + gy) * self.U * 0.5 - gz * self.U)
 
     def zone_origin(self, i: int) -> tuple[float, float]:
+        if self.portrait:                                  # a zig-zag down the frame
+            o = 1.1 if i % 2 else -1.1
+            return i * 5.0 + o, i * 5.0 - o
+        return i * 4.6, 0.0
+
+    def _hub_box(self):
+        n = max(1, len(self.zones))
         if self.portrait:
-            o = 0.9 if i % 2 else -0.9                     # zig-zag: odd zones to the right, even to the left
-            return i * 4.2 + o, i * 4.2 - o
-        return i * 4.3, 0.0
+            return -4.8, -4.8, 2.4, 2.4
+        return 0.4, -4.4, (n - 1) * 4.6 + 2.6, 1.8
 
     def layout(self):
         sc = self.sc
         self.zones = [e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_GROUP]
         self.nodes = [e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_MEMBER]
         self.lb = next((e for e in sc.spec.get("elements", []) if e.get("kind") in ISO_HUB), None)
-        n = max(1, len(self.zones))
+        self.R = 75.0 if self.portrait else 60.0
+        # the extent of the drawing at U = 1, origin 0 (plates, blocks, hub, badges above blocks)
+        self.U, self.ox, self.oy = 1.0, 0.0, 0.0
+        pts = []
+        for i, _ in enumerate(self.zones or [None]):
+            gx, gy = self.zone_origin(i)
+            pts += [self.iso(gx + a, gy + b) for a in (0, 3.4) for b in (0, 3.4)]
+            pts.append(self.iso(gx + 1.7, gy + 1.7, 3.4))
+        if self.lb:
+            hx, hy, hw, hd = self._hub_box()
+            pts += [self.iso(hx + a, hy + b, z) for a in (0, hw) for b in (0, hd) for z in (0.3, 1.0)]
+            pts.append(self.iso(hx + hw / 2, hy + hd / 2, 3.2))
+        x0, x1 = min(p[0] for p in pts), max(p[0] for p in pts)
+        y0, y1 = min(p[1] for p in pts), max(p[1] for p in pts)
+        top = design.content_top(sc.spec, self.portrait)
         if self.portrait:
-            self.span = 0.0
-            top, bottom = -4.9, (n - 1) * 4.2 + 3.4 + 0.8   # in units of U, from the load balancer to the last plate
-            self.U = min(60.0, 880 / (bottom - top))
-            self.ox, self.oy = 540.0, self.CY - (top + bottom) / 2 * self.U
-            for i, z in enumerate(self.zones):
-                gx, gy = self.zone_origin(i)
-                cx, cy = self.iso(gx + 1.7, gy + 1.7)
-                self.pos[z["id"]] = (cx - 10, cy - 10, 20, 20)
-            for nd in self.nodes:
-                zi = next((i for i, z in enumerate(self.zones) if z["id"] == nd.get("zone")), 0)
-                gx, gy = self.zone_origin(zi)
-                cx, cy = self.iso(gx + 1.7, gy + 1.7, 1.3)
-                self.pos[nd["id"]] = (cx - 10, cy - 10, 20, 20)
-            if self.lb:
-                cx, cy = self.iso(-2.6, -2.6, 1.0)
-                self.pos[self.lb["id"]] = (cx - 10, cy - 10, 20, 20)
-            cx, cy = self.iso(-6.4, -6.4, 1.0)
-            self.pos["_in"] = (cx - 10, cy - 10, 20, 20)
-            return
-        self.span = n * 4.3 - 0.9
-        self.ox, self.oy = 960 - (self.span / 2 - 1.2) * self.U * 0.866 - 150, 440 - (self.span / 2) * self.U * 0.5
+            area = (60.0, top + 10, 560.0, design.PORTRAIT_BAND[1] - 60 - top - 10)     # labels go to the right
+        else:
+            area = (140.0, top + 10, 1300.0, 1000 - top - 70)
+        self.U = min(area[2] / (x1 - x0), area[3] / (y1 - y0), 120.0)
+        self.ox = area[0] + (area[2] - (x1 - x0) * self.U) / 2 - x0 * self.U
+        self.oy = area[1] + (area[3] - (y1 - y0) * self.U) / 2 - y0 * self.U
         for i, z in enumerate(self.zones):
-            cx, cy = self.iso(i * 4.3 + 1.7, 1.7)
+            gx, gy = self.zone_origin(i)
+            cx, cy = self.iso(gx + 1.7, gy + 1.7)
             self.pos[z["id"]] = (cx - 10, cy - 10, 20, 20)
         for nd in self.nodes:
-            zi = next((i for i, z in enumerate(self.zones) if z["id"] == nd.get("zone")), 0)
-            cx, cy = self.iso(zi * 4.3 + 1.7, 1.7, 1.3)
+            zi = self._zone_index(nd)
+            gx, gy = self.zone_origin(zi)
+            cx, cy = self.iso(gx + 1.7, gy + 1.7, 1.3)
             self.pos[nd["id"]] = (cx - 10, cy - 10, 20, 20)
         if self.lb:
-            cx, cy = self.iso(self.span / 2, -3.0, 1.0)
+            hx, hy, hw, hd = self._hub_box()
+            cx, cy = self.iso(hx + hw / 2, hy + hd / 2, 1.0)
             self.pos[self.lb["id"]] = (cx - 10, cy - 10, 20, 20)
-        cx, cy = self.iso(self.span / 2, -7.4, 1.0)
+        cx, cy = self.iso(-6.4, -6.4, 1.0)
         self.pos["_in"] = (cx - 10, cy - 10, 20, 20)
+
+    def _zone_index(self, nd):
+        return next((i for i, z in enumerate(self.zones) if z["id"] == nd.get("zone")), 0)
 
     def camera(self, t):
         k = ease_io(t / (self.sc.dur))
-        return 1.0 + 0.06 * k, self.CX, self.CY
+        return 1.0 + 0.03 * k, self.CX, self.CY
 
     def poly(self, c, pts, fill, stroke=None, sw=2):
+        """A filled (and stroked) polygon; settled ones (opaque inputs, no animation) go through the sprite cache."""
+        xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+        x0, y0 = min(xs), min(ys)
+        key = ("poly", tuple((round(q[0] - x0, 1), round(q[1] - y0, 1)) for q in pts), fill, stroke, sw)
+
+        def fn(cc):
+            p = skia.Path()
+            p.moveTo(pts[0][0] - x0, pts[0][1] - y0)
+            for q in pts[1:]:
+                p.lineTo(q[0] - x0, q[1] - y0)
+            p.close()
+            cc.drawPath(p, paint(fill))
+            if stroke is not None:
+                cc.drawPath(p, paint(stroke, sw))
+        if getattr(self, "_settled", False):
+            design.sprite(c, key, x0, y0, max(xs) - x0, max(ys) - y0, fn, 1.0, pad=sw + 2)
+            return
         p = skia.Path()
         p.moveTo(*pts[0])
         for q in pts[1:]:
@@ -623,29 +669,35 @@ class Isometric(Treatment):
         left = [I(gx, gy + sy, z0 + sz), I(gx + sx, gy + sy, z0 + sz), I(gx + sx, gy + sy, z0), I(gx, gy + sy, z0)]
         right = [I(gx + sx, gy, z0 + sz), I(gx + sx, gy + sy, z0 + sz), I(gx + sx, gy + sy, z0), I(gx + sx, gy, z0)]
         e = col(edge or base, a)
-        self.poly(c, left, col(base, 0.30 * a), e)
-        self.poly(c, right, col(base, 0.18 * a), e)
-        self.poly(c, top, col(base, 0.48 * a), e)
+        dark = self.sc.tpl.dark
+        self.poly(c, left, col(base, (0.42 if dark else 0.55) * a), e, 2.5)
+        self.poly(c, right, col(base, (0.26 if dark else 0.35) * a), e, 2.5)
+        self.poly(c, top, col(base, (0.62 if dark else 0.8) * a), e, 2.5)
+
+    def _label(self, c, s, sub, x, y, align, a, size=44, sub_color=None):
+        T = self.sc.T
+        maxw = 420.0 if not self.portrait else 300.0
+        rows, sz = design.fit_block(s, maxw, 2, size, 36, "SemiBold")
+        srows, ss = design.fit_block(sub, maxw, 2, 32, 30) if sub else ([], 30)
+        bw = max([design.text_width(r, sz, "SemiBold") for r in rows] + [design.text_width(r, ss) for r in srows])
+        bh = len(rows) * sz * 1.08 + (len(srows) * ss * 1.15 + 14 if sub else 0) + 14
+        bx = x - 12 if align == "left" else x - bw - 12
+        c.drawRoundRect(skia.Rect.MakeXYWH(bx, y - sz * 0.95, bw + 24, bh), 12, 12,
+                        paint(col(T_bg(self.sc), 0.9 * a)))
+        for j, r in enumerate(rows):
+            design.draw_text(c, r, x, y + j * sz * 1.08, sz, col(T["text"], a), "SemiBold", align)
+        yy = y + (len(rows) - 1) * sz * 1.08
+        if sub:
+            for j, r in enumerate(srows):
+                design.draw_text(c, r, x, yy + 44 + j * ss * 1.15, ss, col(sub_color or T["text2"], a), "Regular", align)
 
     def draw(self, c, t):
-        sc, T = self.sc, self.sc.T
+        sc, T, tpl = self.sc, self.sc.T, self.sc.tpl
         I = self.iso
-        if self.lb:
-            a = sc.vis(self.lb["id"], t)
-            hl = sc.highlight(self.lb["id"], t)
-            if a > 0.01 and self.portrait:
-                self.cuboid(c, -3.9, -3.9, 2.6, 2.6, 0.7, T["accent"], a * (0.75 + 0.25 * hl), z0=0.3 - (1 - a) * 1.2)
-                lx, ly = I(-1.3, -3.9, 1.0)
-                text(c, self.lb.get("label", "Load balancer"), lx + 34, ly + 6, font(30, "SemiBold"), col(T["text"], a))
-                if self.lb.get("sub"):
-                    text(c, self.lb["sub"], lx + 34, ly + 40, font(22), col(T["text2"], a))
-            elif a > 0.01:
-                self.cuboid(c, 0, -3.8, self.span, 1.6, 0.7, T["accent"], a * (0.75 + 0.25 * hl), z0=0.3 - (1 - a) * 1.2)
-                lx, ly = I(self.span / 2, -3.8, 1.0)
-                text(c, self.lb.get("label", "Load balancer"), lx + 40, ly - 96, font(30, "SemiBold"), col(T["text"], a), "center")
-                if self.lb.get("sub"):
-                    text(c, self.lb["sub"], lx + 40, ly - 62, font(22), col(T["text2"], a), "center")
+        icon_tone = lambda k: KIND_COLOR.get(k, "accent") if tpl.icon["style"] in ("pastel", "tint") else None
         pulse = sc.latest("pulse", t)
+        ids = [z["id"] for z in self.zones] + [n["id"] for n in self.nodes] + ([self.lb["id"]] if self.lb else [])
+        self._settled = all(sc.vis(i, t) >= 0.999 for i in ids)
         for i, z in enumerate(self.zones):
             a = sc.vis(z["id"], t)
             if a <= 0.01:
@@ -653,19 +705,24 @@ class Isometric(Treatment):
             gx, gy = self.zone_origin(i)
             drop = (1 - a) * 1.0
             plate = [I(gx, gy, -drop), I(gx + 3.4, gy, -drop), I(gx + 3.4, gy + 3.4, -drop), I(gx, gy + 3.4, -drop)]
-            self.poly(c, plate, col(T["panel"], 0.95 * a), col(T["line"], a), 2)
-            if self.portrait:                              # label on the outer side of the zig-zag
-                if i % 2:
-                    lx, ly = I(gx + 3.4, gy, -drop)
-                    text(c, z.get("label", ""), lx + 24, ly + 50, font(24, "Medium"), col(T["text2"], a))
+            self.poly(c, plate, col(T["panel"], 0.95 * a), col(T["line"] if not tpl.legacy else T["text2"], a), 3)
+            lx, ly = I(gx + 3.4, gy + 3.4, -drop)
+            fx, fy = I(gx, gy + 3.4, -drop)
+            design.draw_text(c, z.get("label", ""), (lx + fx) / 2 - 20, ly + 56, 36, col(T["text2"], a), "SemiBold", "center")
+        if self.lb:
+            a = sc.vis(self.lb["id"], t)
+            hl = sc.highlight(self.lb["id"], t)
+            if a > 0.01:
+                hx, hy, hw, hd = self._hub_box()
+                self.cuboid(c, hx, hy, hw, hd, 0.7, T["accent"], a * (0.8 + 0.2 * hl), z0=0.3 - (1 - a) * 1.2)
+                bx, by = I(hx + hw / 2, hy + hd / 2, 1.0)
+                design.badge(c, tpl, assets.icon_for(self.lb), bx, by - self.R - 6, self.R, a, hl, tone=icon_tone(self.lb.get("kind")), seed=3)
+                if self.portrait:
+                    self._label(c, self.lb.get("label", "Hub"), self.lb.get("sub"), bx + self.R + 26, by - self.R + 10, "left", a)
                 else:
-                    lx, ly = I(gx, gy + 3.4, -drop)
-                    text(c, z.get("label", ""), lx - 24, ly + 50, font(24, "Medium"), col(T["text2"], a), "right")
-            else:
-                lx, ly = I(gx + 1.7, 3.4, -drop)
-                text(c, z.get("label", ""), lx, ly + 44, font(24, "Medium"), col(T["text2"], a), "center")
+                    self._label(c, self.lb.get("label", "Hub"), self.lb.get("sub"), bx + self.R + 30, by - self.R + 10, "left", a)
         for nd in self.nodes:
-            zi = next((i for i, z in enumerate(self.zones) if z["id"] == nd.get("zone")), 0)
+            zi = self._zone_index(nd)
             a = sc.vis(nd["id"], t)
             if a <= 0.01:
                 continue
@@ -677,71 +734,81 @@ class Isometric(Treatment):
             base = T["green"] if healthy else T["red"]
             zgx, zgy = self.zone_origin(zi)
             gx, gy = zgx + 0.9, zgy + 0.9
-            self.cuboid(c, gx, gy, 1.6, 1.6, 1.25, base if (healthy or hl) else T["text2"], a * (1.0 if healthy else 0.5),
+            self.cuboid(c, gx, gy, 1.6, 1.6, 1.25, base if (healthy or hl) else T["text2"], a * (1.0 if healthy else 0.7),
                         edge=T["accent"] if hl > 0.3 else None, z0=(1 - a) * 1.5)
             cx, cy = I(gx + 0.8, gy + 0.8, 1.25)
             if hl > 0.05:
-                p = skia.Paint(AntiAlias=True, Color=col(T["accent"], 0.5 * hl))
-                p.setMaskFilter(skia.MaskFilter.MakeBlur(skia.kNormal_BlurStyle, 26))
-                c.drawCircle(cx, cy, 70, p)
-            if self.portrait:                              # name and state on the outer side, level with the node
-                right = bool(zi % 2)
-                lx, ly = I(zgx + 3.4, zgy, 0.0) if right else I(zgx, zgy + 3.4, 0.0)
-                lx, ly, al = lx + (24 if right else -24), cy + 10, ("left" if right else "right")
-                text(c, nd.get("label", ""), lx, ly, font(26, "SemiBold"), col(T["text"], a), al)
-                hy = ly - 36
-            else:
-                lx, ly = I(gx + 0.8, 1.7, 1.25)
-                text(c, nd.get("label", ""), lx, ly - 64, font(24, "SemiBold"), col(T["text"], a), "center")
-                al, hy = "center", ly - 96
-            if pulse:
+                design.halo(c, cx, cy, 90, T["accent"], 0.5 * hl)
+            if pulse and self.lb:
                 k = clamp((t - pulse["t"]) / (1.4 * sc.motion))
-                if self.lb and 0 < k:
+                if k > 0:
                     x0, y0 = self.center(self.lb["id"])
-                    x1, y1 = self.center(nd["id"])
-                    kk = ease(clamp(k * 1.6))
-                    c.drawLine(x0, y0, lerp(x0, x1, kk), lerp(y0, y1, kk),
-                               paint(col(T["green"] if healthy else T["red"], 0.55 * a), 2.5))
-                    if k > 0.6:
-                        ma = ease((k - 0.6) / 0.3)
-                        sl = sc.spec.get("state_labels") or {}
-                        text(c, sl.get("healthy", "healthy") if healthy else sl.get("unhealthy", "failing health check"), lx, hy, font(21, "Medium"),
-                             col(T["green"] if healthy else T["red"], ma * a), al)
+                    p = skia.Path()
+                    p.moveTo(x0, y0)
+                    p.lineTo(cx, cy - 2 * self.R - 24)
+                    design.stroke(c, tpl, p, a, ease(clamp(k * 1.6)), dashed=True,
+                                  color=design.role_color(tpl, "success" if healthy else "fail"), seed=zi, arrow=True)
+            design.badge(c, tpl, assets.icon_for(nd), cx, cy - self.R - 14, self.R, a, hl, tone=icon_tone(nd.get("kind")), seed=zi + 5)
+            sl = sc.spec.get("state_labels") or {}
+            state = None
+            if pulse and clamp((t - pulse["t"]) / (1.4 * sc.motion)) > 0.6:
+                state = sl.get("healthy", "healthy") if healthy else sl.get("unhealthy", "failing health check")
+            lx = cx + self.R + 24
+            stc = design.text_on(tpl, design.role_color(tpl, "success" if healthy else "fail"), T["bg0"] if tpl.dark else "#FFFFFF")
+            self._label(c, nd.get("label", ""), state, lx, cy - self.R - 14, "left", a, sub_color=stc)
         self.draw_packets(c, t, self.center)
+
+    def draw_packets(self, c, t, endpoint):
+        for e, k in self.sc.packets(t):
+            ax, ay = endpoint(e["from"])
+            bx, by = endpoint(e["to"])
+            kk = ease_io(clamp(k))
+            packet_dot(c, self.sc, lerp(ax, bx, kk), lerp(ay, by, kk), 1 - clamp((k - 1) / 0.4) if k > 1 else 1.0)
 
 
 class Cutaway(Treatment):
+    """Inside one component: a framed shell with its name, the front end (with code lines), a router or index in the
+    middle and the workers or stores it reaches. Every part carries an icon badge."""
+
     def layout(self):
         sc = self.sc
         els = sc.spec.get("elements", [])
         self.ng = next((e for e in els if e.get("kind") in CUT_PANEL), None)
         self.svc = next((e for e in els if e.get("kind") in CUT_ROUTER), None)
         self.pods = [e for e in els if e.get("kind") in CUT_WORKER]
-        if self.portrait:                                  # ingress on top, Service in the middle, pods in a row below
+        top = design.content_top(sc.spec, self.portrait)
+        if self.portrait:
+            self.shell = (60.0, top, 960.0, design.PORTRAIT_BAND[1] - 10 - top)
+            y = top + 96
             if self.ng:
-                self.pos[self.ng["id"]] = (100, 450, 880, 290)
+                self.pos[self.ng["id"]] = (100, y, 880, 360)
+            y += 360 + 70
             if self.svc:
-                self.pos[self.svc["id"]] = (390, 810, 300, 92)
+                self.pos[self.svc["id"]] = (240, y, 600, 150)
+            y += 150 + 70
             n = max(1, len(self.pods))
-            pw = (880 - (n - 1) * 24) / n
+            pw = (880 - (n - 1) * 30) / n
+            ph = min(300.0, top + self.shell[3] - 30 - y)
             for i, p in enumerate(self.pods):
-                self.pos[p["id"]] = (100 + i * (pw + 24), 990, pw, 124)
-            self.pos["_in"] = (530, 330, 20, 20)
+                self.pos[p["id"]] = (100 + i * (pw + 30), y, pw, ph)
+            self.pos["_in"] = (530, top - 40, 20, 20)
             return
+        self.shell = (100.0, top, 1720.0, 1010 - top)
         if self.ng:
-            self.pos[self.ng["id"]] = (250, 330, 640, 330)
+            self.pos[self.ng["id"]] = (150, top + 110, 760, 1010 - top - 160)
         if self.svc:
-            self.pos[self.svc["id"]] = (1010, 236, 300, 92)
+            self.pos[self.svc["id"]] = (970, top + 110, 420, 150)
         n = max(1, len(self.pods))
-        ph = min(130, (470 - (n - 1) * 26) / n)
+        avail = 1010 - top - 160
+        ph = min(260.0, (avail - (n - 1) * 30) / n)
         for i, p in enumerate(self.pods):
-            self.pos[p["id"]] = (1400, 372 + i * (ph + 26), 300, ph)
-        self.pos["_in"] = (40, 500, 20, 20)
+            self.pos[p["id"]] = (1420, top + 110 + i * (ph + 30), 360, ph)
+        self.pos["_in"] = (40, 540, 20, 20)
 
     def camera(self, t):
         sc = self.sc
         k = ease_io(t / 0.9)
-        base = lerp(1.14, 1.0, k)
+        base = lerp(1.06, 1.0, k)
         zf = sc.latest("zoom", t)
         if zf and zf.get("target") in self.pos:
             kk = ease_io((t - zf["t"]) / 0.9)
@@ -755,121 +822,143 @@ class Cutaway(Treatment):
         return x + w / 2, y + h / 2
 
     def draw(self, c, t):
-        sc, T = self.sc, self.sc.T
+        sc, T, tpl = self.sc, self.sc.T, self.sc.tpl
         a0 = ease(t / 0.5)
-        shell = skia.Rect.MakeXYWH(50, 360, 980, 890) if self.portrait else skia.Rect.MakeXYWH(170, 150, 1600, 740)
+        sx, sy, sw, sh = self.shell
 
-        def shell_fn(cc, w=shell.width(), h=shell.height()):
+        def shell_fn(cc, w=sw, h=sh):
             rr = skia.Rect.MakeWH(w, h)
-            cc.drawRoundRect(rr, 28, 28, paint(col(T["panel"], 0.55)))
-            dash = paint(col(T["line"]), 3)
-            dash.setPathEffect(skia.DashPathEffect.Make([18, 12], 0))
+            cc.drawRoundRect(rr, 28, 28, paint(col(T["panel"], 0.5)))
+            dash = paint(col(T["text2"] if not tpl.dark else T["line"]), 4)
+            dash.setPathEffect(skia.DashPathEffect.Make([22, 14], 0))
             cc.drawRoundRect(rr, 28, 28, dash)
-        design.sprite(c, ("shell", sc.tpl.name), shell.left(), shell.top(), shell.width(), shell.height(), shell_fn, a0, pad=4)
-        lx, ly = (86, 412) if self.portrait else (206, 204)
-        text(c, sc.spec.get("container_label", ""), lx, ly, font(28, "SemiBold"), col(T["text2"], a0))
+        design.sprite(c, ("shell", tpl.name, sw, sh), sx, sy, sw, sh, shell_fn, a0, pad=4)
+        design.draw_text(c, sc.spec.get("container_label", ""), sx + 40, sy + 66, 44, col(T["text"], a0), "Bold")
         dim = sc.any_highlight(t)
+        lk = sc.latest("lookup", t)
+        flash = math.sin(clamp((t - lk["t"]) / 1.2) * math.pi) if lk else 0.0
         if self.ng:
             eid = self.ng["id"]
             x, y, w, h = self.pos[eid]
             a, hl = sc.vis(eid, t), sc.highlight(eid, t)
-            box(c, sc, x, y, w, h, self.ng.get("label", "Component"), self.ng.get("kind", "nginx"), a, hl, dim, radius=22)
+            design.card(c, tpl, x, y, w, h, a, hl, dim, seed=4)
+            R = 60.0
+            design.badge(c, tpl, assets.icon_for(self.ng), x + 30 + R, y + 30 + R, R, a, hl,
+                         tone=KIND_COLOR.get(self.ng.get("kind"), "accent") if tpl.icon["style"] in ("pastel", "tint") else None, seed=4)
+            rows, sz = design.fit_block(self.ng.get("label", "Component"), w - 2 * R - 90, 2, 44, 36, "SemiBold")
+            for j, r in enumerate(rows):
+                design.draw_text(c, r, x + 2 * R + 56, y + 30 + R + 14 - (len(rows) - 1) * sz * 0.55 + j * sz * 1.1, sz, col(T["text"], a), "SemiBold")
             code = sc.spec.get("code", [])
             cl = sc.latest("code", t)
+            cy0 = y + 2 * R + 100
             for i, line in enumerate(code):
-                ly = y + 120 + i * 50
+                ly = cy0 + i * 58
                 shown = ease((t - (sc.show_at.get(eid, 0) + 0.3 + 0.12 * i)) / 0.4) * a
                 active = cl is not None and i in cl.get("lines", [])
                 if active:
                     k = ease((t - cl["t"]) / 0.3)
-                    c.drawRoundRect(skia.Rect.MakeXYWH(x + 22, ly - 34, w - 44, 46), 8, 8, paint(col(T["green"], 0.22 * k * a)))
-                text(c, line, x + 40, ly, font(27, mono=True),
-                     col(T["text"] if active else T["text2"], shown * (1 - 0.45 * dim * (0 if active else 1))))
+                    c.drawRoundRect(skia.Rect.MakeXYWH(x + 22, ly - 40, w - 44, 54), 8, 8, paint(col(T["green"], 0.22 * k * a)))
+                f = design.make_font(design.fit_size(line, w - 80, 34, 30, mono=True), mono=True)
+                text(c, design.ellipsize(line, w - 80, f.getSize(), mono=True), x + 40, ly, f, col(T["text"] if active or not dim else T["text2"], shown))
         if self.svc:
             eid = self.svc["id"]
             x, y, w, h = self.pos[eid]
             a, hl = sc.vis(eid, t), sc.highlight(eid, t)
             if a > 0.01:
                 r = skia.Rect.MakeXYWH(x, y, w, h)
-                if hl > 0:
-                    glow(c, r, 46, col(T["amber"], 0.45 * hl * a), 20)
-                dp = paint(col(T["amber"], a), 3)
-                dp.setPathEffect(skia.DashPathEffect.Make([12, 9], 0))
-                c.drawRoundRect(r, 46, 46, paint(col(T["panel"], a)))
-                c.drawRoundRect(r, 46, 46, dp)
-                text(c, self.svc.get("label", "Service"), x + w / 2, y + 56, font(27, "SemiBold"), col(T["text"], a), "center")
+                amb = T["amber"]
+                if hl > 0 or flash > 0:
+                    design.soft_shadow(c, x, y, w, h, h / 2, amb, 0.45 * max(hl, flash) * a, 20)
+                dp = paint(col(amb, a), 4)
+                dp.setPathEffect(skia.DashPathEffect.Make([16, 11], 0))
+                c.drawRoundRect(r, h / 2, h / 2, paint(col(T["panel"], a)))
+                c.drawRoundRect(r, h / 2, h / 2, dp)
+                R = 48.0
+                design.badge(c, tpl, assets.icon_for(self.svc), x + 30 + R, y + h / 2, R, a, hl,
+                             tone="amber" if tpl.icon["style"] in ("pastel", "tint") else None, seed=6)
+                lab = self.svc.get("label", "Service")
+                sz = design.fit_size(lab, w - 2 * R - 90, 44, 30, "SemiBold")
+                design.draw_text(c, design.ellipsize(lab, w - 2 * R - 90, sz, "SemiBold"), x + 2 * R + 56, y + h / 2 + sz * 0.36, sz, col(T["text"], a), "SemiBold")
                 st = sc.latest("strike", t)
                 if st:
                     k = ease((t - st["t"]) / 0.5)
                     bx, by = x + w + 30, y + 8
-                    text(c, st.get("text", "a program?"), bx, by + 34, font(26, "Medium"), col(T["text2"], k * a))
-                    wd = font(26, "Medium").measureText(st.get("text", "a program?"))
+                    text(c, st.get("text", "a program?"), bx, by + 40, font(32, "Medium"), col(T["text2"], k * a))
+                    wd = font(32, "Medium").measureText(st.get("text", "a program?"))
                     k2 = ease((t - st["t"] - 0.7) / 0.35)
-                    c.drawLine(bx - 6, by + 25, bx - 6 + (wd + 12) * k2, by + 25, paint(col(T["red"], a), 4))
-                lk = sc.latest("lookup", t)
-                for p in self.pods:
+                    c.drawLine(bx - 6, by + 30, bx - 6 + (wd + 12) * k2, by + 30, paint(col(T["red"], a), 5))
+                for i, p in enumerate(self.pods):
                     px, py, pw, ph = self.pos[p["id"]]
-                    la = a * sc.vis(p["id"], t) * 0.8
-                    flash = 0.0
-                    if lk:
-                        flash = math.sin(clamp((t - lk["t"]) / 1.2) * math.pi)
-                    lp = paint(col(T["amber"], la * (0.45 + 0.55 * flash)), 2 + 2 * flash)
-                    lp.setPathEffect(skia.DashPathEffect.Make([6, 8], -t * 30))
+                    la = a * sc.vis(p["id"], t)
+                    path = skia.Path()
                     if self.portrait:
-                        c.drawLine(x + w / 2, y + h, px + pw / 2, py, lp)
+                        path.moveTo(x + w / 2, y + h + 8)
+                        path.lineTo(px + pw / 2, py - 10)
                     else:
-                        c.drawLine(x + w / 2 + 60, y + h, px, py + ph / 2, lp)
-                if lk and self.ng:
-                    flash = math.sin(clamp((t - lk["t"]) / 1.2) * math.pi)
+                        path.moveTo(x + w / 2, y + h + 8)
+                        path.lineTo(x + w / 2, py + ph / 2)
+                        path.lineTo(px - 10, py + ph / 2)
+                        path = design.ortho_path([(x + w / 2, y + h + 8), (x + w / 2, py + ph / 2), (px - 10, py + ph / 2)], 22)
+                    design.stroke(c, tpl, path, la * (0.75 + 0.25 * flash), 1.0, dashed=True, color=amb, seed=i, flow=t)
+                if self.ng:
                     nx, ny, nw, nh = self.pos[self.ng["id"]]
-                    lp = paint(col(T["amber"], a * flash), 3)
-                    lp.setPathEffect(skia.DashPathEffect.Make([6, 8], -t * 30))
+                    path = skia.Path()
                     if self.portrait:
-                        c.drawLine(nx + nw / 2, ny + nh, x + w / 2, y, lp)
+                        path.moveTo(nx + nw / 2, ny + nh + 8)
+                        path.lineTo(x + w / 2, y - 10)
                     else:
-                        c.drawLine(nx + nw, ny + 60, x, y + h / 2, lp)
+                        path.moveTo(nx + nw + 8, y + h / 2)
+                        path.lineTo(x - 10, y + h / 2)
+                    design.stroke(c, tpl, path, a, 1.0, color=amb if flash > 0 else None, seed=9)
         for p in self.pods:
             eid = p["id"]
             x, y, w, h = self.pos[eid]
-            box(c, sc, x, y, w, h, p.get("label", "Worker"), p.get("kind", "pod"), sc.vis(eid, t), sc.highlight(eid, t), dim, sub=p.get("sub"), mono_sub=True)
+            box(c, sc, x, y, w, h, p.get("label", "Worker"), p.get("kind", "pod"), sc.vis(eid, t), sc.highlight(eid, t), dim,
+                sub=p.get("sub"), icon=p.get("icon"), R=52.0 if not self.portrait else 56.0,
+                vertical=self.portrait)
         self.draw_packets(c, t, self.edge_point)
 
 
 class Chart(Treatment):
+    """Bars with value labels on top and category labels under them; the spec's title is the scene heading."""
+
     def draw(self, c, t):
-        sc, T = self.sc, self.sc.T
+        sc, T, tpl = self.sc, self.sc.T, self.sc.tpl
         data = sc.spec.get("data", [])
         if not data:
             return
         mx = max(d["value"] for d in data) or 1
         n = len(data)
+        title = sc.spec.get("heading") or sc.spec.get("title")
+        top = design.content_top(dict(sc.spec, heading=title), self.portrait)
+        if title and not sc.spec.get("heading"):
+            design.draw_heading(c, tpl, title, self.portrait, ease(t / 0.5))
+        acc = T["accent"]
         if self.portrait:
-            bw = min(150, 820 / n * 0.6)
-            gap = (900 - n * bw) / max(1, n)
-            a0 = ease(t / 0.5)
-            for j, row in enumerate(wrap(sc.spec.get("title", ""), font(44, "SemiBold"), 900)):
-                text(c, row, 90, 420 + j * 54, font(44, "SemiBold"), col(T["text"], a0))
-            c.drawLine(80, 1150, 1000, 1150, paint(col(T["line"]), 2))
-            for i, d in enumerate(data):
-                k = ease((t - 0.4 - i * 0.18 * sc.motion) / 0.8)
-                h = 600 * d["value"] / mx * k
-                x = 90 + gap / 2 + i * (bw + gap)
-                c.drawRoundRect(skia.Rect.MakeXYWH(x, 1150 - h, bw, h), 8, 8, paint(col(T["accent"] if d.get("accent") else T["blue"], 0.9)))
-                for j, row in enumerate(wrap(d["label"], font(24), bw + gap - 12)):
-                    text(c, row, x + bw / 2, 1192 + j * 28, font(24), col(T["text2"], k), "center")
-                text(c, str(d["value"]), x + bw / 2, 1150 - h - 16, font(26, "SemiBold"), col(T["text"], k), "center")
-            return
-        bw = min(180, 1300 / n * 0.6)
-        gap = (1400 - n * bw) / max(1, n)
-        text(c, sc.spec.get("title", ""), 260, 220, font(44, "SemiBold"), col(T["text"], ease(t / 0.5)))
-        c.drawLine(250, 860, 1670, 860, paint(col(T["line"]), 2))
+            x0, x1, base = 90.0, 990.0, design.PORTRAIT_BAND[1] - 150
+        else:
+            x0, x1, base = 200.0, 1720.0, 900.0
+        bw = min(220.0 if not self.portrait else 200.0, (x1 - x0) / n * 0.62)
+        slot = (x1 - x0) / n
+        hmax = base - top - 80
+        c.drawLine(x0 - 20, base, x1 + 20, base, paint(col(T["text2"]), 3))
         for i, d in enumerate(data):
             k = ease((t - 0.4 - i * 0.18 * sc.motion) / 0.8)
-            h = 560 * d["value"] / mx * k
-            x = 260 + gap / 2 + i * (bw + gap)
-            c.drawRoundRect(skia.Rect.MakeXYWH(x, 860 - h, bw, h), 8, 8, paint(col(T["accent"] if d.get("accent") else T["blue"], 0.9)))
-            text(c, d["label"], x + bw / 2, 904, font(24), col(T["text2"], k), "center")
-            text(c, str(d["value"]), x + bw / 2, 860 - h - 16, font(26, "SemiBold"), col(T["text"], k), "center")
+            h = hmax * d["value"] / mx * k
+            cx = x0 + slot * (i + 0.5)
+            colr = acc if d.get("accent") else T["blue"]
+            r = skia.Rect.MakeXYWH(cx - bw / 2, base - h, bw, h)
+            if tpl.jitter:
+                p = skia.Path()
+                p.addRect(r)
+                c.drawPath(p, paint(col(colr, 0.85)))
+                c.drawPath(design.sketchify(p, i, tpl.jitter), paint(col("#2A2A2A"), 3))
+            else:
+                c.drawRoundRect(r, 10, 10, paint(col(colr, 0.95)))
+            rows, sz = design.fit_block(d["label"], slot - 20, 2, 32, 30)
+            for j, row in enumerate(rows):
+                design.draw_text(c, row, cx, base + 48 + j * sz * 1.15, sz, col(T["text2"], k), "Regular", "center")
+            design.draw_text(c, str(d["value"]), cx, base - h - 20, 44, col(T["text"], k), "Bold", "center")
 
 
 TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cutaway": Cutaway, "chart": Chart}
@@ -944,8 +1033,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
     # overlays, not affected by the camera
     title = sc.spec.get("heading")
     if title:
-        a = ease((t - 0.2) / 0.5)
-        text(canvas, title, 96, 112, font(30, "Medium"), col(T["text2"], a))
+        design.draw_heading(canvas, sc.tpl, title, False, ease((t - 0.2) / 0.5))
     cnt = sc.latest("count", t)
     if cnt:
         k = ease((t - cnt["t"]) / 0.4)
@@ -1015,8 +1103,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     canvas.restore()
     title = sc.spec.get("heading")
     if title:
-        a = ease((t - 0.2) / 0.5)
-        text(canvas, title, 64, 262, font(32, "Medium"), col(T["text2"], a))
+        design.draw_heading(canvas, sc.tpl, title, True, ease((t - 0.2) / 0.5))
     cnt = sc.latest("count", t)
     if cnt:
         k = ease((t - cnt["t"]) / 0.4)
@@ -1061,6 +1148,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
 def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase") -> Treatment:
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
+    design.set_active(sc.tpl)                              # layouts measure text in the template's fonts
     sc.caption_style = caption_style if caption_style in CAPTION_STYLES else "phrase"
     if portrait:                                           # shorter caption cues for a narrow frame
         sc.captions = [dict(c, s=c["s"] + sc.pad0, e=c["e"] + sc.pad0) for c in caption_chunks(timing, 30)]
@@ -1104,3 +1192,7 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
         if proc.poll() is None:
             proc.kill()
     return {"duration": n / fps, "frames": n}
+
+
+def T_bg(sc) -> str:
+    return sc.T["bg0"] if sc.tpl.dark else "#FFFFFF"

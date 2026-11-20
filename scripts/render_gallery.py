@@ -61,6 +61,7 @@ def main():
     ap.add_argument("--templates", default="")
     ap.add_argument("--scale", type=float, default=0.5)
     ap.add_argument("--no-sheet", action="store_true")
+    ap.add_argument("--thumbs", action="store_true", help="also render every tile at 270x480 / 480x270 (phone thumbnail test)")
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     tpls = [x for x in a.templates.split(",") if x] or ["premium-technical", *design.NEW_TEMPLATES]
@@ -92,6 +93,22 @@ def main():
                 im = Image.open(io.BytesIO(made[(s["id"], tp, portrait)])).convert("RGB").resize((cw, ch), Image.LANCZOS)
                 sheet.paste(im, (150 + pad + j * (cw + pad), head + pad + i * (ch + pad)))
         sheet.save(OUT / f"contact-{'9x16' if portrait else '16x9'}.png")
+    if a.thumbs:
+        thumb_sheets(scs, tpls)
+
+
+def thumb_sheets(scs, tpls):
+    """The thumbnail test: every tile rendered (not downscaled) at 270x480 or 480x270 and laid out 1:1, so what is
+    unreadable at phone-feed size is unreadable on the sheet too. Output: docs/style-gallery/thumbs-*.png."""
+    for portrait in (False, True):
+        tw, th = (270, 480) if portrait else (480, 270)
+        pad = 6
+        sheet = Image.new("RGB", (len(tpls) * (tw + pad) + pad, len(scs) * (th + pad) + pad), "#202226")
+        for i, s in enumerate(scs):
+            for j, tp in enumerate(tpls):
+                im = Image.open(io.BytesIO(render(s, tp, portrait, 0.25))).convert("RGB")
+                sheet.paste(im, (pad + j * (tw + pad), pad + i * (th + pad)))
+        sheet.save(OUT / f"thumbs-{'9x16' if portrait else '16x9'}.png")
 
 
 if __name__ == "__main__":

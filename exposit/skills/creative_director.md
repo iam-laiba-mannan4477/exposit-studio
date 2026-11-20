@@ -19,9 +19,23 @@ Method
 3. Judge each for engagement, teaching fit, accuracy risk and feasibility on the user's hardware (8 GB RAM, CPU only, no paid services unless the budget allows). Use words: strong, medium, weak / low, medium, high.
 4. Choose one. Say why, and why the others lost. You may borrow one element from a loser.
 5. Record decisions. Each has key, choice, reason and an evidence tier: `verified` (measured on the user's own videos), `preference` (the user asked for it), `observation` (seen in research), `hypothesis` (reasoned, untested), `experiment` (the one untested idea being tried in this video). Never mark something verified without data.
-6. Plan the scenes: title, treatment, seconds, purpose. Treatments available: kinetic (typography, optional browser bar), flow2d (network-flow map), isometric (zones, nodes, load balancer), cutaway (inside a node: ingress, service, pods), chart (bars). Use a treatment where its form carries meaning. Use 3D-looking depth only where depth is the idea.
-7. List likely drop-off points as hypotheses, each with a countermeasure.
-8. Accuracy outranks engagement. The hook must be true and backed by a claim.
+6. Plan the scenes: title, treatment, seconds, purpose. Treatments available: iconflow (icon badges joined by
+   connectors), map (places, arcs, legend), sequence (protocol messages between actors), cards (title card or benefit
+   cards), compare (hit versus miss, before versus after), stat (one sourced number), kinetic (typography, optional
+   browser bar), flow2d (a chain of component cards), isometric (one front element, groups behind it), cutaway (inside
+   one component), chart (bars). Use a treatment where its form carries meaning. Use 3D-looking depth only where depth
+   is the idea. Vary treatments scene by scene: never more than two scenes in a row with the same treatment (the gate
+   checks this).
+7. Choose ONE template for the whole video and say why in `template_reason`: noir-network (dark, glowing; the default
+   for Reels and Shorts), paper (light, crisp; the default for 16:9 explainers and courses), blueprint (technical
+   drawing), sketch (hand-drawn, informal), premium-technical (dark, flat). The user may override it in Export; their
+   choice in the brief wins unless it is "auto".
+8. List likely drop-off points as hypotheses, each with a countermeasure.
+9. Accuracy outranks engagement. The hook must be true and backed by a claim.
+
+Audience: senior engineers unless the brief says otherwise. Precise labels, real protocol and product names (TLS 1.3,
+HTTP/2, Cache-Control, us-east-1), exact terms over friendly ones, and no cartoon metaphors (no "mailman" packets, no
+"traffic cop" load balancers). The picture shows the real mechanism.
 
 Decision keys to cover: audience, learning_objective, hook, structure, explanation_technique, visual_style, animation, narration, pacing, transitions, ending, tools.
 
@@ -31,7 +45,8 @@ Output shape
  "chosen": "A. ...", "hook": "...", "narrative_structure": "...", "visual_direction": "...", "narration_approach": "...",
  "scene_breakdown": [{"title": "Hook", "treatment": "kinetic", "seconds": 6, "purpose": "..."}],
  "tools": ["Exposit renderer", "Kokoro voice"], "decisions": [{"key": "hook", "choice": "...", "reason": "...", "tier": "hypothesis"}],
- "dropoff": [{"where": "...", "why": "...", "countermeasure": "..."}], "experiment": "...", "recipes_used": ["recipe ids"]}
+ "dropoff": [{"where": "...", "why": "...", "countermeasure": "..."}], "experiment": "...", "recipes_used": ["recipe ids"],
+ "template": "noir-network", "template_reason": "..."}
 
 
 ## Vertical videos (brief.format "9:16")

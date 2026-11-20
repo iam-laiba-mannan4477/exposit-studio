@@ -115,7 +115,7 @@ export function NewProduction() {
   const settings = useApi('/settings')
   const health = useApi('/health')
   const [act, busy] = useAct()
-  const [f, setF] = useState({ topic: '', title: '', audience: 'decide', duration: 60, format: '16:9', quality: '1080p', theme: 'premium-technical', voice: '', voice_speed: 1.0, review_mode: 'final_only', objective: '' })
+  const [f, setF] = useState({ topic: '', title: '', audience: 'decide', duration: 60, format: '16:9', quality: '1080p', theme: 'auto', voice: '', voice_speed: 1.0, review_mode: 'final_only', objective: '' })
   const [audio, setAudio] = useState('')
   const set = (k, v) => setF(x => ({ ...x, [k]: v }))
   const s = settings.data
@@ -145,7 +145,7 @@ export function NewProduction() {
             <button type="button" className="choice" disabled><div className="row between"><b>1:1 square</b><Planned /></div><span>Social feeds</span></button></div>
           <div className="row"><div className="grow"><Field label="Resolution" hint="4K is not offered: it is impractical on this hardware.">
             <Seg value={f.quality} onChange={v => set('quality', v)} options={[{ value: '1080p', label: '1080p' }, { value: '720p', label: '720p, faster' }, { value: '540p', label: '540p, draft' }]} /></Field></div>
-            <div className="grow"><Field label="Theme" hint="Animation style per scene is chosen by the Creative Director and can be overridden."><select value={f.theme} onChange={e => set('theme', e.target.value)}>{(health.data?.themes || ['premium-technical']).map(t => <option key={t}>{t}</option>)}</select></Field></div></div>
+            <div className="grow"><Field label="Template" hint="One look for the whole video. The Creative Director picks one and says why (noir-network for Reels); you can change it later in Export."><select value={f.theme} onChange={e => set('theme', e.target.value)}><option value="auto">Let the Creative Director choose</option>{(health.data?.themes || ['premium-technical']).map(t => <option key={t}>{t}</option>)}</select></Field></div></div>
         </Card>
         <Card title="4. Narration">
           <div className="row" style={{ alignItems: 'flex-end' }}>

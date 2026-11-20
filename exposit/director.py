@@ -128,6 +128,7 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
     payload = {"brief": brief, "facts": facts, "library": knowledge.for_strategy(),
                "preferences": [{"title": k["title"], "body": k["body"]} for k in prefs],
                "recent_productions": recent_structures(pid), "treatments_available": schemas.TREATMENTS,
+               "templates_available": list(engine.design.NEW_TEMPLATES) + ["premium-technical"],
                "tools_available": [t["name"] for t in knowledge.tools() if t["status"] in ("adopted", "optional")],
                "hardware": "8 GB RAM, CPU only, one render at a time", "budget_paid_usd": store.get_settings()["budget_paid_usd"],
                "scout_signals": scout.signals(), "scout_signals_caveat": scout.SIGNALS_CAVEAT}
@@ -136,7 +137,10 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
     crit = [gates._crit("Three treatments compared", len(s["treatments"]) >= 3, f"{len(s['treatments'])} treatments"),
             gates._crit("One treatment chosen", any(t["name"] == s["chosen"] for t in s["treatments"]), s["chosen"]),
             gates._crit("Every decision has a reason", all(d["reason"].strip() for d in s["decisions"]) and len(s["decisions"]) >= 5, f"{len(s['decisions'])} decisions"),
-            gates._crit("Scene breakdown uses supported treatments", all(sc["treatment"] in schemas.TREATMENTS for sc in s["scene_breakdown"]))]
+            gates._crit("Scene breakdown uses supported treatments", all(sc["treatment"] in schemas.TREATMENTS for sc in s["scene_breakdown"])),
+            gates._crit("One known template, with a reason", (not s.get("template")) or (s["template"] in engine.design.TEMPLATES and bool(s.get("template_reason", "").strip())),
+                        s.get("template") or "Not chosen: the brief's template is used"),
+            gates._crit("No more than two scenes in a row with the same treatment", gates.max_run([sc["treatment"] for sc in s["scene_breakdown"]]) <= 2)]
     s = apply_overrides(s, p.get("overrides", {}))
     store.write_json(pid, "strategy/strategy.json", s)
     (store.pdir(pid) / "strategy" / "strategy.md").write_text(strategy_markdown(s, p["title"]), encoding="utf-8")
@@ -208,7 +212,7 @@ def render_settings(pid: str) -> dict:
         w, h = int(w * 2 / 3) // 2 * 2, int(h * 2 / 3) // 2 * 2
     if q == "540p":
         w, h = w // 2, h // 2
-    return {"w": w, "h": h, "fps": int(b.get("fps", config.FPS)), "theme": b.get("theme", "premium-technical"),
+    return {"w": w, "h": h, "fps": int(b.get("fps", config.FPS)), "theme": resolve_template(pid, b),
             "captions": bool(s.get("burn_captions", True)), "caption_style": s.get("caption_style", "phrase") if s.get("caption_style") in engine.CAPTION_STYLES else "phrase", "voice": b.get("voice") or s["voice"], "speed": float(b.get("voice_speed") or s["voice_speed"]),
             "music": bool(s.get("music", True)), "sfx": bool(s.get("sfx", True))}
 
@@ -238,6 +242,17 @@ def scene_hashes(pid: str) -> list[dict]:
         if extra:
             o["clip_hash"] = store.sha("clip+", base[i], extra)
     return out
+
+
+def resolve_template(pid: str, b: dict) -> str:
+    """The brief's template; "auto" means the Creative Director's choice, else noir-network for 9:16 and paper for 16:9."""
+    t = b.get("theme", "premium-technical")
+    if t != "auto":
+        return t if t in engine.design.TEMPLATES else "premium-technical"
+    chosen = (store.read_json(pid, "strategy/strategy.json", {}) or {}).get("template", "")
+    if chosen in engine.design.TEMPLATES:
+        return chosen
+    return "noir-network" if b.get("format") == "9:16" else "paper"
 
 
 def plan(pid: str) -> dict:

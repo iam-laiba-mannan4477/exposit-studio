@@ -4,7 +4,8 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field
 
 Tier = Literal["verified", "preference", "observation", "hypothesis", "experiment"]
-TREATMENTS = ["kinetic", "flow2d", "isometric", "cutaway", "chart"]
+TREATMENTS = ["iconflow", "map", "sequence", "cards", "compare", "stat",
+              "kinetic", "flow2d", "isometric", "cutaway", "chart"]
 
 
 class Source(BaseModel):
@@ -92,6 +93,8 @@ class Strategy(BaseModel):
     dropoff: list[Dropoff] = []
     experiment: str = ""
     recipes_used: list[str] = []
+    template: str = ""                 # one template for the whole video (design.TEMPLATES)
+    template_reason: str = ""
 
 
 class Sentence(BaseModel):

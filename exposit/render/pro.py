@@ -227,7 +227,7 @@ class IconFlow(ProTreatment):
                 self._label_side(c, e, cx, cy, ease_out(k), hl, dim)
             else:
                 a = ease_out((k - 0.2) / 0.8)                  # labels are never dimmed
-                yb = D.label_under(c, tpl, e.get("label", eid), cx, cy + self.r + 16, self._maxw(), self.S["label"], a, self._sub(e), hl=hl)
+                yb = D.label_under(c, tpl, e.get("label", eid), cx, cy + self.r + 16, self._maxw(), self.S["label"], a, self._sub(e), hl=hl, plate=True)
                 nt = sc.note(eid, t)
                 if nt:
                     D.draw_text(c, D.ellipsize(nt[0], self._maxw(), 30, mono=True), cx, yb + 40, 30,
@@ -274,6 +274,8 @@ class IconFlow(ProTreatment):
         srows, ss = D.fit_block(sub, maxw, 2, 32, 30) if sub else ([], 0)
         total = len(rows) * sz * 1.12 + len(srows) * ss * 1.18
         y = cy - total / 2 + sz * 0.9
+        D.text_plate(c, tpl, [(r, sz, "SemiBold") for r in rows] + [(r, ss, "Regular") for r in srows],
+                     None, cy - total / 2, cy + total / 2, a, x_left=x)
         colr = D.mix(tpl.T["text"], tpl.conn["active"], 0.25 * hl) if tpl.dark else tpl.T["text"]
         for j, r in enumerate(rows):
             D.draw_text(c, r, x, y + j * sz * 1.12, sz, D.col(colr, a), "SemiBold")

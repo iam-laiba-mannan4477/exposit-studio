@@ -834,9 +834,15 @@ def chip(c, tpl: Template, cx: float, cy: float, label: str, icon: str | None = 
 
 
 def label_under(c, tpl: Template, s: str, cx: float, y: float, max_w: float, size: float = 44, a: float = 1.0,
-                sub: str | None = None, weight: str = "SemiBold", hl: float = 0.0, sub_size: float = 32) -> float:
-    """A centred label (and optional sub-line) that never exceeds max_w. Returns the bottom y."""
+                sub: str | None = None, weight: str = "SemiBold", hl: float = 0.0, sub_size: float = 32,
+                plate: bool = False) -> float:
+    """A centred label (and optional sub-line) that never exceeds max_w. Returns the bottom y.
+    `plate`: a rounded backing in the template's card colour, so connectors drawn earlier never cross the text."""
     rows, sz = fit_block(s, max_w, 2, size, size * 0.8, weight)
+    if plate and a > 0.01:
+        text_plate(c, tpl, [(r, sz, weight) for r in rows] + ([(r, ss_, "Regular") for r in fit_block(sub, max_w, 2, sub_size, MIN_TEXT)[0]
+                    for ss_ in [fit_block(sub, max_w, 2, sub_size, MIN_TEXT)[1]]] if sub else []),
+                   cx, y, y + label_block_h(s, max_w, size, sub, sub_size), a)
     colr = mix(tpl.T["text"], tpl.conn["active"], 0.25 * hl) if tpl.dark else tpl.T["text"]
     for i, r in enumerate(rows):
         draw_text(c, r, cx, y + sz * 0.95 + i * sz * 1.12, sz, col(colr, a), weight, "center")
@@ -847,6 +853,19 @@ def label_under(c, tpl: Template, s: str, cx: float, y: float, max_w: float, siz
             draw_text(c, r, cx, yb + ss * 0.95 + i * ss * 1.15, ss, col(tpl.T["text2"], a), "Regular", "center")
         yb += ss * 1.15 * len(srows) + 4
     return yb
+
+
+def text_plate(c, tpl: Template, rows: list, cx: float | None, y0: float, y1: float, a: float = 1.0,
+               x_left: float | None = None) -> None:
+    """A rounded plate in the template's card colour behind a block of text rows [(text, size, weight)], centred on
+    cx (or starting at x_left), from y0 to y1, with a little padding."""
+    w = max((text_width(t, sz, wt) for t, sz, wt in rows), default=0.0)
+    if w <= 0:
+        return
+    pad_x, pad_y = 14.0, 6.0
+    x0 = (cx - w / 2) if x_left is None else x_left
+    c.drawRoundRect(skia.Rect.MakeLTRB(x0 - pad_x, y0 - pad_y, x0 + w + pad_x, y1 + pad_y), 14, 14,
+                    paint(col(tpl.card["fill"], 0.94 * a)))
 
 
 def legend(c, tpl: Template, x: float, y: float, items: list[dict], a: float = 1.0, w: float = 520,

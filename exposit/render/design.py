@@ -653,6 +653,27 @@ def _paint_background(c, tpl: Template, W, H):
 # ------------------------------------------------------------------ cards, badges, chips, legends
 def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.0, hl: float = 0.0, dim: float = 0.0,
          radius: float | None = None, seed: int = 0, accent: str | None = None, fill: str | None = None) -> None:
+    """A card; on templates with "tilt" (paper craft) it sits at a small deterministic angle with a curled corner."""
+    tilt = tpl.card.get("tilt")
+    if not tilt or a <= 0.01:
+        return _card(c, tpl, x, y, w, h, a, hl, dim, radius, seed, accent, fill)
+    k = (math.sin((round(x) * 12.9898 + round(y) * 78.233 + seed * 3.17)) * 43758.5453) % 1.0
+    ang = (k * 2 - 1) * tilt
+    c.save()
+    c.rotate(ang, x + w / 2, y + h / 2)
+    _card(c, tpl, x, y, w, h, a, hl, dim, radius, seed, accent, fill)
+    if tpl.card.get("curl"):                               # a lifted corner: its shadow, then the folded flap
+        s = min(46.0, w * 0.12, h * 0.25)
+        soft_shadow(c, x + w - s * 0.9, y + h - s * 0.6, s * 0.9, s * 0.5, 6, "#3A2410", 0.35 * a, 6)
+        flap = skia.Path()
+        flap.moveTo(x + w - s, y + h); flap.lineTo(x + w, y + h - s); flap.lineTo(x + w - s * 0.82, y + h - s * 0.82); flap.close()
+        c.drawPath(flap, paint(col(mix(tpl.card["fill"], "#C9AC8C", 0.55), a)))
+        c.drawPath(flap, paint(col("#B08D6B", 0.6 * a), 1))
+    c.restore()
+
+
+def _card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.0, hl: float = 0.0, dim: float = 0.0,
+          radius: float | None = None, seed: int = 0, accent: str | None = None, fill: str | None = None) -> None:
     """A card in the template's style. `hl` (0..1) glows or tints it as the focus; `dim` fades the rest a little
     (never so far that text on it loses contrast)."""
     if a <= 0.01:

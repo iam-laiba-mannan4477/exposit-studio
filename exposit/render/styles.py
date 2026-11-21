@@ -95,7 +95,7 @@ def bg_pixel(c, W, H):
         c.drawRect(skia.Rect.MakeXYWH(x, y, 8, 8), D.paint(col("#FFF1E8" if r.random() > 0.6 else "#83769C")))
 
 
-def bg_woodcut(c, W, H):
+def bg_engraving(c, W, H):
     _bg_solid(c, "#EEE4CF", W, H)
     p = D.paint(col("#2A1F17", 0.12), 1.6)
     for i in range(-int(H), int(W), 14):                      # engraved hatching in the margins
@@ -153,9 +153,35 @@ def tex_hatch(cc, w, h):
 
 def tex_paper(cc, w, h):
     r = _rng(int(w) * 7 + int(h))
-    for _ in range(int(w * h / 900)):
+    for _ in range(int(w * h / 420)):                         # visible paper fibres
         x, y = r.random() * w, r.random() * h
-        cc.drawLine(x, y, x + r.random() * 18 - 9, y + r.random() * 6 - 3, D.paint(col("#8A7A60", 0.10), 1))
+        ang = r.random() * math.pi
+        ln = 8 + r.random() * 22
+        cc.drawLine(x, y, x + math.cos(ang) * ln, y + math.sin(ang) * ln, D.paint(col("#8A7A60", 0.20), 1.1))
+
+
+def tex_engraving(cc, w, h):
+    """Carved look: a thick ink band inside the edge with cream gouge cuts, and cut-line hatching in one corner."""
+    ink, paper = "#1A1410", "#F5EDDA"
+    band = 16
+    cc.drawRect(skia.Rect.MakeWH(w, band), D.paint(col(ink)))
+    cc.drawRect(skia.Rect.MakeXYWH(0, h - band, w, band), D.paint(col(ink)))
+    cc.drawRect(skia.Rect.MakeWH(band, h), D.paint(col(ink)))
+    cc.drawRect(skia.Rect.MakeXYWH(w - band, 0, band, h), D.paint(col(ink)))
+    r = _rng(int(w) * 3 + int(h))
+    cut = D.paint(col(paper), 2.6)
+    for x in np.arange(10, w - 10, 13):                       # gouge marks across the top and bottom bands
+        ln = 6 + r.random() * 8
+        cc.drawLine(float(x), 3, float(x + r.random() * 4 - 2), 3 + ln, cut)
+        cc.drawLine(float(x), h - 3, float(x + r.random() * 4 - 2), h - 3 - ln, cut)
+    for y in np.arange(10, h - 10, 13):
+        ln = 6 + r.random() * 8
+        cc.drawLine(3, float(y), 3 + ln, float(y + r.random() * 4 - 2), cut)
+        cc.drawLine(w - 3, float(y), w - 3 - ln, float(y + r.random() * 4 - 2), cut)
+    p = D.paint(col(ink, 0.55), 2.2)                          # cut-line hatching: curved strokes, bottom-right corner
+    for k in range(9):
+        rr = skia.Rect.MakeXYWH(w - 40 - k * 16, h - 40 - k * 14, (k + 1) * 32, (k + 1) * 28)
+        cc.drawArc(rr, 180, 90, False, p)
 
 
 def tex_cardboard(cc, w, h):
@@ -364,9 +390,12 @@ def post_process(arr: np.ndarray, ops: tuple, frame: int) -> np.ndarray:
 # ================================================================== the style packs
 class Style:
     def __init__(self, name: str, tier: int, status: str, best_for: str, tpl: Template | None, post: tuple = (),
-                 fps: int | None = None, jitter: float = 0.0, effects: tuple = (), why_planned: str = ""):
+                 fps: int | None = None, jitter: float = 0.0, effects: tuple = (), why_planned: str = "",
+                 intertitles: bool = False, requires: str | None = None):
         self.name, self.tier, self.status, self.best_for, self.tpl = name, tier, status, best_for, tpl
         self.post, self.fps, self.jitter, self.effects, self.why_planned = post, fps, jitter, effects, why_planned
+        self.intertitles = intertitles      # silent film: headings become 1.5 s intertitle cards; kinetic scenes are drawn as one
+        self.requires = requires            # offered only for videos with this content (e.g. a 3D model)
         if tpl is not None:
             tpl.style = self
 
@@ -444,10 +473,10 @@ _add(Style("pixel-art", 1, "ready", "networking basics, protocols for beginners,
                 card=_card("#29366F", "#FFF1E8", 4.0, 0), icon=dict(style="solid", color="#1D2B53", badge="#FFA300", ring="#FFF1E8", stroke=3.0, shape="square"),
                 conn=dict(color="#FFF1E8", width=8.0, active="#FFA300", glow=False, dash=(16, 16))),
            post=(("pixelate", 5, "pico8"),)))
-_add(Style("woodcut", 1, "ready", "history, principles, protocols with a long lineage",
-           _tpl("woodcut", _T("#EEE4CF", "#EEE4CF", "#F5EDDA", "#1A1410", "#1A1410", "#3E342B", "#8E1F20", red="#8E1F20", green="#2E5E2A"),
-                dark=False, bg_fn=bg_woodcut, family="IMFell", font_scale=1.12, texture=tex_hatch,
-                card=_card("#F5EDDA", "#1A1410", 3.0, 2), icon=dict(style="outline", color="#1A1410", badge=None, ring="#1A1410", stroke=2.8),
+_add(Style("engraving-print", 1, "ready", "history, principles, protocols with a long lineage",
+           _tpl("engraving-print", _T("#EEE4CF", "#EEE4CF", "#F5EDDA", "#1A1410", "#1A1410", "#3E342B", "#8E1F20", red="#8E1F20", green="#2E5E2A"),
+                dark=False, bg_fn=bg_engraving, family="IMFell", font_scale=1.12, texture=tex_engraving,
+                card=_card("#F5EDDA", "#1A1410", 6.0, 2), icon=dict(style="outline", color="#1A1410", badge=None, ring="#1A1410", stroke=3.2),
                 conn=dict(color="#1A1410", width=6.0, active="#8E1F20", glow=False, dash=(14, 10))),
            post=(("paper", 0.14), ("grain", 0.04))))
 _add(Style("silent-film", 1, "ready", "history of a technology, origin stories, 'how it used to work'",
@@ -456,11 +485,12 @@ _add(Style("silent-film", 1, "ready", "history of a technology, origin stories, 
                 dark=True, bg_fn=bg_silent, family="IMFell", font_scale=1.12,
                 card=_card("#1F1C19", "#D8CDB8", 3.0, 6), icon=dict(style="outline", color="#F2E9D8", badge=None, ring="#D8CDB8", stroke=2.6),
                 conn=dict(color="#D8CDB8", width=6.0, active="#FFFFFF", glow=False, dash=(14, 10))),
-           post=(("grain", 0.09), ("flicker", 0.07), ("scratches", 3), ("vignette", 0.6)), fps=18))   # palette is sepia already
+           post=(("grain", 0.09), ("flicker", 0.07), ("scratches", 3), ("vignette", 0.6)), fps=18,   # palette is sepia already
+           intertitles=True))
 _add(Style("paper-craft", 1, "ready", "architecture overviews, layered systems",
            _tpl("paper-craft", _T("#F4E8D8", "#F4E8D8", "#FFF8EE", "#B88B6A", "#2B211A", "#45372B", "#A63E1F", blue="#2F6F9E", teal="#2E8A7E"),
                 dark=False, bg_fn=bg_papercraft, texture=tex_paper,
-                card=_card("#FFF8EE", "#E6D2BC", 1.0, 18, shadow=0.35, shadow_color="#5A3A20"),
+                card=_card("#FFF8EE", "#E6D2BC", 1.0, 10, shadow=0.35, shadow_color="#5A3A20", tilt=1.5, curl=True),
                 icon=dict(style="pastel", color="#2B211A", badge=None, ring="#B88B6A", stroke=2.6),
                 conn=dict(color="#8C5E3C", width=6.0, active="#C24E2B", glow=False, dash=(16, 13))),
            post=(("paper", 0.08),)))
@@ -490,13 +520,47 @@ _add(Style("hd-pixel-sprite-3d", 2, "ready", "hardware and infrastructure with a
                 dark=True, bg_fn=bg_pixel, glow=True, family_bold="Pixel", bold_scale=0.6,
                 card=_card("#17204A", "#5EE2FF", 3.0, 0), icon=dict(style="solid", color="#FFFFFF", badge="#3A4C9A", ring="#5EE2FF", stroke=3.0, shape="square"),
                 conn=dict(color="#8FA2FF", width=8.0, active="#5EE2FF", glow=False, dash=(16, 16))),
-           post=(("pixelate", 4, 8),)))
+           post=(("pixelate", 4, 8),), requires="model_3d"))
 for _n, _why in (("stick-figure-story", "needs posed, rigged characters with readable gestures; a style pack alone cannot draw them"),
                  ("paper-cutout-puppet", "needs jointed cut-out characters; not built"),
                  ("hand-puppet-theatre", "needs puppet characters on a stage; a frame and curtain alone would not be honest")):
     _add(Style(_n, 2, "planned", "incidents and postmortems told as stories", None, why_planned=_why))
 
 READY = tuple(n for n, s in STYLES.items() if s.status == "ready")
+INTERTITLE_SECONDS = 1.5
+
+
+def draw_intertitle(c, tpl, text: str, W: float, H: float, a: float = 1.0, show_text: bool = True) -> None:
+    """A silent-film intertitle: a black card with an ornate thin double border and corner flourishes; the text in
+    IM FELL, centred. The card is a cached sprite; the text is drawn on top."""
+    inset = 70.0 if H > W else 150.0
+
+    def card(cc):
+        cc.drawColor(col("#0B0907"))
+        x0, y0, x1, y1 = inset, inset * (1.6 if H > W else 0.7), W - inset, H - inset * (1.6 if H > W else 0.7)
+        line = D.paint(col("#E9DFC9"), 2.2)
+        cc.drawRect(skia.Rect.MakeLTRB(x0, y0, x1, y1), line)
+        cc.drawRect(skia.Rect.MakeLTRB(x0 + 14, y0 + 14, x1 - 14, y1 - 14), D.paint(col("#E9DFC9"), 1.2))
+        for (cx, cy, sx, sy) in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
+            p = skia.Path()                                    # a corner flourish: a small scroll and a diamond
+            p.moveTo(cx + sx * 14, cy + sy * 46)
+            p.cubicTo(cx + sx * 40, cy + sy * 46, cx + sx * 46, cy + sy * 40, cx + sx * 46, cy + sy * 14)
+            cc.drawPath(p, D.paint(col("#E9DFC9"), 2))
+            d = skia.Path()
+            d.moveTo(cx + sx * 30, cy + sy * 22); d.lineTo(cx + sx * 36, cy + sy * 30)
+            d.lineTo(cx + sx * 30, cy + sy * 38); d.lineTo(cx + sx * 24, cy + sy * 30); d.close()
+            cc.drawPath(d, D.paint(col("#E9DFC9")))
+        mid = (y0 + y1) / 2
+        for yy in (y0 + (mid - y0) * 0.35, y1 - (y1 - mid) * 0.35):   # thin rules above and below the text
+            cc.drawLine(W / 2 - 120, yy, W / 2 + 120, yy, D.paint(col("#E9DFC9"), 1.4))
+            cc.drawCircle(W / 2, yy, 4, D.paint(col("#E9DFC9")))
+    D.sprite(c, ("intertitle", int(W), int(H)), 0, 0, W, H, card, a)
+    if show_text and text:
+        rows, sz = D.fit_block(text, W - 2 * inset - 120, 4, 96 if H > W else 88, 56, "Regular")
+        total = len(rows) * sz * 1.18
+        y = H / 2 - total / 2 + sz * 0.8
+        for j, r in enumerate(rows):
+            D.draw_text(c, r, W / 2, y + j * sz * 1.18, sz, col("#F2E9D8", a), "Regular", "center")
 PLANNED = tuple(n for n, s in STYLES.items() if s.status == "planned")
 
 

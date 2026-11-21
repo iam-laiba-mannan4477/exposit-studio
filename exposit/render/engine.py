@@ -116,6 +116,11 @@ class Scene:
         self.tpl = design.template(spec.get("theme") or theme)
         self.T = self.tpl.T
         self.pad0 = float(spec.get("pad_start", 0.4))
+        st = styles.style_of(self.tpl)
+        self.intertitle = None                                 # silent film: the heading on a card before the scene
+        if st and st.intertitles and spec.get("heading") and spec.get("treatment") != "kinetic":
+            self.intertitle = spec["heading"]
+            self.pad0 = max(self.pad0, styles.INTERTITLE_SECONDS + 0.3)
         self.pad1 = float(spec.get("pad_end", 0.5))
         self.dur = self.pad0 + float(timing.get("duration", 3.0)) + self.pad1
         self.motion = float(spec.get("motion_scale", 1.0))
@@ -490,6 +495,9 @@ class Kinetic(Treatment):
         if self.portrait:
             return self.draw_portrait(c, t)
         sc, T = self.sc, self.sc.T
+        st = styles.style_of(sc.tpl)
+        if st and st.intertitles:
+            styles.draw_intertitle(c, sc.tpl, "", 1920, 1080, 1.0, False)
         ui = sc.spec.get("ui")
         y0 = 330
         if ui:
@@ -528,15 +536,19 @@ class Kinetic(Treatment):
 
     def draw_portrait(self, c, t):
         sc, T = self.sc, self.sc.T
+        st = styles.style_of(sc.tpl)
+        if st and st.intertitles:                          # silent film: kinetic scenes are intertitle cards
+            styles.draw_intertitle(c, sc.tpl, "", 1080, 1920, 1.0, False)
         ui = sc.spec.get("ui")
         lines = sc.spec.get("lines", [])
         times = [sc.cue_time(l.get("at")) or 0.0 for l in lines]
         blocks = []
-        for l in lines:                                     # each line wraps to the 940 px column
+        col_w = 780 if (st and st.intertitles) else 940      # inside the intertitle card's border
+        for l in lines:                                     # each line wraps to the column
             wt = "Bold" if l.get("accent") or l.get("brand") else "SemiBold"
-            size = design.fit_size(l["text"], 940, max(96, min(l.get("size", 120), 132)), 84, wt)
+            size = design.fit_size(l["text"], col_w, max(96, min(l.get("size", 120), 132)), 84, wt)
             f = font(size, wt)
-            blocks.append((f, size, wrap(l["text"], f, 940)))
+            blocks.append((f, size, wrap(l["text"], f, col_w)))
         total = sum(len(r) * size * 1.14 + 30 for _, size, r in blocks)
         top = 560.0 if ui else design.PORTRAIT_BAND[0]
         y = top + (design.band_bottom(self.sc) - top - total) / 2
@@ -1104,6 +1116,7 @@ def _draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, ca
                 canvas.drawRoundRect(r, 12, 12, paint(col("#000000", 0.62)))
                 text(canvas, cp["text"], 960, 989, f, col("#FFFFFF"), "center")
                 break
+    _intertitle(canvas, tr, t, 1920, 1080)
     fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
                clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
@@ -1184,6 +1197,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
                 for j, row in enumerate(rows):
                     text(canvas, row, 540, r.top() + 60 + j * 58, f, col("#FFFFFF"), "center")
                 break
+    _intertitle(canvas, tr, t, 1080, 1920)
     fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
                clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
@@ -1452,3 +1466,15 @@ def _effects_after_stage(canvas, tr, t: float, W: float, H: float) -> None:
 def _effects_after(canvas, tr, t: float, W: float, H: float) -> None:
     if motion.wrapper_spec(tr.sc.spec, "pinned_heading") and tr.sc.spec.get("heading"):
         motion.heading_mask(canvas, tr.sc.tpl, W, design.content_top(tr.sc.spec, tr.portrait) - 10)
+
+
+def _intertitle(canvas, tr, t: float, W: float, H: float) -> None:
+    """Silent film: the scene's heading as a 1.5 s intertitle in its opening pause, dissolving into the scene."""
+    text = getattr(tr.sc, "intertitle", None)
+    if not text:
+        return
+    end = styles.INTERTITLE_SECONDS
+    if t >= end + 0.3:
+        return
+    a = 1.0 if t < end else 1 - (t - end) / 0.3
+    styles.draw_intertitle(canvas, tr.sc.tpl, text, W, H, a)

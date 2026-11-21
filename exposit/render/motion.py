@@ -1,0 +1,516 @@
+"""Motion effects: ten reusable "scroll effects" translated to video, in 9:16 and 16:9.
+
+Two kinds:
+- Wrapper effects, listed in any scene's "effects": [{"type": ...}] and applied around its treatment by the engine:
+  parallax (depth layers behind the scene), pinned_heading (the heading stays while the content scrolls under it),
+  focus_frame (a highlight frame slides between elements on spoken words, dimming the rest).
+- Content effects, drawn by the "motion" treatment ({"treatment": "motion", "effect": ...}): card_zoom_3d,
+  line_reveal, marquee, card_carousel, model_3d, stacking_cards, scroll_demo.
+
+3D is done here, without a GPU: card corners are projected with a pinhole camera and the card image is mapped onto
+that quad (a projective matrix from skia's polyToPoly); the low-poly models are projected triangles with flat shading,
+back-face culling and a painter's depth sort, meshes built once and cached.
+"""
+from __future__ import annotations
+import functools, math
+import skia
+from . import assets, design as D
+from .design import col, clamp, lerp, ease_out, ease_in_out, spring
+from .pro import ProTreatment
+
+WRAPPERS = ("parallax", "pinned_heading", "focus_frame")
+CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo")
+EFFECTS = WRAPPERS + CONTENT
+MODELS = ("server_rack", "cube", "globe", "database")
+
+
+# ================================================================== 3D helpers
+def rot(p, ax: float, ay: float, az: float = 0.0):
+    x, y, z = p
+    if ax:
+        y, z = y * math.cos(ax) - z * math.sin(ax), y * math.sin(ax) + z * math.cos(ax)
+    if ay:
+        x, z = x * math.cos(ay) + z * math.sin(ay), -x * math.sin(ay) + z * math.cos(ay)
+    if az:
+        x, y = x * math.cos(az) - y * math.sin(az), x * math.sin(az) + y * math.cos(az)
+    return x, y, z
+
+
+def project(p, cx: float, cy: float, f: float = 1400.0):
+    """Pinhole projection of a camera-space point (z grows away from the viewer) to the screen."""
+    x, y, z = p
+    k = f / max(1.0, f + z)
+    return cx + x * k, cy + y * k, k
+
+
+def quad_matrix(w: float, h: float, quad, perspective: bool = False) -> skia.Matrix:
+    """The matrix that maps the rectangle (0, 0, w, h) onto the screen quad (tl, tr, br, bl). By default an affine fit
+    through the quad's centre and edge midpoints: CPU raster draws affine images several times faster than projective
+    ones, and at the angles used here the difference is a slight lack of foreshortening. perspective=True is exact."""
+    m = skia.Matrix()
+    if perspective:
+        m.setPolyToPoly([skia.Point(0, 0), skia.Point(w, 0), skia.Point(w, h), skia.Point(0, h)], [skia.Point(*q) for q in quad])
+        return m
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = quad
+    cx, cy = (x0 + x1 + x2 + x3) / 4, (y0 + y1 + y2 + y3) / 4
+    rx, ry = ((x1 + x2) - (x0 + x3)) / 4, ((y1 + y2) - (y0 + y3)) / 4        # half the width vector
+    dx, dy = ((x3 + x2) - (x0 + x1)) / 4, ((y3 + y2) - (y0 + y1)) / 4        # half the height vector
+    m.setAll(2 * rx / w, 2 * dx / h, cx - rx - dx, 2 * ry / w, 2 * dy / h, cy - ry - dy, 0, 0, 1)
+    return m
+
+
+def card_quad(w: float, h: float, center3, ax: float, ay: float, cx: float, cy: float, f: float = 1400.0):
+    """Screen quad of a w x h card centred at center3 (camera space) and rotated by (ax, ay); also its depth scale."""
+    corners = [(-w / 2, -h / 2, 0), (w / 2, -h / 2, 0), (w / 2, h / 2, 0), (-w / 2, h / 2, 0)]
+    out = []
+    for p in corners:
+        x, y, z = rot(p, ax, ay)
+        x, y, z = x + center3[0], y + center3[1], z + center3[2]
+        sx, sy, _ = project((x, y, z), cx, cy, f)
+        out.append((sx, sy))
+    return out, f / max(1.0, f + center3[2])
+
+
+def draw_image_quad(c, img: skia.Image, w: float, h: float, quad, alpha: float = 1.0, shade: float = 0.0,
+                    shade_color: str = "#000000") -> None:
+    """Maps img onto the quad. `alpha` fades it (entrances); `shade` darkens it while keeping it opaque (depth)."""
+    c.save()
+    c.concat(quad_matrix(w, h, quad))
+    c.drawImageRect(img, skia.Rect.MakeWH(img.width(), img.height()), skia.Rect.MakeWH(w, h),
+                    skia.SamplingOptions(skia.FilterMode.kLinear), skia.Paint(Alphaf=alpha) if alpha < 0.999 else None)
+    if shade > 0.01:
+        c.drawRoundRect(skia.Rect.MakeXYWH(6, 6, w - 12, h - 12), 18, 18, D.paint(col(shade_color, clamp(shade) * alpha)))
+    c.restore()
+
+
+_card_cache: dict = {}
+
+
+def card_image(tpl, w: int, h: int, item: dict, key, accent: bool = False) -> skia.Image:
+    """A card (icon, title, body) rendered once into an image at 1.5x, for mapping onto a 3D quad."""
+    k = (tpl.name, w, h, key, accent)
+    img = _card_cache.get(k)
+    if img is not None:
+        return img
+    s = 1.5
+    surf = skia.Surface(int(w * s), int(h * s))
+    c = surf.getCanvas()
+    c.clear(skia.ColorTRANSPARENT)
+    c.scale(s, s)
+    T = tpl.T
+    r0 = tpl.card["radius"]                                   # opaque backing: cards in 3D must not show through
+    c.drawRoundRect(skia.Rect.MakeXYWH(6, 6, w - 12, h - 12), r0, r0, D.paint(col(T["bg0"] if tpl.dark else "#FFFFFF")))
+    D.card(c, tpl, 6, 6, w - 12, h - 12, 1.0, 1.0 if accent else 0.0, 0.0, seed=hash(str(key)) % 97)
+    R = min(70.0, h * 0.2)
+    D.badge(c, tpl, assets.resolve(item.get("icon")) or "box", w / 2, 40 + R, R, 1.0, tone=item.get("tone"), seed=3)
+    rows, sz = D.fit_block(item.get("title", ""), w - 60, 2, 50, 36, "Bold")
+    y = 40 + 2 * R + 30
+    for j, r in enumerate(rows):
+        D.draw_text(c, r, w / 2, y + sz * 0.9 + j * sz * 1.08, sz, col(T["text"]), "Bold", "center")
+    y += len(rows) * sz * 1.08 + 12
+    if item.get("text"):
+        brows, bs = D.fit_block(item["text"], w - 70, 3, 34, 30)
+        for j, r in enumerate(brows):
+            D.draw_text(c, r, w / 2, y + bs + j * bs * 1.2, bs, col(T["text2"]), "Regular", "center")
+    img = surf.makeImageSnapshot()
+    if len(_card_cache) > 256:
+        _card_cache.clear()
+    _card_cache[k] = img
+    return img
+
+
+# ================================================================== low-poly meshes (cached)
+def _box(x0, y0, z0, x1, y1, z1, tag=0):
+    v = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0), (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)]
+    quads = [(0, 1, 2, 3), (5, 4, 7, 6), (4, 0, 3, 7), (1, 5, 6, 2), (4, 5, 1, 0), (3, 2, 6, 7)]
+    tris = []
+    for a, b, c_, d in quads:
+        tris.append((v[a], v[b], v[c_], tag))
+        tris.append((v[a], v[c_], v[d], tag))
+    return tris
+
+
+@functools.lru_cache(maxsize=8)
+def mesh(name: str) -> tuple:
+    """Triangles ((p0, p1, p2, tag), ...) in model space, roughly unit size; tag 1 marks accent parts."""
+    tris = []
+    if name == "cube":
+        tris = _box(-1, -1, -1, 1, 1, 1)
+    elif name == "server_rack":
+        tris = _box(-0.75, -1.5, -0.6, 0.75, 1.5, 0.6)
+        for i in range(6):                                     # rack units sticking out of the front
+            y0 = -1.3 + i * 0.44
+            tris += _box(-0.62, y0, -0.68, 0.62, y0 + 0.3, -0.6, tag=1 if i % 2 == 0 else 2)
+    elif name == "database":
+        seg = 24
+        for k in range(3):                                     # three stacked discs
+            y0, y1 = -1.2 + k * 0.85, -1.2 + k * 0.85 + 0.7
+            for i in range(seg):
+                a0, a1 = 2 * math.pi * i / seg, 2 * math.pi * (i + 1) / seg
+                p0, p1 = (math.cos(a0), math.sin(a0)), (math.cos(a1), math.sin(a1))
+                tris.append(((p0[0], y0, p0[1]), (p1[0], y0, p1[1]), (p1[0], y1, p1[1]), k % 2))
+                tris.append(((p0[0], y0, p0[1]), (p1[0], y1, p1[1]), (p0[0], y1, p0[1]), k % 2))
+                tris.append(((0, y0, 0), (p1[0], y0, p1[1]), (p0[0], y0, p0[1]), 2))
+                tris.append(((0, y1, 0), (p0[0], y1, p0[1]), (p1[0], y1, p1[1]), 2))
+    elif name == "globe":
+        t = (1 + 5 ** 0.5) / 2
+        vs = [(-1, t, 0), (1, t, 0), (-1, -t, 0), (1, -t, 0), (0, -1, t), (0, 1, t), (0, -1, -t), (0, 1, -t),
+              (t, 0, -1), (t, 0, 1), (-t, 0, -1), (-t, 0, 1)]
+        fs = [(0, 11, 5), (0, 5, 1), (0, 1, 7), (0, 7, 10), (0, 10, 11), (1, 5, 9), (5, 11, 4), (11, 10, 2), (10, 7, 6),
+              (7, 1, 8), (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9), (4, 9, 5), (2, 4, 11), (6, 2, 10), (8, 6, 7), (9, 8, 1)]
+        norm = lambda p: tuple(x / math.sqrt(sum(y * y for y in p)) for x in p)
+        faces = [tuple(norm(vs[i]) for i in f) for f in fs]
+        for _ in range(2):                                      # subdivide twice: 320 faces
+            nf = []
+            for a, b, c_ in faces:
+                ab, bc, ca = norm(tuple((x + y) / 2 for x, y in zip(a, b))), norm(tuple((x + y) / 2 for x, y in zip(b, c_))), norm(tuple((x + y) / 2 for x, y in zip(c_, a)))
+                nf += [(a, ab, ca), (b, bc, ab), (c_, ca, bc), (ab, bc, ca)]
+            faces = nf
+        for i, (a, b, c_) in enumerate(faces):
+            m = [(x + y + z) / 3 for x, y, z in zip(a, b, c_)]
+            land = math.sin(m[0] * 5.1) * math.cos(m[1] * 4.3) + math.sin(m[2] * 3.7) > 0.35   # procedural "continents"
+            tris.append(((a[0] * 1.3, a[1] * 1.3, a[2] * 1.3), (b[0] * 1.3, b[1] * 1.3, b[2] * 1.3), (c_[0] * 1.3, c_[1] * 1.3, c_[2] * 1.3), 1 if land else 0))
+    return tuple(tris)
+
+
+def draw_model(c, tpl, name: str, cx: float, cy: float, size: float, ay: float, ax: float = -0.42, alpha: float = 1.0,
+               neon: bool | None = None) -> None:
+    """A low-poly model: projected, back-face culled, depth sorted, flat shaded; neon edges on dark templates."""
+    T = tpl.T
+    neon = tpl.dark if neon is None else neon
+    body = tpl.icon.get("badge") or T["accent"]
+    base = {0: body if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#FFFFFF", 0.35) if tpl.dark else "#9FB3CC"}
+    lx, ly, lz = -0.35, -0.62, -0.70                         # towards the light: up, left, towards the viewer
+    out = []
+    for p0, p1, p2, tag in mesh(name):
+        q = [rot(p, ax, ay) for p in (p0, p1, p2)]
+        q = [(x * size, y * size, z * size + 600) for x, y, z in q]
+        ux, uy, uz = (q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2])
+        vx, vy, vz = (q[2][0] - q[0][0], q[2][1] - q[0][1], q[2][2] - q[0][2])
+        nx, ny, nz = uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx
+        ln = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+        nx, ny, nz = nx / ln, ny / ln, nz / ln
+        if nz > 0:                                            # face the normal towards the camera
+            nx, ny, nz = -nx, -ny, -nz
+        s = [project(p, cx, cy, 1400.0) for p in q]
+        area = (s[1][0] - s[0][0]) * (s[2][1] - s[0][1]) - (s[1][1] - s[0][1]) * (s[2][0] - s[0][0])
+        if area >= 0:                                          # back face (screen winding)
+            continue
+        lam = 0.42 + 0.58 * max(0.0, nx * lx + ny * ly + nz * lz)
+        out.append((sum(p[2] for p in q) / 3, s, tag, lam))
+    out.sort(key=lambda r: -r[0])
+    edge = D.paint(col(tpl.conn["active"], 0.7 * alpha), 1.8) if neon else D.paint(col(T["line"], 0.5 * alpha), 1.0)
+    for _, s, tag, lam in out:
+        p = skia.Path()
+        p.moveTo(s[0][0], s[0][1]); p.lineTo(s[1][0], s[1][1]); p.lineTo(s[2][0], s[2][1]); p.close()
+        b = base.get(tag, base[0])
+        shade = D.mix("#000000", b, lam)
+        c.drawPath(p, D.paint(col(shade, alpha)))
+        c.drawPath(p, edge)
+
+
+# ================================================================== wrapper effects (applied by the engine)
+_layer_cache: dict = {}
+
+
+def parallax_layers(c, tpl, W: float, H: float, t: float, dur: float, layers: int = 4, a: float = 1.0) -> None:
+    """3-5 depth layers of procedural shapes drifting sideways at different speeds (far slow and small, near fast and
+    large). Drawn as vectors each frame: a few hundred small shapes cost less than compositing full-screen layers."""
+    layers = int(clamp(layers, 3, 5))
+    pan = ease_in_out(t / max(0.1, dur))
+    colr = tpl.conn["active"] if tpl.dark else tpl.T["line"]
+    span = W * 1.6
+    for i in range(layers):
+        depth = (i + 1) / layers                              # 0 far .. 1 near
+        dx = -pan * W * 0.5 * (0.15 + depth)
+        n = int(70 * (1.15 - depth)) + 10
+        if depth < 0.5:
+            p = D.paint(col(colr, (0.45 + 0.3 * depth) * a))
+        else:
+            p = D.paint(col(colr, (0.22 + 0.2 * depth) * a), 2.5 + depth * 3)
+        for j in range(n):
+            h1 = (math.sin(j * 12.9898 + i * 78.2) * 43758.5) % 1.0
+            h2 = (math.sin(j * 39.3468 + i * 11.1) * 24634.6) % 1.0
+            x, y = (h1 * span + dx) % span - W * 0.3, h2 * H
+            if x < -60 or x > W + 60:
+                continue
+            r = 2 + depth * 26 * ((j * 7) % 5 + 1) / 5
+            if depth < 0.5:
+                c.drawCircle(x, y, 2.5 + r * 0.5, p)
+            else:
+                c.drawPath(_hexagon(x, y, r, j), p)
+
+
+@functools.lru_cache(maxsize=2048)
+def _hex_unit(j: int) -> skia.Path:
+    p = skia.Path()
+    for k in range(6):
+        ang = math.pi / 3 * k + j
+        (p.moveTo if k == 0 else p.lineTo)(math.cos(ang), math.sin(ang))
+    p.close()
+    return p
+
+
+def _hexagon(x: float, y: float, r: float, j: int) -> skia.Path:
+    p = skia.Path(_hex_unit(j % 64))
+    p.transform(skia.Matrix.MakeAll(r, 0, x, 0, r, y, 0, 0, 1))
+    return p
+
+
+def pinned_scroll(t: float, dur: float, distance: float, start: float = 0.15) -> float:
+    """How far the content has scrolled under a pinned heading at time t."""
+    return distance * ease_in_out((t / max(0.1, dur) - start) / (1 - start - 0.12))
+
+
+def heading_mask(c, tpl, W: float, top: float) -> None:
+    """A band of background over the scrolled content behind the pinned heading, fading out below it."""
+    T = tpl.T
+
+    def band(cc):                                             # built once, blitted (see focus_frame)
+        p = skia.Paint()
+        p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, top - 60), skia.Point(0, top + 10)],
+                                                   [col(T["bg0"], 1.0), col(T["bg0"], 0.0)]))
+        cc.drawRect(skia.Rect.MakeLTRB(0, 0, W, top - 60), D.paint(col(T["bg0"])))
+        cc.drawRect(skia.Rect.MakeLTRB(0, top - 60, W, top + 10), p)
+    D.sprite(c, ("heading-mask", tpl.name, int(W), int(top)), 0, 0, W, top + 10, band, 0.97)
+
+
+def focus_frame(c, tpl, rects: list, times: list, t: float, W: float, H: float, a: float = 1.0) -> None:
+    """A rounded highlight frame that slides between rectangles at their times, dimming everything outside it."""
+    if not rects or t < times[0]:
+        return
+    i = max(j for j, tt in enumerate(times) if t >= tt)
+    k = ease_in_out((t - times[i]) / 0.55)
+    r0 = rects[max(0, i - 1)] if i > 0 else rects[0]
+    r1 = rects[i]
+    x, y, w, h = (lerp(p, q, k) for p, q in zip(r0, r1))
+    appear = ease_out((t - times[0]) / 0.4) * a
+    rr = skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, w, h), 26, 26)
+    # Everything but the frame, dimmed. Built opaque with a clear hole and blitted with alpha: this skia build fills
+    # translucent colours ~100x slower than it blits a translucent image.
+    q = [round(v / 4) * 4 for v in (x, y, w, h)]
+    M = 400
+
+    def dim(cc):
+        cc.drawColor(col(tpl.T["bg0"]))
+        hole = skia.Paint(AntiAlias=True, BlendMode=skia.BlendMode.kClear)
+        cc.drawRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(q[0] + M, q[1] + M, q[2], q[3]), 26, 26), hole)
+    D.sprite(c, ("focus-dim", tpl.name, tuple(q), int(W), int(H)), -M, -M, W + 2 * M, H + 2 * M, dim, 0.62 * appear)
+    if tpl.glow:                                              # glow from widening strokes: no per-size blur cache
+        frame = skia.Path()
+        frame.addRRect(rr)
+        D.glow_stroke(c, frame, tpl.conn["active"], appear, 5)
+    c.drawRRect(rr, D.paint(col(tpl.conn["active"], appear), 5))
+    for (px, py, dx, dy) in ((x, y, 1, 1), (x + w, y, -1, 1), (x, y + h, 1, -1), (x + w, y + h, -1, -1)):
+        c.drawLine(px, py + dy * 34, px, py, D.paint(col("#FFFFFF" if tpl.dark else tpl.T["text"], appear), 7))
+        c.drawLine(px, py, px + dx * 34, py, D.paint(col("#FFFFFF" if tpl.dark else tpl.T["text"], appear), 7))
+
+
+# ================================================================== content effects: the "motion" treatment
+class MotionScene(ProTreatment):
+    """{"treatment": "motion", "effect": one of CONTENT, ...}. See visual_planner.md for each effect's fields."""
+    drift = 0.0
+
+    def layout(self):
+        self.effect = self.sc.spec.get("effect", "marquee")
+
+    def camera(self, t):
+        return 1.0, self.CX, self.CY
+
+    def _times(self, items, step=0.9, first=0.5):
+        out, prev = [], first - step
+        for it in items:
+            tt = self.cue_t(it.get("at"), prev + step)
+            out.append(tt)
+            prev = tt
+        return out
+
+    def draw(self, c, t):
+        getattr(self, "_" + self.effect, self._marquee)(c, t)
+
+    # ---- 3 card zoom
+    def _card_zoom_3d(self, c, t):
+        sp, tpl = self.sc.spec, self.tpl
+        item = sp.get("card") or (sp.get("items") or [{}])[0]
+        at = self.cue_t(sp.get("at"), 0.4)
+        k = ease_out((t - at) / (1.6 * self.sc.motion))
+        w, h = (760.0, 900.0) if self.portrait else (720.0, 640.0)
+        img = card_image(tpl, int(w), int(h), item, ("zoom", item.get("title")), True)
+        cy = self.top + (self.bottom - self.top) / 2
+        z = lerp(1800.0, -180.0, k)
+        kr = ease_out(k / 0.55)                               # the tilt settles while the card is still small:
+        quad, _ = card_quad(w, h, (0, 0, z), lerp(0.5, 0.0, kr), lerp(-0.95, 0.0, kr), self.CX, cy)   # rotated draws cost by area
+        if tpl.glow:
+            D.halo(c, self.CX, cy, w * 0.7, tpl.conn["active"], 0.35 * k)   # fixed size: one cached glow
+        draw_image_quad(c, img, w, h, quad, clamp(k * 3))
+
+    # ---- 4 line-by-line reveal
+    def _line_reveal(self, c, t):
+        sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
+        lines = sp.get("lines", [])
+        mono = bool(sp.get("code"))
+        times = self._times(lines, 0.8)
+        size = sp.get("size", 44 if mono else 60)
+        x0 = 80.0 if self.portrait else 160.0
+        maxw = (920.0 if self.portrait else 1600.0)
+        rows = []
+        for l in lines:
+            if mono:
+                sz = D.fit_size(l["text"], maxw - 60, size, 30, mono=True)
+                rows.append(([D.ellipsize(l["text"], maxw - 60, sz, mono=True)], sz, l))
+            else:
+                rr, sz = D.fit_block(l["text"], maxw, 2, size, 36, "Bold" if l.get("accent") else "SemiBold")
+                rows.append((rr, sz, l))
+        total = sum(len(r) * s * 1.3 + 18 for r, s, _ in rows)
+        y = self.top + max(0.0, (self.bottom - self.top - total) / 2)
+        if mono:
+            D.card(c, tpl, x0 - 30, y - 50, maxw + 20, total + 80, 1.0)
+        for (rr, sz, l), tt in zip(rows, times):
+            if t < tt:
+                y += len(rr) * sz * 1.3 + 18
+                continue
+            k = ease_in_out((t - tt) / 0.5)
+            colr = D.text_on(tpl, tpl.conn["active"]) if l.get("accent") else T["text"]
+            for r in rr:
+                tw = D.text_width(r, sz, "Bold" if l.get("accent") else "SemiBold", mono)
+                c.save()
+                c.clipRect(skia.Rect.MakeLTRB(x0 - 4, y - 4, x0 + tw * k + 6, y + sz * 1.3))
+                D.draw_text(c, r, x0, y + sz, sz, col(colr), "Bold" if l.get("accent") else "SemiBold", mono=mono)
+                c.restore()
+                if k < 1:                                     # the wipe edge
+                    c.drawRect(skia.Rect.MakeXYWH(x0 + tw * k, y + 4, 6, sz * 1.1), D.paint(col(tpl.conn["active"])))
+                y += sz * 1.3
+            y += 18
+
+    # ---- 5 sideways text
+    def _marquee(self, c, t):
+        sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
+        rows = sp.get("rows") or [{"text": sp.get("text", "TECHHUB")}]
+        n = len(rows)
+        size = sp.get("size", 190 if self.portrait else 210)
+        span = self.bottom - self.top
+        for i, r in enumerate(rows):
+            txt = (r["text"].upper() if sp.get("upper", True) else r["text"]) + "  ·  "
+            f = D.make_font(size, "Bold")
+            tw = f.measureText(txt)
+            d = 1 if i % 2 == 0 else -1
+            speed = float(r.get("speed", 260 + 70 * i))
+            off = (t * speed * d) % tw
+            y = self.top + span * (i + 0.5) / n + size * 0.35
+            colr = D.text_on(tpl, tpl.conn["active"]) if r.get("accent") else T["text"]
+            x = -off
+            while x < self.W:
+                D.draw_text(c, txt, x, y, size, col(colr, 1.0 if r.get("accent") or i % 2 == 0 else 0.92), "Bold")
+                x += tw
+
+    # ---- 6 card arc carousel
+    def _card_carousel(self, c, t):
+        sp, tpl = self.sc.spec, self.tpl
+        items = sp.get("items", [])
+        if not items:
+            return
+        times = self._times(items, 1.0, 0.3)
+        act = sum(ease_in_out((t - tt) / 0.6) for tt in times[1:])   # continuous index of the card in front
+        w, h = (560.0, 540.0) if self.portrait else (460.0, 470.0)
+        cy = self.top + (self.bottom - self.top) * 0.5
+        R = 900.0 if self.portrait else 1100.0
+        step = 0.42 if self.portrait else 0.36
+        order = []
+        for i, it in enumerate(items):
+            th = (i - act) * step
+            if abs(th) > 1.45:
+                continue
+            x, z = R * math.sin(th), R * (1 - math.cos(th))
+            order.append((z, i, it, th, x))
+        order.sort(key=lambda o: -o[0])
+        for z, i, it, th, x in order:
+            front = 1 - clamp(abs(th) / step)
+            img = card_image(tpl, int(w), int(h), it, ("car", i, it.get("title")), front > 0.5)
+            quad, _ = card_quad(w, h, (x, 0, z), 0.0, th * 0.9, self.CX, cy)
+            draw_image_quad(c, img, w, h, quad, 1.0, 0.72 * clamp(abs(th) / 1.2), tpl.T["bg0"])
+        lab = sp.get("counter")
+        if lab:
+            cur = min(len(items), int(act + 0.5) + 1)
+            D.chip(c, tpl, self.CX, self.bottom - 40, f"{cur} / {len(items)}  {lab}", None, "info", 1.0, 1.0, 32)
+
+    # ---- 7 fixed 3D model
+    def _model_3d(self, c, t):
+        sp, tpl = self.sc.spec, self.tpl
+        name = sp.get("model", "server_rack")
+        k = ease_out(t / 0.8)
+        cy = self.top + (self.bottom - self.top) * (0.44 if sp.get("label") else 0.5)
+        size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0))
+        if tpl.glow:
+            D.halo(c, self.CX, cy, size * 2.2, tpl.conn["active"], 0.25 * k)
+        draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, t * float(sp.get("spin", 0.55)) + 0.6,
+                   alpha=k)
+        if sp.get("label"):
+            D.label_under(c, tpl, sp["label"], self.CX, cy + size * 1.9, 900, 52, k, sp.get("sub"), plate=True)
+
+    # ---- 8 stacking cards
+    def _stacking_cards(self, c, t):
+        sp, tpl = self.sc.spec, self.tpl
+        items = sp.get("items", [])
+        times = self._times(items, 0.9)
+        w, h = (900.0, 300.0) if self.portrait else (1100.0, 300.0)
+        x = self.CX - w / 2
+        base_y = self.bottom - h - 40
+        shown = [i for i, tt in enumerate(times) if t >= tt]
+        for i in shown:
+            depth = sum(ease_out((t - times[j]) / 0.5) for j in shown if j > i)   # how many cards sit on top of it
+            if depth > 4.2:
+                continue
+            k = ease_out((t - times[i]) / 0.55)
+            s = 0.92 ** depth
+            yy = base_y - depth * (110 if self.portrait else 70) + (1 - k) * 500
+            cw, ch = w * s, h * s
+            cx0 = self.CX - cw / 2
+            a = clamp(k * 3)                                  # quick fade: slides in nearly opaque
+            D.soft_shadow(c, cx0, yy + 18, cw, ch, 26, "#000000", 0.35 * a, 20)
+            img = card_image(tpl, int(w), int(h), items[i], ("stack", i, items[i].get("title")), depth < 0.5)
+            quad = [(cx0, yy), (cx0 + cw, yy), (cx0 + cw, yy + ch), (cx0, yy + ch)]
+            draw_image_quad(c, img, w, h, quad, a, 0.22 * depth, tpl.T["bg0"])
+
+    # ---- 10 scroll-triggered demo
+    def _scroll_demo(self, c, t):
+        sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
+        lines = sp.get("lines", [])
+        times = self._times(lines, 0.7)
+        x0 = 60.0 if self.portrait else 200.0
+        w = 960.0 if self.portrait else 1520.0
+        y0, y1 = self.top + 10, self.bottom - 10
+        h = y1 - y0
+        D.card(c, tpl, x0, y0, w, h, 1.0, fill=T["bg0"] if tpl.dark else "#0F1B2D")
+        for i, colr in enumerate(("#FF5F57", "#FEBC2E", "#28C840")):
+            c.drawCircle(x0 + 40 + i * 34, y0 + 38, 11, D.paint(col(colr)))
+        title = sp.get("title", "terminal")
+        D.draw_text(c, title, x0 + w / 2, y0 + 50, 30, col("#B8C7DD"), "Medium", "center", mono=True)
+        c.drawLine(x0, y0 + 78, x0 + w, y0 + 78, D.paint(col("#FFFFFF", 0.12), 2))
+        size, lh = 32.0, 50.0
+        shown = [(l, tt) for l, tt in zip(lines, times) if t >= tt]
+        view_top, view_h = y0 + 100, h - 130
+        content_h = len(shown) * lh
+        target = max(0.0, content_h - view_h)
+        prev_target = max(0.0, (len(shown) - 1) * lh - view_h)
+        kk = ease_out((t - shown[-1][1]) / 0.35) if shown else 1.0
+        scroll = lerp(prev_target, target, kk)
+        c.save()
+        c.clipRect(skia.Rect.MakeXYWH(x0 + 10, view_top - 6, w - 20, view_h + 12))
+        for j, (l, tt) in enumerate(shown):
+            yy = view_top + j * lh - scroll + size
+            txt = l["text"]
+            if l.get("cmd"):
+                n = int(len(txt) * clamp((t - tt) / max(0.3, 0.035 * len(txt))))
+                D.draw_text(c, "$", x0 + 34, yy, size, col("#7EE787"), mono=True)
+                D.draw_text(c, D.ellipsize(txt[:n], w - 120, size, mono=True), x0 + 74, yy, size, col("#F0F6FC"), mono=True)
+            else:
+                colr = {"ok": "#7EE787", "err": "#FF7B72", "dim": "#9DB0C8"}.get(l.get("tone", ""), "#C9D6E8")
+                D.draw_text(c, D.ellipsize(txt, w - 90, size, mono=True), x0 + 34, yy, size, col(colr), mono=True)
+        c.restore()
+        if shown and int(t * 2.2) % 2 == 0:
+            c.drawRect(skia.Rect.MakeXYWH(x0 + 34, min(y1 - 40, view_top + len(shown) * lh - scroll + 6), 18, 34),
+                       D.paint(col("#F0F6FC", 0.8)))
+
+
+def wrapper_spec(spec: dict, kind: str) -> dict | None:
+    return next((e for e in spec.get("effects", []) if isinstance(e, dict) and e.get("type") == kind), None)

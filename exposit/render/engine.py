@@ -967,7 +967,9 @@ class Chart(Treatment):
 TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cutaway": Cutaway, "chart": Chart}
 LEGACY_TREATMENTS = tuple(TREATMENTS)
 from .pro import PRO_TREATMENTS          # noqa: E402  (pro imports engine lazily)
+from . import motion                      # noqa: E402
 TREATMENTS.update(PRO_TREATMENTS)
+TREATMENTS["motion"] = motion.MotionScene
 
 
 # ------------------------------------------------------------------ frame + clip
@@ -1028,13 +1030,17 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
         if k > 0:
             px, py = tr.center(cam.get("exit_focus", "")) if cam.get("exit_focus") else (fx, fy)
             s, fx, fy = s * lerp(1.0, 1.9, k), lerp(fx, px, k), lerp(fy, py, k)
+    _effects_before(canvas, tr, t, 1920, 1080)
     canvas.save()
     canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))   # match-cut carry (transitions)
     canvas.translate(960, 540)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
+    canvas.translate(0, -_scroll(tr, t))
     tr.draw(canvas, t)
+    _effects_after_stage(canvas, tr, t, 1920, 1080)
     canvas.restore()
+    _effects_after(canvas, tr, t, 1920, 1080)
     # overlays, not affected by the camera
     title = sc.spec.get("heading")
     if title:
@@ -1103,13 +1109,17 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     if not getattr(tr, "no_background", False):
         background(canvas, sc, 1080, 1920)
     s, fx, fy = stage_camera(tr, t)
+    _effects_before(canvas, tr, t, 1080, 1920)
     canvas.save()
     canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))
     canvas.translate(tr.CX, tr.CY)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
+    canvas.translate(0, -_scroll(tr, t))
     tr.draw(canvas, t)
+    _effects_after_stage(canvas, tr, t, 1080, 1920)
     canvas.restore()
+    _effects_after(canvas, tr, t, 1080, 1920)
     title = sc.spec.get("heading")
     if title:
         design.draw_heading(canvas, sc.tpl, title, True, ease((t - 0.2) / 0.5))
@@ -1360,3 +1370,47 @@ def render_cover(theme: str, headline: str, kicker: str = "", visual: tuple[dict
         assets.draw_icon(c, "network", bx + 38, by + 32, 34, acc, 1.0, 2.75)
         design.put_text(c, brand, bx + 66, by + 44, f, col(T["text"]))
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 100))
+
+
+# ------------------------------------------------------------------ wrapper motion effects (motion.WRAPPERS)
+def _scroll(tr, t: float) -> float:
+    e = motion.wrapper_spec(tr.sc.spec, "pinned_heading")
+    return motion.pinned_scroll(t, tr.sc.dur, float(e.get("distance", 500))) if e else 0.0
+
+
+def _effects_before(canvas, tr, t: float, W: float, H: float) -> None:
+    e = motion.wrapper_spec(tr.sc.spec, "parallax")
+    if e:
+        motion.parallax_layers(canvas, tr.sc.tpl, W, H, t, tr.sc.dur, int(e.get("layers", 4)), float(e.get("opacity", 1.0)))
+
+
+def _effects_after_stage(canvas, tr, t: float, W: float, H: float) -> None:
+    """Effects drawn in the treatment's own coordinates (they follow its layout)."""
+    e = motion.wrapper_spec(tr.sc.spec, "focus_frame")
+    if not e:
+        return
+    rects, times = [], []
+    prev = 0.6
+    for tg in e.get("targets", []):
+        tid = tg.get("id") if isinstance(tg, dict) else tg
+        if tid not in tr.pos:
+            continue
+        x, y, w, h = tr.pos[tid]
+        pad = float(e.get("pad", 34))
+        below = float(e.get("below", 130 if tr.sc.spec.get("treatment") in ("iconflow", "sequence") else 0))
+        side = float(e.get("side", 60 if w < 260 else 0))
+        if getattr(tr, "side", False):                    # labels beside the badges (9:16 single column)
+            right = design.PORTRAIT_X[1] - (x + w) - 10
+            rects.append((x - pad, y - pad, w + pad + right, h + 2 * pad))
+        else:
+            rects.append((x - pad - side, y - pad, w + 2 * (pad + side), h + 2 * pad + below))
+        tt = tr.sc.cue_time(tg.get("at")) if isinstance(tg, dict) and tg.get("at") is not None else None
+        prev = tt if tt is not None else prev + 1.2
+        times.append(prev)
+    W2, H2 = (1080, 1920) if tr.portrait else (1920, 1080)
+    motion.focus_frame(canvas, tr.sc.tpl, rects, times, t, W2, H2 + 2000)
+
+
+def _effects_after(canvas, tr, t: float, W: float, H: float) -> None:
+    if motion.wrapper_spec(tr.sc.spec, "pinned_heading") and tr.sc.spec.get("heading"):
+        motion.heading_mask(canvas, tr.sc.tpl, W, design.content_top(tr.sc.spec, tr.portrait) - 10)

@@ -84,11 +84,25 @@ def draw_image_quad(c, img: skia.Image, w: float, h: float, quad, alpha: float =
 
 
 _card_cache: dict = {}
+BIG = dict(R=100.0, title=72, body=44, pad=56)              # the zoomed hero card
+SMALL = dict(R=70.0, title=50, body=34, pad=40)
 
 
-def card_image(tpl, w: int, h: int, item: dict, key, accent: bool = False) -> skia.Image:
+def card_height(item: dict, w: float, big: bool = False) -> float:
+    """The height a card needs for its icon, title and body at width w: cards are sized to their content."""
+    S = BIG if big else SMALL
+    h = S["pad"] + 2 * S["R"] + 30
+    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 36, "Bold")
+    h += len(rows) * sz * 1.08 + 12
+    if item.get("text"):
+        brows, bs = D.fit_block(item["text"], w - 2 * S["pad"] - 10, 3, S["body"], 30)
+        h += len(brows) * bs * 1.2 + 10
+    return h + S["pad"]
+
+
+def card_image(tpl, w: int, h: int, item: dict, key, accent: bool = False, big: bool = False) -> skia.Image:
     """A card (icon, title, body) rendered once into an image at 1.5x, for mapping onto a 3D quad."""
-    k = (tpl.name, w, h, key, accent)
+    k = (tpl.name, w, h, key, accent, big)
     img = _card_cache.get(k)
     if img is not None:
         return img
@@ -101,15 +115,16 @@ def card_image(tpl, w: int, h: int, item: dict, key, accent: bool = False) -> sk
     r0 = tpl.card["radius"]                                   # opaque backing: cards in 3D must not show through
     c.drawRoundRect(skia.Rect.MakeXYWH(6, 6, w - 12, h - 12), r0, r0, D.paint(col(T["bg0"] if tpl.dark else "#FFFFFF")))
     D.card(c, tpl, 6, 6, w - 12, h - 12, 1.0, 1.0 if accent else 0.0, 0.0, seed=hash(str(key)) % 97)
-    R = min(70.0, h * 0.2)
-    D.badge(c, tpl, assets.resolve(item.get("icon")) or "box", w / 2, 40 + R, R, 1.0, tone=item.get("tone"), seed=3)
-    rows, sz = D.fit_block(item.get("title", ""), w - 60, 2, 50, 36, "Bold")
-    y = 40 + 2 * R + 30
+    S = BIG if big else SMALL
+    R = min(S["R"], h * 0.2)
+    D.badge(c, tpl, assets.resolve(item.get("icon")) or "box", w / 2, S["pad"] + R, R, 1.0, tone=item.get("tone"), seed=3)
+    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 36, "Bold")
+    y = S["pad"] + 2 * R + 30
     for j, r in enumerate(rows):
         D.draw_text(c, r, w / 2, y + sz * 0.9 + j * sz * 1.08, sz, col(T["text"]), "Bold", "center")
     y += len(rows) * sz * 1.08 + 12
     if item.get("text"):
-        brows, bs = D.fit_block(item["text"], w - 70, 3, 34, 30)
+        brows, bs = D.fit_block(item["text"], w - 2 * S["pad"] - 10, 3, S["body"], 30)
         for j, r in enumerate(brows):
             D.draw_text(c, r, w / 2, y + bs + j * bs * 1.2, bs, col(T["text2"]), "Regular", "center")
     img = surf.makeImageSnapshot()
@@ -130,6 +145,26 @@ def _box(x0, y0, z0, x1, y1, z1, tag=0):
     return tris
 
 
+RACK_UNITS = 6
+
+
+@functools.lru_cache(maxsize=1)
+def _land_cells() -> frozenset:
+    d = assets.world()["dots"]
+    step = assets.world().get("dot_step_deg", 1.5)
+    return frozenset((round(d[i] / step), round(d[i + 1] / step)) for i in range(0, len(d), 2))
+
+
+def _is_land(cells, lon: float, lat: float) -> bool:
+    step = 1.5
+    i, j = round(lon / step - 0.5) + 0.5, round(lat / step - 0.5) + 0.5
+    for di in (-0.5, 0.5):
+        for dj in (-0.5, 0.5):
+            if (round(lon / step + di), round(lat / step + dj)) in cells:
+                return True
+    return False
+
+
 @functools.lru_cache(maxsize=8)
 def mesh(name: str) -> tuple:
     """Triangles ((p0, p1, p2, tag), ...) in model space, roughly unit size; tag 1 marks accent parts."""
@@ -138,9 +173,9 @@ def mesh(name: str) -> tuple:
         tris = _box(-1, -1, -1, 1, 1, 1)
     elif name == "server_rack":
         tris = _box(-0.75, -1.5, -0.6, 0.75, 1.5, 0.6)
-        for i in range(6):                                     # rack units sticking out of the front
-            y0 = -1.3 + i * 0.44
-            tris += _box(-0.62, y0, -0.68, 0.62, y0 + 0.3, -0.6, tag=1 if i % 2 == 0 else 2)
+        for i in range(RACK_UNITS):                            # rack units standing out of the front
+            y0 = -1.32 + i * 0.44
+            tris += _box(-0.64, y0, -0.70, 0.64, y0 + 0.34, -0.6, tag=2)
     elif name == "database":
         seg = 24
         for k in range(3):                                     # three stacked discs
@@ -160,16 +195,20 @@ def mesh(name: str) -> tuple:
               (7, 1, 8), (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9), (4, 9, 5), (2, 4, 11), (6, 2, 10), (8, 6, 7), (9, 8, 1)]
         norm = lambda p: tuple(x / math.sqrt(sum(y * y for y in p)) for x in p)
         faces = [tuple(norm(vs[i]) for i in f) for f in fs]
-        for _ in range(2):                                      # subdivide twice: 320 faces
+        for _ in range(3):                                      # subdivide three times: 1280 faces
             nf = []
             for a, b, c_ in faces:
                 ab, bc, ca = norm(tuple((x + y) / 2 for x, y in zip(a, b))), norm(tuple((x + y) / 2 for x, y in zip(b, c_))), norm(tuple((x + y) / 2 for x, y in zip(c_, a)))
                 nf += [(a, ab, ca), (b, bc, ab), (c_, ca, bc), (ab, bc, ca)]
             faces = nf
-        for i, (a, b, c_) in enumerate(faces):
-            m = [(x + y + z) / 3 for x, y, z in zip(a, b, c_)]
-            land = math.sin(m[0] * 5.1) * math.cos(m[1] * 4.3) + math.sin(m[2] * 3.7) > 0.35   # procedural "continents"
-            tris.append(((a[0] * 1.3, a[1] * 1.3, a[2] * 1.3), (b[0] * 1.3, b[1] * 1.3, b[2] * 1.3), (c_[0] * 1.3, c_[1] * 1.3, c_[2] * 1.3), 1 if land else 0))
+        cells = _land_cells()
+        for a, b, c_ in faces:                                  # Natural Earth land (the vendored 1.5 degree grid)
+            m = norm(tuple((x + y + z) / 3 for x, y, z in zip(a, b, c_)))
+            lat = math.degrees(math.asin(clamp(-m[1], -1, 1)))
+            lon = math.degrees(math.atan2(m[0], -m[2]))
+            land = _is_land(cells, lon, lat)
+            r = 1.36 if land else 1.3                           # land raised a little above the ocean
+            tris.append(((a[0] * r, a[1] * r, a[2] * r), (b[0] * r, b[1] * r, b[2] * r), (c_[0] * r, c_[1] * r, c_[2] * r), 1 if land else 0))
     return tuple(tris)
 
 
@@ -179,7 +218,10 @@ def draw_model(c, tpl, name: str, cx: float, cy: float, size: float, ay: float, 
     T = tpl.T
     neon = tpl.dark if neon is None else neon
     body = tpl.icon.get("badge") or T["accent"]
-    base = {0: body if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#FFFFFF", 0.35) if tpl.dark else "#9FB3CC"}
+    if name == "globe":                                        # dark ocean, bright land
+        base = {0: D.mix(T["bg0"], body, 0.55) if tpl.dark else "#AFC4DA", 1: tpl.conn["active"] if tpl.dark else "#2F8F5B"}
+    else:
+        base = {0: body if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#0B1220", 0.45) if tpl.dark else "#8BA0BA"}
     lx, ly, lz = -0.35, -0.62, -0.70                         # towards the light: up, left, towards the viewer
     out = []
     for p0, p1, p2, tag in mesh(name):
@@ -197,16 +239,97 @@ def draw_model(c, tpl, name: str, cx: float, cy: float, size: float, ay: float, 
         if area >= 0:                                          # back face (screen winding)
             continue
         lam = 0.42 + 0.58 * max(0.0, nx * lx + ny * ly + nz * lz)
-        out.append((sum(p[2] for p in q) / 3, s, tag, lam))
+        e3 = [math.dist(q[0], q[1]), math.dist(q[1], q[2]), math.dist(q[2], q[0])]
+        out.append((sum(p[2] for p in q) / 3, s, tag, lam, e3.index(max(e3))))
     out.sort(key=lambda r: -r[0])
     edge = D.paint(col(tpl.conn["active"], 0.7 * alpha), 1.8) if neon else D.paint(col(T["line"], 0.5 * alpha), 1.0)
-    for _, s, tag, lam in out:
+    hi = D.paint(col("#FFFFFF" if neon else tpl.conn["active"], 0.85 * alpha), 2.2)
+    thin = name == "globe"
+    if thin:                                                  # convex and culled: no overlaps, so faces can be
+        batches: dict = {}                                    # batched by shade (12 levels), ocean first, then land
+        for _, s_, tag, lam, _d in out:
+            key = (tag, round(lam * 12))
+            pth = batches.setdefault(key, skia.Path())
+            pth.moveTo(s_[0][0], s_[0][1]); pth.lineTo(s_[1][0], s_[1][1]); pth.lineTo(s_[2][0], s_[2][1]); pth.close()
+        for (tag, lv), pth in sorted(batches.items()):
+            shade = D.mix("#000000", base.get(tag, base[0]), lv / 12)
+            c.drawPath(pth, D.paint(col(shade, alpha)))
+            if tag == 1:                                      # seal hairline gaps where they show (bright land)
+                c.drawPath(pth, D.paint(col(shade, alpha), 1.2))
+        if neon:
+            land = skia.Path()
+            for (tag, lv), pth in batches.items():
+                if tag == 1:
+                    land.addPath(pth)
+            c.drawPath(land, D.paint(col(tpl.conn["active"], 0.35 * alpha), 1.0))
+        out = []
+    for _, s, tag, lam, diag in out:
         p = skia.Path()
         p.moveTo(s[0][0], s[0][1]); p.lineTo(s[1][0], s[1][1]); p.lineTo(s[2][0], s[2][1]); p.close()
+        ed = skia.Path()                                       # outline without the triangle's diagonal (quad edges)
+        for k in range(3):
+            if k != diag:
+                ed.moveTo(s[k][0], s[k][1]); ed.lineTo(s[(k + 1) % 3][0], s[(k + 1) % 3][1])
         b = base.get(tag, base[0])
         shade = D.mix("#000000", b, lam)
-        c.drawPath(p, D.paint(col(shade, alpha)))
-        c.drawPath(p, edge)
+        fill = D.paint(col(shade, alpha))
+        c.drawPath(p, fill)
+        if thin:                                              # globe: seal hairline gaps, edges only on land
+            c.drawPath(p, D.paint(col(shade, alpha), 1.2))
+            if tag == 1 and neon:
+                c.drawPath(p, D.paint(col(tpl.conn["active"], 0.35 * alpha), 1.0))
+        else:
+            c.drawPath(p, fill_seal := D.paint(col(shade, alpha), 1.0))
+            if name != "database":                            # the database reads by its rims instead
+                c.drawPath(ed, hi if tag == 2 else edge)
+    if name == "server_rack":
+        _rack_front(c, tpl, cx, cy, size, ax, ay, alpha)
+    elif name == "database":
+        _disk_rims(c, tpl, cx, cy, size, ax, ay, alpha)
+
+
+def _visible_front(ax: float, ay: float) -> bool:
+    return rot((0, 0, -1), ax, ay)[2] < -0.05
+
+
+def _rack_front(c, tpl, cx, cy, size, ax, ay, alpha):
+    """Front-panel lines and status LEDs on each rack unit, drawn when the front faces the camera."""
+    if not _visible_front(ax, ay):
+        return
+    P = lambda x, y, z: project(tuple(v * size if i < 2 else v * size + 600 for i, v in enumerate(rot((x, y, z), ax, ay))), cx, cy, 1400.0)[:2]
+    line = D.paint(col("#FFFFFF" if tpl.dark else "#24364F", 0.55 * alpha), 2)
+    leds = ("#3EE3A0", "#38D6F5", "#3EE3A0", "#FFC04D", "#3EE3A0", "#38D6F5")
+    for i in range(RACK_UNITS):
+        y0 = -1.32 + i * 0.44
+        for k in (0.10, 0.17, 0.24):                           # vent lines across the unit
+            a, b = P(-0.52, y0 + k, -0.705), P(0.18, y0 + k, -0.705)
+            c.drawLine(a[0], a[1], b[0], b[1], line)
+        for j, dx in enumerate((0.36, 0.48)):                  # two status LEDs
+            x, y = P(dx, y0 + 0.17, -0.705)
+            colr = leds[(i + j) % len(leds)]
+            if tpl.dark:
+                D.halo(c, x, y, 16, colr, 0.8 * alpha)
+            c.drawCircle(x, y, max(3.0, size * 0.028), D.paint(col(colr, alpha)))
+
+
+def _disk_rims(c, tpl, cx, cy, size, ax, ay, alpha):
+    """Bright rims where the database's disks meet, so the stacked bands read clearly."""
+    P = lambda x, y, z: project(tuple(v * size if i < 2 else v * size + 600 for i, v in enumerate(rot((x, y, z), ax, ay))), cx, cy, 1400.0)[:2]
+    rim = D.paint(col("#FFFFFF" if tpl.dark else tpl.conn["active"], 0.75 * alpha), 2.4)
+    for k in range(3):
+        for y in (-1.2 + k * 0.85, -1.2 + k * 0.85 + 0.7):
+            pts = []
+            for i in range(25):
+                a = 2 * math.pi * i / 24
+                x, z = math.cos(a), math.sin(a)
+                if rot((x, 0, z), ax, ay)[2] > 0.15:           # only the near half of each rim
+                    if len(pts) > 1:
+                        path = skia.Path(); path.moveTo(*pts[0]); [path.lineTo(*q) for q in pts[1:]]; c.drawPath(path, rim)
+                    pts = []
+                    continue
+                pts.append(P(x, y, z))
+            if len(pts) > 1:
+                path = skia.Path(); path.moveTo(*pts[0]); [path.lineTo(*q) for q in pts[1:]]; c.drawPath(path, rim)
 
 
 # ================================================================== wrapper effects (applied by the engine)
@@ -334,8 +457,9 @@ class MotionScene(ProTreatment):
         item = sp.get("card") or (sp.get("items") or [{}])[0]
         at = self.cue_t(sp.get("at"), 0.4)
         k = ease_out((t - at) / (1.6 * self.sc.motion))
-        w, h = (760.0, 900.0) if self.portrait else (720.0, 640.0)
-        img = card_image(tpl, int(w), int(h), item, ("zoom", item.get("title")), True)
+        w = 860.0 if self.portrait else 900.0
+        h = card_height(item, w, big=True)
+        img = card_image(tpl, int(w), int(h), item, ("zoom", item.get("title")), True, big=True)
         cy = self.top + (self.bottom - self.top) / 2
         z = lerp(1800.0, -180.0, k)
         kr = ease_out(k / 0.55)                               # the tilt settles while the card is still small:
@@ -350,36 +474,55 @@ class MotionScene(ProTreatment):
         lines = sp.get("lines", [])
         mono = bool(sp.get("code"))
         times = self._times(lines, 0.8)
-        size = sp.get("size", 44 if mono else 60)
-        x0 = 80.0 if self.portrait else 160.0
-        maxw = (920.0 if self.portrait else 1600.0)
+        if self.portrait:
+            px, pw = 80.0, 920.0
+        else:
+            px, pw = 160.0, 1600.0
+        py, ph = self.top + 10, self.bottom - self.top - 20
+        size = float(sp.get("size", 38 if mono else 60))
+        inner = pw - (96 if mono else 0)
         rows = []
         for l in lines:
-            if mono:
-                sz = D.fit_size(l["text"], maxw - 60, size, 30, mono=True)
-                rows.append(([D.ellipsize(l["text"], maxw - 60, sz, mono=True)], sz, l))
-            else:
-                rr, sz = D.fit_block(l["text"], maxw, 2, size, 36, "Bold" if l.get("accent") else "SemiBold")
-                rows.append((rr, sz, l))
-        total = sum(len(r) * s * 1.3 + 18 for r, s, _ in rows)
-        y = self.top + max(0.0, (self.bottom - self.top - total) / 2)
-        if mono:
-            D.card(c, tpl, x0 - 30, y - 50, maxw + 20, total + 80, 1.0)
-        for (rr, sz, l), tt in zip(rows, times):
+            wt = "Bold" if l.get("accent") else ("Regular" if mono else "SemiBold")
+            rr, sz = D.fit_block(l["text"], inner, 2, size, 30, wt) if not mono else \
+                ([D.ellipsize(l["text"], inner, D.fit_size(l["text"], inner, size, 34 if size >= 34 else 30, mono=True), mono=True)],
+                 D.fit_size(l["text"], inner, size, 34 if size >= 34 else 30, mono=True))
+            rows.append((rr, sz, l, wt))
+        lh = 1.55 if mono else 1.25
+        content = sum(len(r) * sz * lh for r, sz, _, _ in rows) + 18 * len(rows)
+        if mono:                                               # a code panel sized to its lines, centred in the band
+            full = ph
+            ph = min(full, max(content + 78 + 140, full * 0.55))
+            py = py + (full - ph) / 2
+            D.card(c, tpl, px, py, pw, ph, 1.0, fill=T["bg0"] if tpl.dark else "#0F1B2D")
+            for i, dot in enumerate(("#FF5F57", "#FEBC2E", "#28C840")):
+                c.drawCircle(px + 40 + i * 34, py + 38, 11, D.paint(col(dot)))
+            if sp.get("title"):
+                D.draw_text(c, sp["title"], px + pw / 2, py + 50, 30, col("#B8C7DD"), "Medium", "center", mono=True)
+            c.drawLine(px, py + 78, px + pw, py + 78, D.paint(col("#FFFFFF", 0.12), 2))
+            y = py + 78 + max(40.0, (ph - 78 - content) * 0.35)
+            x0 = px + 48
+        else:
+            y = py + max(0.0, (ph - content) / 2)
+            x0 = px
+        for (rr, sz, l, wt), tt in zip(rows, times):
             if t < tt:
-                y += len(rr) * sz * 1.3 + 18
+                y += len(rr) * sz * lh + 18
                 continue
             k = ease_in_out((t - tt) / 0.5)
-            colr = D.text_on(tpl, tpl.conn["active"]) if l.get("accent") else T["text"]
+            if mono:
+                colr = {"ok": "#7EE787", "err": "#FF7B72", "dim": "#9DB0C8"}.get(l.get("tone", ""), "#7FE3FF" if l.get("accent") else "#E6EDF3")
+            else:
+                colr = D.text_on(tpl, tpl.conn["active"]) if l.get("accent") else T["text"]
             for r in rr:
-                tw = D.text_width(r, sz, "Bold" if l.get("accent") else "SemiBold", mono)
+                tw = D.text_width(r, sz, wt, mono)
                 c.save()
-                c.clipRect(skia.Rect.MakeLTRB(x0 - 4, y - 4, x0 + tw * k + 6, y + sz * 1.3))
-                D.draw_text(c, r, x0, y + sz, sz, col(colr), "Bold" if l.get("accent") else "SemiBold", mono=mono)
+                c.clipRect(skia.Rect.MakeLTRB(x0 - 4, y - 4, x0 + tw * k + 6, y + sz * 1.4))
+                D.draw_text(c, r, x0, y + sz, sz, col(colr), wt, mono=mono)
                 c.restore()
                 if k < 1:                                     # the wipe edge
-                    c.drawRect(skia.Rect.MakeXYWH(x0 + tw * k, y + 4, 6, sz * 1.1), D.paint(col(tpl.conn["active"])))
-                y += sz * 1.3
+                    c.drawRect(skia.Rect.MakeXYWH(x0 + tw * k, y + 2, 6, sz * 1.2), D.paint(col(tpl.conn["active"])))
+                y += sz * lh
             y += 18
 
     # ---- 5 sideways text
@@ -442,8 +585,11 @@ class MotionScene(ProTreatment):
         size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0))
         if tpl.glow:
             D.halo(c, self.CX, cy, size * 2.2, tpl.conn["active"], 0.25 * k)
-        draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, t * float(sp.get("spin", 0.55)) + 0.6,
-                   alpha=k)
+        if name == "server_rack":                             # swings, so the front panel stays in view
+            ay = 0.55 * math.sin(t * float(sp.get("spin", 0.55))) + 0.35
+        else:
+            ay = t * float(sp.get("spin", 0.55)) + 0.6
+        draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, ay, alpha=k)
         if sp.get("label"):
             D.label_under(c, tpl, sp["label"], self.CX, cy + size * 1.9, 900, 52, k, sp.get("sub"), plate=True)
 

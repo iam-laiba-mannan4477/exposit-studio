@@ -105,7 +105,8 @@ def draw_icon(c: skia.Canvas, name: str | None, cx: float, cy: float, size: floa
 
 # ------------------------------------------------------------------ fonts
 FONT_FILES = {"Inter-Regular": "Inter-Regular.otf", "Inter-Medium": "Inter-Medium.otf", "Inter-SemiBold": "Inter-SemiBold.otf",
-              "Inter-Bold": "Inter-Bold.otf", "Mono": "JetBrainsMono-Regular.ttf", "Caveat": "Caveat-Variable.ttf"}
+              "Inter-Bold": "Inter-Bold.otf", "Mono": "JetBrainsMono-Regular.ttf", "Caveat": "Caveat-Variable.ttf",
+              "IMFell": "IMFellEnglish-Regular.ttf", "Pixel": "PressStart2P-Regular.ttf"}
 
 
 @functools.lru_cache(maxsize=16)

@@ -14,7 +14,7 @@ from typing import Callable
 import numpy as np
 import skia
 from .. import config
-from . import assets, design
+from . import assets, design, styles
 
 THEMES = {name: tpl.T for name, tpl in design.TEMPLATES.items()}   # colour keys, for old callers
 KIND_COLOR = {"browser": "blue", "client": "blue", "dns": "teal", "lb": "accent", "nginx": "green", "ingress": "green",
@@ -1012,9 +1012,34 @@ def draw_word_captions(canvas: skia.Canvas, sc, t: float, cx: float, top: float,
         x += f.measureText(w) + gap
 
 
+def style_time(tr, t: float) -> float:
+    """Style motion rules: a 12 or 18 fps feel holds each drawing for several output frames."""
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.fps:
+        return math.floor(t * st.fps + 1e-6) / st.fps
+    return t
+
+
 def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
+    design.set_active(tr.sc.tpl)
+    t = style_time(tr, t)
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.jitter:                                    # stop-motion: the whole set shifts a little per drawing
+        k = int(t * (st.fps or 12))
+        canvas.save()
+        canvas.translate(math.sin(k * 12.9898) * st.jitter * w / 1080, math.cos(k * 78.233) * st.jitter * w / 1080)
+        try:
+            _draw_frame(canvas, tr, t, w, h, captions)
+        finally:
+            canvas.restore()
+    else:
+        _draw_frame(canvas, tr, t, w, h, captions)
+    if st and st.post:                                      # textures (grain, paper, vignette...) as image blits
+        styles.overlay(canvas, st.post, w, h, int(t * 30))
+
+
+def _draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
     sc, T = tr.sc, tr.sc.T
-    design.set_active(sc.tpl)
     if tr.portrait:
         return draw_frame_portrait(canvas, tr, t, w, h, captions)
     canvas.save()
@@ -1169,6 +1194,9 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
 def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase",
           captions: bool = False) -> Treatment:
     """`captions`: burned-in captions will be drawn, so 9:16 content keeps clear of them (stops at y 1340)."""
+    st = styles.style_of(design.template(spec.get("theme") or theme))
+    if st and st.effects and not spec.get("effects"):        # a style's default motion effects
+        spec = dict(spec, effects=[{"type": e} for e in st.effects])
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
     sc.caption_band = bool(captions) and portrait
@@ -1186,7 +1214,14 @@ def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960,
     tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style,
                captions=captions if caption_band is None else caption_band)
     surf = skia.Surface(w, h)
-    draw_frame(surf.getCanvas(), tr, tr.sc.dur * 0.62 if t is None else t, w, h, captions)
+    tt = tr.sc.dur * 0.62 if t is None else t
+    draw_frame(surf.getCanvas(), tr, tt, w, h, captions)
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.post and styles.needs_pixels(st.post):    # style post-process, on the pixels
+        arr = np.zeros((h, w, 4), dtype=np.uint8)
+        surf.readPixels(skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType), arr)
+        styles.post_process(arr, st.post, int(style_time(tr, tt) * 30))
+        return bytes(skia.Image.fromarray(arr, skia.kRGBA_8888_ColorType).encodeToData(skia.kPNG, 90))
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 90))
 
 
@@ -1269,6 +1304,7 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
         shift = _match_shift(tr, ptr, w, h)
         design.set_active(tr.sc.tpl)
     n = max(1, int(round(tr.sc.dur * fps)))
+    st = styles.style_of(tr.sc.tpl)
     surf = skia.Surface(w, h)                             # native pixel order: cached layers blit without conversion
     scratch = skia.Surface(w, h) if prev_img is not None else None
     canvas = surf.getCanvas()
@@ -1282,6 +1318,8 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
         for i in range(n):
             transition_frame(canvas, tr, i / fps, w, h, captions, prev_img, kind, shift, scratch)
             surf.readPixels(rgba, frame)                  # one conversion to RGBA per frame (about 3 ms at 1080p)
+            if st and st.post and styles.needs_pixels(st.post):   # pixel-level steps (sepia, pixelation...)
+                styles.post_process(frame, st.post, int(style_time(tr, i / fps) * 30))
             proc.stdin.write(memoryview(frame))
             if progress and i % 15 == 0:
                 progress(i / n)

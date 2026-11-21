@@ -230,6 +230,9 @@ def scene_hashes(pid: str) -> list[dict]:
         ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
                       *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))   # Phrase hashes unchanged
         out.append({"id": spec["id"], "title": spec.get("title", ""), "audio_hash": ah, "clip_hash": ch, "sentences": sentences, "spec": spec})
+    end = end_slide(rs, out[-1]["spec"] if out else None)
+    if end:
+        out.append(end)
     # Transitions: a scene that enters from the previous one depends on that scene's picture, and a scene the next one
     # transitions from does not fade out. Only those clips get extra hash inputs, so other hashes are unchanged.
     base = [o["clip_hash"] for o in out]
@@ -242,6 +245,44 @@ def scene_hashes(pid: str) -> list[dict]:
         if extra:
             o["clip_hash"] = store.sha("clip+", base[i], extra)
     return out
+
+
+END_ID = "end"
+END_GAP = 0.55                                            # pause between the end slide's spoken lines
+
+
+def end_slide_spec(lines: list[dict], spoken: list[str], transition: str = "crossfade") -> dict:
+    """The end slide as a kinetic scene: each line appears on its spoken word (or in turn, when the word is not said);
+    plain lines in the text colour, accent lines in the accent colour, the brand line last and largest."""
+    said = {engine.norm_word(w) for s in spoken for w in s.split()}
+    out = []
+    for i, l in enumerate(lines):
+        if not isinstance(l, dict) or not str(l.get("text", "")).strip():
+            continue
+        at = {"word": l["at"]} if l.get("at") and engine.norm_word(l["at"]) in said else 0.3 + 0.6 * i
+        size = 120 if l.get("brand") else (96 if l.get("accent") else 84)
+        out.append({"text": l["text"], "at": at, "accent": bool(l.get("accent")), "brand": bool(l.get("brand")), "keep": True, "size": size})
+    return {"id": END_ID, "title": "End slide", "treatment": "kinetic", "lines": out, "cues": [], "locked": True,
+            "end_slide": True, "pad_start": 0.4, "pad_end": 1.8, "transition": transition,
+            "reason": "Added at export from Settings; not part of the AI script."}
+
+
+def end_slide(rs: dict, last_spec: dict | None) -> dict | None:
+    """The end slide entry for scene_hashes, or None when it is switched off. Its narration and clip are hashed from
+    the end-slide settings and the production's voice, speed, template, format and captions only."""
+    s = store.get_settings()
+    if not s.get("end_slide", True):
+        return None
+    spoken = [x.strip() for x in s.get("end_slide_spoken", []) if str(x).strip()]
+    if not spoken:
+        return None
+    tr = (last_spec or {}).get("transition", "fade")
+    spec = end_slide_spec(s.get("end_slide_lines", []), spoken, tr if tr in engine.TRANSITIONS[1:] else "crossfade")
+    ah = store.sha("audio-end", spoken, rs["voice"], rs["speed"], END_GAP, tts.PRONUNCIATION)
+    ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
+                   *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))
+    return {"id": END_ID, "title": "End slide", "audio_hash": ah, "clip_hash": ch, "sentences": spoken, "spec": spec,
+            "gap": END_GAP, "end_slide": True}
 
 
 def resolve_template(pid: str, b: dict) -> str:
@@ -295,7 +336,7 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
         hfile = d / "audio" / f"{s['id']}.hash"
         if not (wav.exists() and hfile.exists() and hfile.read_text() == s["audio_hash"]):
             ctx.say(f"Audio Producer: narrating scene {i + 1} of {n}", 0.40 + 0.15 * i / n)
-            tts.narrate_scene(s["sentences"], wav, rs["voice"], rs["speed"])
+            tts.narrate_scene(s["sentences"], wav, rs["voice"], rs["speed"], gap=s.get("gap", 0.22))
             hfile.write_text(s["audio_hash"])
         s["timing"] = json.loads(wav.with_suffix(".timing.json").read_text(encoding="utf-8"))
     tts.unload()  # free the voice model before rendering
@@ -307,7 +348,7 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             t_start = time.time()
             tmp = clip.with_suffix(".part.mp4")
             prev = {"spec": cur[i - 1]["spec"], "timing": cur[i - 1]["timing"]} if i > 0 else None
-            fade_out = not (i + 1 < n and engine.needs_prev(cur[i + 1]["spec"]))
+            fade_out = not (i + 1 < n and engine.needs_prev(cur[i + 1]["spec"])) and not s.get("end_slide")  # the end slide holds
             info = engine.render_clip(s["spec"], s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
                                       progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None,
                                       caption_style=rs["caption_style"], prev=prev, fade_out=fade_out)
@@ -317,15 +358,19 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
         (d / "storyboard" / f"{s['id']}.png").write_bytes(engine.render_still(s["spec"], s["timing"], None, sw, sh, theme=rs["theme"],
                                                                                  caption_band=bool(rs["captions"])))
         sc = engine.Scene(s["spec"], s["timing"], rs["theme"])
+        events = [{"t": round(e["t"], 3), "action": e["action"]} for e in sc.events]
+        if s.get("end_slide"):                                # a soft sound as each line appears
+            events = [{"t": round(sc.cue_time(l["at"]) or 0.0, 3), "action": "line"} for l in s["spec"]["lines"]]
         man_scenes.append({"id": s["id"], "title": s["title"], "audio_hash": s["audio_hash"], "clip_hash": s["clip_hash"], "start": round(t0, 3),
                            "duration": round(round(sc.dur * rs["fps"]) / rs["fps"], 3), "pad_start": sc.pad0, "treatment": s["spec"].get("treatment"),
-                           "events": [{"t": round(e["t"], 3), "action": e["action"]} for e in sc.events]})
+                           "events": events, **({"end_slide": True, "locked": True} if s.get("end_slide") else {})})
         t0 += man_scenes[-1]["duration"]
     store.write_json(pid, "export/manifest.json", {"scenes": man_scenes, "duration": round(t0, 3), "settings": rs, "final_hash": ""})
     return True
 
 
-SFX_FOR = {"packet": "packet", "highlight": "highlight", "callout": "callout", "count": "count", "enter": "enter", "type": "type"}
+SFX_FOR = {"packet": "packet", "highlight": "highlight", "callout": "callout", "count": "count", "enter": "enter", "type": "type",
+           "line": "soft"}
 
 
 def run_export(pid: str, ctx: Ctx) -> bool:
@@ -356,9 +401,10 @@ def run_export(pid: str, ctx: Ctx) -> bool:
         f"- **{c['id']}** {c['text']}\n" + "".join(f"  - [{s['title']}]({s['url']}) ({s.get('kind','')})\n" for s in c.get("sources", [])) for c in facts["claims"]), encoding="utf-8")
     ctx.say("Quality Reviewer: automated checks on the final video", 0.97)
     brief = _brief(pid)
+    tail = sum(s["duration"] for s in man["scenes"] if s.get("end_slide"))
     checks = compose.checks(str(ex / "video.mp4"), {"width": rs["w"], "height": rs["h"], "fps": rs["fps"], "duration": _target_seconds(brief),
-                                                    "tolerance": max(3.0, 0.08 * _target_seconds(brief))})
-    treatments = sorted({s["treatment"] for s in man["scenes"]})
+                                                    "tolerance": max(3.0, 0.08 * _target_seconds(brief)), "exclude_tail": tail})
+    treatments = sorted({s["treatment"] for s in man["scenes"] if not s.get("end_slide")})
     checks.append({"name": "No paid service was used", "passed": not any(j["paid"] for j in store.list_jobs(500, pid)), "detail": "Job log shows local tools only"})
     gate = {"gate": "final", "passed": all(c["passed"] for c in checks), "criteria": checks, "treatments": treatments, "mix": mixinfo}
     _save_gate(pid, gate, True)

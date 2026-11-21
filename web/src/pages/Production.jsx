@@ -205,6 +205,8 @@ function Editor({ p, reload }) {
       <aside className="scenes" aria-label="Scenes"><span className="label">Scenes</span>
         {p.board.scenes.map((s, i) => { const m = man?.scenes.find(x => x.id === s.id); return <button key={s.id} className={'scene-item ' + (s.id === spec.id ? 'on' : '')} onClick={() => pick(s.id)}>
           <span><span className="mono muted">{i + 1}</span>&nbsp; {s.title}</span><span className="mono muted">{m ? fmtDur(m.start) : ''}</span></button> })}
+        {man?.scenes.filter(m => m.end_slide).map(m => <button key={m.id} className="scene-item locked" title="Added at export. Change it on the Settings page." onClick={() => seek(m.start + 0.05)}>
+          <span><span className="mono muted">🔒</span>&nbsp; End slide</span><span className="mono muted">{fmtDur(m.start)}</span></button>)}
         <div className="row" style={{ gap: 6, marginTop: 8 }}><Btn sm disabled={idx === 0} onClick={() => move(-1)}>Move up</Btn><Btn sm disabled={idx === p.board.scenes.length - 1} onClick={() => move(1)}>Move down</Btn></div>
         <span className="muted" style={{ marginTop: 8 }}>Split and merge scenes <Planned /></span>
       </aside>
@@ -261,7 +263,9 @@ function Editor({ p, reload }) {
         <span className="muted">Click the timeline to move the playhead. Scene length follows its narration.</span></div>
       <div className="tl-scroll"><div className="tl-inner">
         <div className="lane"><div className="head" /><div className="ruler" style={{ flex: 1 }}>{Array.from({ length: Math.floor(total / 10) + 1 }).map((_, i) => <span key={i} style={{ left: pct(i * 10) }}>{fmtDur(i * 10)}</span>)}</div></div>
-        <div className="lane"><div className="head">Visual</div><div className="body" onClick={click}>{man?.scenes.map((s, i) => <div key={s.id} className={'clip scene ' + (s.id === spec.id ? 'on' : '')} style={{ left: pct(s.start), width: `calc(${pct(s.duration)} - 2px)` }} onClick={e => { e.stopPropagation(); pick(s.id) }}>{i + 1} · {s.title}</div>)}</div></div>
+        <div className="lane"><div className="head">Visual</div><div className="body" onClick={click}>{man?.scenes.map((s, i) => s.end_slide
+          ? <div key={s.id} className="clip scene locked" title="End slide: locked, edit it in Settings" style={{ left: pct(s.start), width: `calc(${pct(s.duration)} - 2px)` }} onClick={e => { e.stopPropagation(); seek(s.start + 0.05) }}>🔒 End slide</div>
+          : <div key={s.id} className={'clip scene ' + (s.id === spec.id ? 'on' : '')} style={{ left: pct(s.start), width: `calc(${pct(s.duration)} - 2px)` }} onClick={e => { e.stopPropagation(); pick(s.id) }}>{i + 1} · {s.title}</div>)}</div></div>
         <div className="lane small"><div className="head">Narration</div><div className="body" onClick={click}>{man?.scenes.map(s => <div key={s.id} className="clip voice" style={{ left: pct(s.start + s.pad_start), width: `calc(${pct(Math.max(0.2, s.duration - s.pad_start - 0.5))} - 2px)` }} />)}</div></div>
         <div className="lane small"><div className="head">Captions</div><div className="body" onClick={click}>{man?.scenes.map(s => <div key={s.id} className="clip cap" style={{ left: pct(s.start + s.pad_start), width: `calc(${pct(Math.max(0.2, s.duration - s.pad_start - 0.5))} - 2px)` }} />)}</div></div>
         <div className="lane small"><div className="head">Cues</div><div className="body" onClick={click}>{man?.scenes.flatMap(s => s.events.map((e, i) => <div key={s.id + i} className="cue" title={e.action} style={{ left: pct(s.start + e.t) }} />))}</div></div>

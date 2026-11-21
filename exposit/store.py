@@ -88,6 +88,17 @@ DEFAULT_SETTINGS = {
     "repair_rounds": 1,
     "scout_last_run": 0,
     "default_review_mode": "final_only",
+    # End slide (outro): appended to every video at export, outside the AI script
+    "end_slide": True,
+    "end_slide_spoken": ["If you want tech to make sense to you,", "Like.", "Share.", "And follow Tech Hub."],
+    "end_slide_lines": [                     # on screen; each appears on its spoken word ("at")
+        {"text": "If you want tech", "at": "If", "accent": False},
+        {"text": "to make sense to you", "at": "make", "accent": False},
+        {"text": "Like", "at": "Like", "accent": True},
+        {"text": "Share", "at": "Share", "accent": True},
+        {"text": "& Follow", "at": "follow", "accent": True},
+        {"text": "TechHub", "at": "Hub", "accent": False, "brand": True},
+    ],
 }
 
 

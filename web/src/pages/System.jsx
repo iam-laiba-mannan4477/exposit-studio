@@ -1,3 +1,4 @@
+const NL = String.fromCharCode(10)
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, useApi, useAct, Shell, Card, Btn, Badge, StateBadge, Planned, Empty, ErrorBox, Loading, Field, Line, Progress, Modal, Seg, fmtTime } from '../ui.jsx'
@@ -98,6 +99,19 @@ export function Settings() {
             {s.caption_style === 'word' && !s.burn_captions && <p className="muted">Captions are off, so the style has no effect until you turn them on.</p>}
             <Check k="music">Add the generated ambient music bed</Check><Check k="sfx">Add sound effects on visual cues</Check>
             <Line k="Urdu narration"><Planned /></Line><Line k="Premium cloud voices"><Planned>Optional, paid · off</Planned></Line><Line k="Licensed music library"><Planned /></Line></Card>
+          <Card title="End slide">
+            <Check k="end_slide">Add an end slide to every video (after the content; not part of the AI script)</Check>
+            <span className="muted">Rendered in the production's own template, format, voice and speed, with its music and a soft sound per line. It does not count towards the video length check. Changing it re-renders only the end slide.</span>
+            <Field label="Spoken, one sentence per line" hint="A short pause follows each sentence. Write names as they should be said (Tech Hub, not Techub).">
+              <textarea rows={4} disabled={!s.end_slide} value={(s.end_slide_spoken || []).join(NL)} onChange={e => set('end_slide_spoken', e.target.value.split(NL))} /></Field>
+            <span className="label">On screen, in order</span>
+            {(s.end_slide_lines || []).map((l, i) => <div className="row" key={i} style={{ gap: 6, alignItems: 'center' }}>
+              <input style={{ flex: '2 1 0' }} disabled={!s.end_slide} value={l.text} aria-label={`Line ${i + 1} text`} onChange={e => set('end_slide_lines', s.end_slide_lines.map((x, j) => j === i ? { ...x, text: e.target.value } : x))} />
+              <input style={{ flex: '1 1 0' }} disabled={!s.end_slide} value={l.at || ''} placeholder="on word" title="Appears when this spoken word is said" aria-label={`Line ${i + 1} cue word`} onChange={e => set('end_slide_lines', s.end_slide_lines.map((x, j) => j === i ? { ...x, at: e.target.value } : x))} />
+              <label className="row center" style={{ gap: 4 }}><input type="checkbox" disabled={!s.end_slide} checked={!!l.accent} onChange={e => set('end_slide_lines', s.end_slide_lines.map((x, j) => j === i ? { ...x, accent: e.target.checked } : x))} />Accent</label>
+              <Btn sm disabled={!s.end_slide} onClick={() => set('end_slide_lines', s.end_slide_lines.filter((_, j) => j !== i))}>Remove</Btn></div>)}
+            <Btn sm disabled={!s.end_slide} onClick={() => set('end_slide_lines', [...(s.end_slide_lines || []), { text: '', at: '', accent: false }])}>Add a line</Btn>
+          </Card>
           <Card title="This machine">{!h ? <Loading rows={2} /> : <>
             <Line k="Version">{h.version}</Line><Line k="FFmpeg"><Badge tone={h.ffmpeg ? 'ok' : 'danger'}>{h.ffmpeg ? 'Found' : 'Missing'}</Badge></Line>
             {h.voice_engines.map(e => <Line key={e.id || e.name} k={`Voice: ${e.name || e.id}`}><Badge tone={e.available ? 'ok' : 'warn'}>{e.available ? 'Ready' : 'Not installed'}</Badge></Line>)}

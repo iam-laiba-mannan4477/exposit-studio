@@ -48,6 +48,11 @@ def test_exports_are_real_files(client):
     assert client.get(f"/api/productions/{pid}/file/../../exposit.db").status_code in (400, 404)
 
 
+def store_settings():
+    from exposit import store
+    return store.get_settings()
+
+
 def transition_dependents(board_scenes: list[dict], order: list[str], changed: set[str]) -> set[str]:
     """Scenes whose clip changes when `changed` scenes change, through transitions: a scene that enters from its
     predecessor depends on that scene's picture, and a scene does not fade out when its successor transitions from it."""
@@ -129,7 +134,8 @@ def test_instruction_edit_is_a_proposal_until_accepted(client, fake_agent):
 def test_switch_to_vertical_reuses_narration(client):
     pid = state["pid"]
     plan = client.put(f"/api/productions/{pid}/brief", json={"format": "9:16"}).json()["plan"]
-    assert plan["renders"] == 6 and plan["narrations"] == 0, "a new shape re-renders pictures only; voice and AI work are reused"
+    n_clips = len(get(client)["board"]["scenes"]) + (1 if store_settings()["end_slide"] else 0)   # + the end slide
+    assert plan["renders"] == n_clips and plan["narrations"] == 0, "a new shape re-renders pictures only; voice and AI work are reused"
     r = client.post(f"/api/productions/{pid}/rebuild").json()
     j = wait_job(client, r["job"])
     assert j["state"] == "done", j["log"]

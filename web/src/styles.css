@@ -133,3 +133,5 @@ pre { margin: 0; font: 12px/18px var(--mono); white-space: pre-wrap; word-break:
 .swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border-strong); display: inline-block; }
 @media (max-width: 1100px) { .inspector { flex-basis: 280px; } .scenes { flex-basis: 190px; } }
 @media (max-width: 860px) { .editor-top { flex-direction: column; overflow: auto; } .scenes, .inspector { flex: 0 0 auto; border: 0; border-bottom: 1px solid var(--border-subtle); } }
+
+.scene-item.locked, .clip.scene.locked { opacity: .75; font-style: italic; }

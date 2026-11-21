@@ -62,8 +62,11 @@ def checks(path: str, expect: dict) -> list[dict]:
                 "detail": f"{p['width']} x {p['height']}"})
     res.append({"name": "Frame rate", "passed": abs(p["fps"] - expect["fps"]) < 0.01, "detail": f"{p['fps']} fps"})
     tol = expect.get("tolerance", 3.0)
-    res.append({"name": "Duration", "passed": abs(p["duration"] - expect["duration"]) <= tol,
-                "detail": f"{p['duration']:.1f} s (target {expect['duration']:.0f} s, tolerance {tol:.0f} s)"})
+    tail = float(expect.get("exclude_tail", 0.0))        # the end slide is not part of the content length
+    main = p["duration"] - tail
+    res.append({"name": "Duration", "passed": abs(main - expect["duration"]) <= tol,
+                "detail": f"{main:.1f} s (target {expect['duration']:.0f} s, tolerance {tol:.0f} s)"
+                          + (f"; end slide {tail:.1f} s not counted" if tail else "")})
     out = _run(["-i", path, "-vf", "blackdetect=d=0.7:pix_th=0.06,freezedetect=n=0.001:d=5", "-af",
                 "silencedetect=n=-45dB:d=3,volumedetect", "-f", "null", "-"])
     black = re.findall(r"black_start:([\d.]+)", out)

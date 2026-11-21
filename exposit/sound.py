@@ -62,7 +62,8 @@ def tick() -> np.ndarray:
 
 
 SFX = {"packet": lambda: blip(740), "highlight": lambda: blip(988, 0.18), "callout": lambda: blip(587, 0.3),
-       "count": lambda: blip(1174, 0.16), "enter": lambda: blip(523, 0.3), "transition": whoosh, "type": tick}
+       "count": lambda: blip(1174, 0.16), "enter": lambda: blip(523, 0.3), "transition": whoosh, "type": tick,
+       "soft": lambda: blip(660, 0.2) * 0.45}         # end-slide lines: quieter than cue sounds
 
 
 def mix(narration: list[tuple[float, str]], events: list[tuple[float, str]], duration: float, out_wav: str,

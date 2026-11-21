@@ -522,7 +522,7 @@ class Kinetic(Treatment):
             k = ease((t - times[i]) / 0.45)
             older = any(t >= tt for tt in times[i + 1:])
             size = sizes[i]
-            f = font(size, "Bold" if l.get("accent") else "SemiBold")
+            f = font(size, "Bold" if l.get("accent") or l.get("brand") else "SemiBold")
             y = y0 + sum(s * 1.22 + 26 for s in sizes[:i]) + size * 0.82 + (1 - k) * 36
             text(c, l["text"], 960, y, f, col(self._line_color(l, older), k), "center")
 
@@ -533,7 +533,7 @@ class Kinetic(Treatment):
         times = [sc.cue_time(l.get("at")) or 0.0 for l in lines]
         blocks = []
         for l in lines:                                     # each line wraps to the 940 px column
-            wt = "Bold" if l.get("accent") else "SemiBold"
+            wt = "Bold" if l.get("accent") or l.get("brand") else "SemiBold"
             size = design.fit_size(l["text"], 940, max(96, min(l.get("size", 120), 132)), 84, wt)
             f = font(size, wt)
             blocks.append((f, size, wrap(l["text"], f, 940)))

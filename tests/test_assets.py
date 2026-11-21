@@ -27,7 +27,8 @@ def test_every_font_file_has_its_licence():
     for f in assets.FONT_FILES.values():
         assert (config.ASSETS / "fonts" / f).exists(), f
         assert assets.typeface(next(k for k, v in assets.FONT_FILES.items() if v == f)) is not None
-    assert (config.ASSETS / "fonts" / "OFL-Caveat.txt").read_text(encoding="utf-8").count("SIL OPEN FONT LICENSE") >= 1
+    for lic in ("OFL-Caveat.txt", "OFL-IMFellEnglish.txt", "OFL-PressStart2P.txt", "OFL-Inter.txt", "OFL-JetBrainsMono.txt"):
+        assert "SIL OPEN FONT LICENSE" in (config.ASSETS / "fonts" / lic).read_text(encoding="utf-8").upper(), lic
 
 
 def test_aliases_and_kind_defaults_resolve_to_vendored_icons():

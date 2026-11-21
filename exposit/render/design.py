@@ -190,8 +190,13 @@ def make_font(size: float, weight: str = "Regular", mono: bool = False) -> skia.
     (code, short labels); everything else is Inter. Never smaller than MIN_TEXT."""
     t = active()
     size = max(float(size), MIN_TEXT)
+    fb = getattr(t, "family_bold", None)
     if mono:
         tf = assets.typeface("Mono")
+    elif fb and weight in ("Bold", "SemiBold") and size >= 60:   # style packs: a display face for headings only
+        tf, size = assets.typeface(fb), size * getattr(t, "bold_scale", 1.0)
+    elif t.family in ("IMFell", "Pixel"):
+        tf, size = assets.typeface(t.family), size * getattr(t, "font_scale", 1.0)
     elif t.family == "Caveat":
         tf, size = _caveat(weight in ("SemiBold", "Bold")), size * 1.28
     else:
@@ -586,6 +591,14 @@ def background(c: skia.Canvas, tpl: Template, W: float, H: float) -> None:
 def _paint_background(c, tpl: Template, W, H):
     T = tpl.T
     full = skia.Rect.MakeWH(W, H)
+    if tpl.bg == "style":                                    # style packs paint their own procedural background
+        tpl.paint_bg(c, W, H)
+        if tpl.vignette > 0:
+            p = skia.Paint()
+            p.setShader(skia.GradientShader.MakeRadial(skia.Point(W / 2, H / 2), math.hypot(W, H) * 0.62,
+                                                       [col("#000000", 0.0), col("#000000", tpl.vignette)], [0.55, 1.0]))
+            c.drawRect(full, p)
+        return
     if tpl.bg == "legacy":
         p = skia.Paint()
         p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, 0), skia.Point(W, H)], [col(T["bg0"]), col(T["bg1"])]))
@@ -640,6 +653,27 @@ def _paint_background(c, tpl: Template, W, H):
 # ------------------------------------------------------------------ cards, badges, chips, legends
 def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.0, hl: float = 0.0, dim: float = 0.0,
          radius: float | None = None, seed: int = 0, accent: str | None = None, fill: str | None = None) -> None:
+    """A card; on templates with "tilt" (paper craft) it sits at a small deterministic angle with a curled corner."""
+    tilt = tpl.card.get("tilt")
+    if not tilt or a <= 0.01:
+        return _card(c, tpl, x, y, w, h, a, hl, dim, radius, seed, accent, fill)
+    k = (math.sin((round(x) * 12.9898 + round(y) * 78.233 + seed * 3.17)) * 43758.5453) % 1.0
+    ang = (k * 2 - 1) * tilt
+    c.save()
+    c.rotate(ang, x + w / 2, y + h / 2)
+    _card(c, tpl, x, y, w, h, a, hl, dim, radius, seed, accent, fill)
+    if tpl.card.get("curl"):                               # a lifted corner: its shadow, then the folded flap
+        s = min(46.0, w * 0.12, h * 0.25)
+        soft_shadow(c, x + w - s * 0.9, y + h - s * 0.6, s * 0.9, s * 0.5, 6, "#3A2410", 0.35 * a, 6)
+        flap = skia.Path()
+        flap.moveTo(x + w - s, y + h); flap.lineTo(x + w, y + h - s); flap.lineTo(x + w - s * 0.82, y + h - s * 0.82); flap.close()
+        c.drawPath(flap, paint(col(mix(tpl.card["fill"], "#C9AC8C", 0.55), a)))
+        c.drawPath(flap, paint(col("#B08D6B", 0.6 * a), 1))
+    c.restore()
+
+
+def _card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.0, hl: float = 0.0, dim: float = 0.0,
+          radius: float | None = None, seed: int = 0, accent: str | None = None, fill: str | None = None) -> None:
     """A card in the template's style. `hl` (0..1) glows or tints it as the focus; `dim` fades the rest a little
     (never so far that text on it loses contrast)."""
     if a <= 0.01:
@@ -663,6 +697,11 @@ def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.
             p = skia.Path()
             p.addRRect(skia.RRect.MakeRectXY(skia.Rect.MakeWH(w, h), r, r))
             cc.drawPath(p, paint(col(fc)))
+            if getattr(tpl, "card_texture", None):
+                cc.save()
+                cc.clipPath(p, skia.ClipOp.kIntersect, True)
+                tpl.card_texture(cc, w, h)
+                cc.restore()
             cc.drawPath(sketchify(p, seed + 7, tpl.jitter * 1.4), paint(col(cs["border"]), cs["width"] + 0.8))
         sprite(c, ("card-sketch", seed, r, fc, cs["border"]), x, y, w, h, sk, alpha, pad=10)
         if hl > 0.02:
@@ -673,6 +712,11 @@ def card(c, tpl: Template, x: float, y: float, w: float, h: float, a: float = 1.
     def body(cc):
         rr = skia.Rect.MakeXYWH(0, 0, w, h)
         cc.drawRoundRect(rr, r, r, paint(col(fill_c, 0.86 if cs.get("glass") else 1.0)))
+        if getattr(tpl, "card_texture", None):               # style packs: hatching, paper, cardboard, clay
+            cc.save()
+            cc.clipRRect(skia.RRect.MakeRectXY(rr, r, r), skia.ClipOp.kIntersect, True)
+            tpl.card_texture(cc, w, h)
+            cc.restore()
         if cs.get("glass"):
             p = skia.Paint(AntiAlias=True)
             p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, 0), skia.Point(0, h)], [col("#FFFFFF", 0.08), col("#FFFFFF", 0.0)]))
@@ -773,6 +817,17 @@ def _badge_body(c, tpl: Template, icon, cx: float, cy: float, r: float, tone, se
         c.drawCircle(cx, cy, r, paint(col(ring), 3.0))
         c.drawCircle(cx, cy, r - 9, paint(col(ring, 0.35), 1.5))
         assets.draw_icon(c, icon, cx, cy, r * 1.0, st["color"], 1.0, st["stroke"], glyph=T["bg0"])
+    elif st["style"] == "flat":                               # limited animation: flat colour, thick ink outline
+        fill = tone_col or st["badge"]
+        c.drawCircle(cx, cy, r, paint(col(fill)))
+        c.drawCircle(cx, cy, r, paint(col(st["ring"]), 5.0))
+        assets.draw_icon(c, icon, cx, cy, r * 1.05, st["color"], 1.0, st["stroke"], glyph=fill)
+    elif st["style"] == "silhouette":                         # shadow puppetry: a black cut-out with a coloured rim
+        ring = tone_col or st["ring"]
+        halo(c, cx, cy, r * 1.45, ring, 0.6)
+        c.drawCircle(cx, cy, r, paint(col("#000000")))
+        c.drawCircle(cx, cy, r, paint(col(ring), 3.0))
+        assets.draw_icon(c, icon, cx, cy, r * 1.0, st["color"], 1.0, st["stroke"], glyph="#000000")
     elif st["style"] == "pastel":
         fill = PASTELS.get(tone or "", None) or "#FCE7A8"
         p = skia.Path()
@@ -1053,8 +1108,8 @@ def chip_size(tpl: Template, label: str, icon: str | None = None, size: float = 
 
 def text_on(tpl: Template, colr: str, bg: str | None = None) -> str:
     """`colr` if it reads at 4.5:1 on the template's plain background, otherwise the template's text colour."""
-    bg = bg or (tpl.T["bg0"] if tpl.dark else "#FFFFFF")
-    return colr if contrast(colr, bg) >= 4.6 else tpl.T["text"]
+    bgs = [bg] if bg else [tpl.T["bg0"], tpl.T["bg1"]]          # the template's own background, not white
+    return colr if min(contrast(colr, b) for b in bgs) >= 4.6 else tpl.T["text"]
 
 
 def label_block_h(s: str, max_w: float, size: float = 44, sub: str | None = None, sub_size: float = 32) -> float:

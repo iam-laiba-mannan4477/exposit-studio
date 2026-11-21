@@ -14,7 +14,7 @@ from typing import Callable
 import numpy as np
 import skia
 from .. import config
-from . import assets, design
+from . import assets, design, styles
 
 THEMES = {name: tpl.T for name, tpl in design.TEMPLATES.items()}   # colour keys, for old callers
 KIND_COLOR = {"browser": "blue", "client": "blue", "dns": "teal", "lb": "accent", "nginx": "green", "ingress": "green",
@@ -116,6 +116,11 @@ class Scene:
         self.tpl = design.template(spec.get("theme") or theme)
         self.T = self.tpl.T
         self.pad0 = float(spec.get("pad_start", 0.4))
+        st = styles.style_of(self.tpl)
+        self.intertitle = None                                 # silent film: the heading on a card before the scene
+        if st and st.intertitles and spec.get("heading") and spec.get("treatment") != "kinetic":
+            self.intertitle = spec["heading"]
+            self.pad0 = max(self.pad0, styles.INTERTITLE_SECONDS + 0.3)
         self.pad1 = float(spec.get("pad_end", 0.5))
         self.dur = self.pad0 + float(timing.get("duration", 3.0)) + self.pad1
         self.motion = float(spec.get("motion_scale", 1.0))
@@ -490,6 +495,9 @@ class Kinetic(Treatment):
         if self.portrait:
             return self.draw_portrait(c, t)
         sc, T = self.sc, self.sc.T
+        st = styles.style_of(sc.tpl)
+        if st and st.intertitles:
+            styles.draw_intertitle(c, sc.tpl, "", 1920, 1080, 1.0, False)
         ui = sc.spec.get("ui")
         y0 = 330
         if ui:
@@ -528,15 +536,19 @@ class Kinetic(Treatment):
 
     def draw_portrait(self, c, t):
         sc, T = self.sc, self.sc.T
+        st = styles.style_of(sc.tpl)
+        if st and st.intertitles:                          # silent film: kinetic scenes are intertitle cards
+            styles.draw_intertitle(c, sc.tpl, "", 1080, 1920, 1.0, False)
         ui = sc.spec.get("ui")
         lines = sc.spec.get("lines", [])
         times = [sc.cue_time(l.get("at")) or 0.0 for l in lines]
         blocks = []
-        for l in lines:                                     # each line wraps to the 940 px column
+        col_w = 780 if (st and st.intertitles) else 940      # inside the intertitle card's border
+        for l in lines:                                     # each line wraps to the column
             wt = "Bold" if l.get("accent") or l.get("brand") else "SemiBold"
-            size = design.fit_size(l["text"], 940, max(96, min(l.get("size", 120), 132)), 84, wt)
+            size = design.fit_size(l["text"], col_w, max(96, min(l.get("size", 120), 132)), 84, wt)
             f = font(size, wt)
-            blocks.append((f, size, wrap(l["text"], f, 940)))
+            blocks.append((f, size, wrap(l["text"], f, col_w)))
         total = sum(len(r) * size * 1.14 + 30 for _, size, r in blocks)
         top = 560.0 if ui else design.PORTRAIT_BAND[0]
         y = top + (design.band_bottom(self.sc) - top - total) / 2
@@ -967,7 +979,9 @@ class Chart(Treatment):
 TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cutaway": Cutaway, "chart": Chart}
 LEGACY_TREATMENTS = tuple(TREATMENTS)
 from .pro import PRO_TREATMENTS          # noqa: E402  (pro imports engine lazily)
+from . import motion                      # noqa: E402
 TREATMENTS.update(PRO_TREATMENTS)
+TREATMENTS["motion"] = motion.MotionScene
 
 
 # ------------------------------------------------------------------ frame + clip
@@ -1010,9 +1024,34 @@ def draw_word_captions(canvas: skia.Canvas, sc, t: float, cx: float, top: float,
         x += f.measureText(w) + gap
 
 
+def style_time(tr, t: float) -> float:
+    """Style motion rules: a 12 or 18 fps feel holds each drawing for several output frames."""
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.fps:
+        return math.floor(t * st.fps + 1e-6) / st.fps
+    return t
+
+
 def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
+    design.set_active(tr.sc.tpl)
+    t = style_time(tr, t)
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.jitter:                                    # stop-motion: the whole set shifts a little per drawing
+        k = int(t * (st.fps or 12))
+        canvas.save()
+        canvas.translate(math.sin(k * 12.9898) * st.jitter * w / 1080, math.cos(k * 78.233) * st.jitter * w / 1080)
+        try:
+            _draw_frame(canvas, tr, t, w, h, captions)
+        finally:
+            canvas.restore()
+    else:
+        _draw_frame(canvas, tr, t, w, h, captions)
+    if st and st.post:                                      # textures (grain, paper, vignette...) as image blits
+        styles.overlay(canvas, st.post, w, h, int(t * 30))
+
+
+def _draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
     sc, T = tr.sc, tr.sc.T
-    design.set_active(sc.tpl)
     if tr.portrait:
         return draw_frame_portrait(canvas, tr, t, w, h, captions)
     canvas.save()
@@ -1028,13 +1067,17 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
         if k > 0:
             px, py = tr.center(cam.get("exit_focus", "")) if cam.get("exit_focus") else (fx, fy)
             s, fx, fy = s * lerp(1.0, 1.9, k), lerp(fx, px, k), lerp(fy, py, k)
+    _effects_before(canvas, tr, t, 1920, 1080)
     canvas.save()
     canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))   # match-cut carry (transitions)
     canvas.translate(960, 540)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
+    canvas.translate(0, -_scroll(tr, t))
     tr.draw(canvas, t)
+    _effects_after_stage(canvas, tr, t, 1920, 1080)
     canvas.restore()
+    _effects_after(canvas, tr, t, 1920, 1080)
     # overlays, not affected by the camera
     title = sc.spec.get("heading")
     if title:
@@ -1073,6 +1116,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
                 canvas.drawRoundRect(r, 12, 12, paint(col("#000000", 0.62)))
                 text(canvas, cp["text"], 960, 989, f, col("#FFFFFF"), "center")
                 break
+    _intertitle(canvas, tr, t, 1920, 1080)
     fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
                clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
@@ -1103,13 +1147,17 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     if not getattr(tr, "no_background", False):
         background(canvas, sc, 1080, 1920)
     s, fx, fy = stage_camera(tr, t)
+    _effects_before(canvas, tr, t, 1080, 1920)
     canvas.save()
     canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))
     canvas.translate(tr.CX, tr.CY)
     canvas.scale(s, s)
     canvas.translate(-fx, -fy)
+    canvas.translate(0, -_scroll(tr, t))
     tr.draw(canvas, t)
+    _effects_after_stage(canvas, tr, t, 1080, 1920)
     canvas.restore()
+    _effects_after(canvas, tr, t, 1080, 1920)
     title = sc.spec.get("heading")
     if title:
         design.draw_heading(canvas, sc.tpl, title, True, ease((t - 0.2) / 0.5))
@@ -1149,6 +1197,7 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
                 for j, row in enumerate(rows):
                     text(canvas, row, 540, r.top() + 60 + j * 58, f, col("#FFFFFF"), "center")
                 break
+    _intertitle(canvas, tr, t, 1080, 1920)
     fade = min(clamp(t / 0.3) if getattr(tr, "fade_in", True) else 1.0,
                clamp((sc.dur - t) / 0.3) if getattr(tr, "fade_out", True) else 1.0)
     if fade < 1:
@@ -1159,6 +1208,9 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
 def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: bool = False, caption_style: str = "phrase",
           captions: bool = False) -> Treatment:
     """`captions`: burned-in captions will be drawn, so 9:16 content keeps clear of them (stops at y 1340)."""
+    st = styles.style_of(design.template(spec.get("theme") or theme))
+    if st and st.effects and not spec.get("effects"):        # a style's default motion effects
+        spec = dict(spec, effects=[{"type": e} for e in st.effects])
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
     sc.caption_band = bool(captions) and portrait
@@ -1176,7 +1228,14 @@ def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960,
     tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style,
                captions=captions if caption_band is None else caption_band)
     surf = skia.Surface(w, h)
-    draw_frame(surf.getCanvas(), tr, tr.sc.dur * 0.62 if t is None else t, w, h, captions)
+    tt = tr.sc.dur * 0.62 if t is None else t
+    draw_frame(surf.getCanvas(), tr, tt, w, h, captions)
+    st = styles.style_of(tr.sc.tpl)
+    if st and st.post and styles.needs_pixels(st.post):    # style post-process, on the pixels
+        arr = np.zeros((h, w, 4), dtype=np.uint8)
+        surf.readPixels(skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType), arr)
+        styles.post_process(arr, st.post, int(style_time(tr, tt) * 30))
+        return bytes(skia.Image.fromarray(arr, skia.kRGBA_8888_ColorType).encodeToData(skia.kPNG, 90))
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 90))
 
 
@@ -1259,6 +1318,7 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
         shift = _match_shift(tr, ptr, w, h)
         design.set_active(tr.sc.tpl)
     n = max(1, int(round(tr.sc.dur * fps)))
+    st = styles.style_of(tr.sc.tpl)
     surf = skia.Surface(w, h)                             # native pixel order: cached layers blit without conversion
     scratch = skia.Surface(w, h) if prev_img is not None else None
     canvas = surf.getCanvas()
@@ -1272,6 +1332,8 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
         for i in range(n):
             transition_frame(canvas, tr, i / fps, w, h, captions, prev_img, kind, shift, scratch)
             surf.readPixels(rgba, frame)                  # one conversion to RGBA per frame (about 3 ms at 1080p)
+            if st and st.post and styles.needs_pixels(st.post):   # pixel-level steps (sepia, pixelation...)
+                styles.post_process(frame, st.post, int(style_time(tr, i / fps) * 30))
             proc.stdin.write(memoryview(frame))
             if progress and i % 15 == 0:
                 progress(i / n)
@@ -1360,3 +1422,59 @@ def render_cover(theme: str, headline: str, kicker: str = "", visual: tuple[dict
         assets.draw_icon(c, "network", bx + 38, by + 32, 34, acc, 1.0, 2.75)
         design.put_text(c, brand, bx + 66, by + 44, f, col(T["text"]))
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 100))
+
+
+# ------------------------------------------------------------------ wrapper motion effects (motion.WRAPPERS)
+def _scroll(tr, t: float) -> float:
+    e = motion.wrapper_spec(tr.sc.spec, "pinned_heading")
+    return motion.pinned_scroll(t, tr.sc.dur, float(e.get("distance", 500))) if e else 0.0
+
+
+def _effects_before(canvas, tr, t: float, W: float, H: float) -> None:
+    e = motion.wrapper_spec(tr.sc.spec, "parallax")
+    if e:
+        motion.parallax_layers(canvas, tr.sc.tpl, W, H, t, tr.sc.dur, int(e.get("layers", 4)), float(e.get("opacity", 1.0)))
+
+
+def _effects_after_stage(canvas, tr, t: float, W: float, H: float) -> None:
+    """Effects drawn in the treatment's own coordinates (they follow its layout)."""
+    e = motion.wrapper_spec(tr.sc.spec, "focus_frame")
+    if not e:
+        return
+    rects, times = [], []
+    prev = 0.6
+    for tg in e.get("targets", []):
+        tid = tg.get("id") if isinstance(tg, dict) else tg
+        if tid not in tr.pos:
+            continue
+        x, y, w, h = tr.pos[tid]
+        pad = float(e.get("pad", 34))
+        below = float(e.get("below", 130 if tr.sc.spec.get("treatment") in ("iconflow", "sequence") else 0))
+        side = float(e.get("side", 60 if w < 260 else 0))
+        if getattr(tr, "side", False):                    # labels beside the badges (9:16 single column)
+            right = design.PORTRAIT_X[1] - (x + w) - 10
+            rects.append((x - pad, y - pad, w + pad + right, h + 2 * pad))
+        else:
+            rects.append((x - pad - side, y - pad, w + 2 * (pad + side), h + 2 * pad + below))
+        tt = tr.sc.cue_time(tg.get("at")) if isinstance(tg, dict) and tg.get("at") is not None else None
+        prev = tt if tt is not None else prev + 1.2
+        times.append(prev)
+    W2, H2 = (1080, 1920) if tr.portrait else (1920, 1080)
+    motion.focus_frame(canvas, tr.sc.tpl, rects, times, t, W2, H2 + 2000)
+
+
+def _effects_after(canvas, tr, t: float, W: float, H: float) -> None:
+    if motion.wrapper_spec(tr.sc.spec, "pinned_heading") and tr.sc.spec.get("heading"):
+        motion.heading_mask(canvas, tr.sc.tpl, W, design.content_top(tr.sc.spec, tr.portrait) - 10)
+
+
+def _intertitle(canvas, tr, t: float, W: float, H: float) -> None:
+    """Silent film: the scene's heading as a 1.5 s intertitle in its opening pause, dissolving into the scene."""
+    text = getattr(tr.sc, "intertitle", None)
+    if not text:
+        return
+    end = styles.INTERTITLE_SECONDS
+    if t >= end + 0.3:
+        return
+    a = 1.0 if t < end else 1 - (t - end) / 0.3
+    styles.draw_intertitle(canvas, tr.sc.tpl, text, W, H, a)

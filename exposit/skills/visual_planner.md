@@ -121,6 +121,34 @@ chart: bars; "title", "data": [{"label", "value", "accent"?}]. Values must come 
 are illustrative.
 {"treatment": "chart", "title": "Responses by source (illustrative)", "data": [{"label": "From cache", "value": 3}]}
 
+motion: one content effect fills the scene ("effect" below). Wrapper effects go in any scene's "effects" list.
+{"treatment": "motion", "effect": "card_carousel", "items": [{"icon": "server", "title": "Edge locations", "text": "Answer users nearby", "at": {"word": "edge"}}], "counter": "CDN parts"}
+
+## Motion effects (ten; pick 2 to 4 per video where they help the explanation)
+Wrapper effects, on any treatment: "effects": [{"type": ...}]
+1. parallax: 3-5 depth layers of procedural shapes drift at different speeds behind the scene. Atmosphere for
+   overviews and openings. {"type": "parallax", "layers": 4}
+2. pinned_heading: the heading stays fixed while the content scrolls up under it; for lists longer than one screen.
+   {"type": "pinned_heading", "distance": 380}
+9. focus_frame: a highlight frame slides between elements on their spoken words and dims the rest; for walking
+   through a path one hop at a time. {"type": "focus_frame", "targets": [{"id": "edge", "at": {"word": "edge"}}]}
+Content effects, with "treatment": "motion":
+3. card_zoom_3d: one card tilts in perspective and zooms toward the camera; for introducing one key concept.
+   {"effect": "card_zoom_3d", "card": {"icon": "database-zap", "title": "Regional edge cache", "text": "..."}, "at": {"word": "regional"}}
+4. line_reveal: text or code lines wipe in on their spoken words ("code": true for a monospace panel); for headers,
+   configs and definitions. {"effect": "line_reveal", "code": true, "lines": [{"text": "cache-control: max-age=86400", "at": {"word": "lifetime"}}]}
+5. marquee: rows of large text slide sideways across the frame; for hooks and section breaks, a few words per row.
+   {"effect": "marquee", "rows": [{"text": "Edge"}, {"text": "Cache hit", "accent": true}]}
+6. card_carousel: cards on a perspective arc; the arc turns to bring each card to the front on its word; for 4-15
+   parallel items (topics, services). {"effect": "card_carousel", "items": [...], "counter": "topics"}
+7. model_3d: a slowly rotating low-poly model (server_rack, cube, globe, database) with a label; for hardware and
+   infrastructure. {"effect": "model_3d", "model": "server_rack", "label": "Edge server", "sub": "..."}
+8. stacking_cards: cards slide up and stack with depth; for layered or sequential ideas (a stack, a pipeline).
+   {"effect": "stacking_cards", "items": [{"icon": "layers", "title": "...", "at": {"word": "..."}}]}
+10. scroll_demo: a terminal (or UI) panel that types commands and scrolls output as the narration proceeds; for
+   real commands and their output ("cmd": true marks a command; "tone": ok, err or dim colours output lines).
+   {"effect": "scroll_demo", "title": "bash", "lines": [{"text": "kubectl get pods", "cmd": true, "at": {"word": "pods"}}, {"text": "web-7d9 1/1 Running", "tone": "ok"}]}
+
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.
 
 ## Output shape

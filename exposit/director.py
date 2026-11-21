@@ -399,6 +399,7 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     (ex / "script.md").write_text(f"# {p['title']}\n\n" + "\n\n".join(f"## {s['title']}\n\n" + " ".join(x["text"] for x in s["sentences"]) for s in script["scenes"]) + "\n", encoding="utf-8")
     (ex / "sources.md").write_text(f"# Sources for {p['title']}\n\nArrangement depicted: {facts.get('arrangement','')}\n\n" + "\n".join(
         f"- **{c['id']}** {c['text']}\n" + "".join(f"  - [{s['title']}]({s['url']}) ({s.get('kind','')})\n" for s in c.get("sources", [])) for c in facts["claims"]), encoding="utf-8")
+    write_cover(pid, rs, man)
     ctx.say("Quality Reviewer: automated checks on the final video", 0.97)
     brief = _brief(pid)
     tail = sum(s["duration"] for s in man["scenes"] if s.get("end_slide"))
@@ -420,6 +421,23 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     p["final"] = "awaiting_approval" if gate["passed"] else "checks_failed"
     store.save_production(p)
     return True
+
+
+def write_cover(pid: str, rs: dict, man: dict) -> Path:
+    """export/cover.png in the production's template: the brand (the end slide's brand line) as the kicker, the
+    production title as the headline, and the first iconflow or cards scene as the visual."""
+    d = store.pdir(pid)
+    p = store.get_production(pid)
+    board = store.read_json(pid, "storyboard/board.json", {"scenes": []})
+    vis = next((s for s in board["scenes"] if s.get("treatment") in ("iconflow", "cards")), None)
+    visual = None
+    if vis and (d / "audio" / f"{vis['id']}.timing.json").exists():
+        visual = (vis, json.loads((d / "audio" / f"{vis['id']}.timing.json").read_text(encoding="utf-8")))
+    brand = next((l.get("text", "") for l in store.get_settings().get("end_slide_lines", []) if isinstance(l, dict) and l.get("brand")), "")
+    png = engine.render_cover(rs["theme"], p["title"], brand, visual, rs["h"] > rs["w"], brand)
+    out = d / "export" / "cover.png"
+    out.write_bytes(png)
+    return out
 
 
 def write_record(pid: str) -> None:

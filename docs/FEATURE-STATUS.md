@@ -85,6 +85,7 @@ Last updated 17 November 2026 (9:16 vertical added). Every line says what was ac
 | Motion: draw-on connectors and arcs, spring icons, staggered cards, popping chips, counting numbers, focus (others dim to 35%, active one glows) | Tested | Text is never dimmed |
 | Frame time under 80 ms at 1080p | Tested | Every treatment x template x format, after the cache build (slow test and scripts/bench_frames.py) |
 | Storyboard gate: unknown icons, templates or transitions fail | Tested | |
+| Cover image (cover.png) with every export: brand kicker, production title, first iconflow or cards scene as the visual, small brand badge; 1080x1920 (content within y 240-1680) or 1920x1080 | Tested | |
 | End slide (outro) on every video: on/off, spoken lines and on-screen lines in Settings | Tested | Appended at export, not part of the AI script; rendered in the production's template, format, voice and speed with its music, a soft sound per line and the production's transition; held about 1.8 s. Excluded from the script length gate and the duration check, included in the subtitle files. Cached by its own hash, so changing it re-renders only the end slide. Shown locked in the Edit timeline |
 | Automated final checks: size, frame rate, duration, black, frozen, silence, clipping, codec, no paid service | Tested | |
 | Regenerate only changed scenes; clips cached by content hash | Tested | Undo restores from cache without rendering |

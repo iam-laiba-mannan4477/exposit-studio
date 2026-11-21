@@ -142,7 +142,7 @@ def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
             unknown_names.append(f"{spec['id']}: unknown transition {spec.get('transition')}")
         spoken = {norm_word(w) for s in sc_script["sentences"] for w in words(s["text"])}
         eids = {e["id"] for e in spec.get("elements", [])} | {"_in"}
-        for c in spec.get("cues", []) + (spec.get("lines") or []):
+        for c in spec.get("cues", []) + (spec.get("lines") or []) + (spec.get("items") or []) + (spec.get("messages") or []):
             at = c.get("at")
             if isinstance(at, dict) and "word" in at and norm_word(at["word"]) not in spoken:
                 problems.append(f"{spec['id']}: cue word '{at['word']}' is not spoken in this scene")
@@ -154,7 +154,9 @@ def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
                 refs.append(f"{spec['id']}: {e['id']} -> {e['model_ref']}")
         n_words = sum(len(words(s["text"])) for s in sc_script["sentences"])
         est = n_words / WPS
-        changes = len(spec.get("cues", [])) + len(spec.get("lines") or [])
+        changes = len(spec.get("cues", [])) + len(spec.get("lines") or []) + sum(      # timed reveals are changes too
+            1 for x in (spec.get("items") or []) + (spec.get("messages") or []) + [l for l in (spec.get("links") or []) if isinstance(l, dict)]
+            if isinstance(x, dict) and x.get("at") is not None)
         if est > 0 and changes / est < 1 / 6:
             sparse.append(f"{spec['id']}: {changes} visual changes in about {est:.0f} s")
     crit = [

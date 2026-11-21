@@ -259,3 +259,13 @@ def test_visual_planner_skill_documents_every_treatment_template_and_transition(
     for t in engine.TRANSITIONS:
         assert f'"{t}"' in text
     assert set(schemas.TREATMENTS) == set(engine.TREATMENTS), "the Creative Director is offered every treatment"
+
+
+def test_storyboard_gate_counts_timed_card_items_as_visual_changes():
+    facts, script, board = (example(f) for f in ("facts.json", "script.json", "board.json"))
+    b = copy.deepcopy(board)
+    words = [w for s in script["scenes"][1]["sentences"] for w in s["text"].split()]
+    b["scenes"][1] = {"id": b["scenes"][1]["id"], "title": "t", "treatment": "cards", "variant": "benefits", "cues": [],
+                      "items": [{"icon": "cloud", "title": "x", "at": {"word": w.strip(",.:")}} for w in words[:6]]}
+    crit = {c["name"]: c for c in gates.storyboard_gate(b, script, facts)["criteria"]}
+    assert crit["A visual change at least every 6 seconds"]["passed"], crit["A visual change at least every 6 seconds"]["detail"]

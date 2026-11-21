@@ -1017,7 +1017,8 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
         return draw_frame_portrait(canvas, tr, t, w, h, captions)
     canvas.save()
     canvas.scale(w / 1920.0, h / 1080.0)
-    background(canvas, sc, 1920, 1080)
+    if not getattr(tr, "no_background", False):
+        background(canvas, sc, 1920, 1080)
     cam = sc.spec.get("camera", {})
     s, fx, fy = tr.camera(t)
     if cam.get("enter") == "zoom_out":
@@ -1099,7 +1100,8 @@ def draw_frame_portrait(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h:
     sc, T = tr.sc, tr.sc.T
     canvas.save()
     canvas.scale(w / 1080.0, h / 1920.0)
-    background(canvas, sc, 1080, 1920)
+    if not getattr(tr, "no_background", False):
+        background(canvas, sc, 1080, 1920)
     s, fx, fy = stage_camera(tr, t)
     canvas.save()
     canvas.translate(*getattr(tr, "shift", (0.0, 0.0)))
@@ -1285,3 +1287,76 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
 
 def T_bg(sc) -> str:
     return sc.T["bg0"] if sc.tpl.dark else "#FFFFFF"
+
+
+# ------------------------------------------------------------------ cover image
+def _visual_still(spec: dict, timing: dict, theme: str, w: int, h: int) -> skia.Image:
+    """The scene at its most complete moment, without its heading, titles, step markers or captions."""
+    v = {k: x for k, x in spec.items() if k not in ("heading",)}
+    if v.get("treatment") == "cards":
+        v.pop("title", None)
+    v["cues"] = [c for c in v.get("cues", []) if c.get("action") not in ("count", "callout")]
+    v["camera"] = {}
+    tr = build(v, timing, theme, portrait=h > w)
+    tr.fade_out = False
+    tr.no_background = True                               # drawn straight onto the cover's own background
+    t = max(0.0, tr.sc.dur - 0.45)
+    surf = skia.Surface(w, h)
+    surf.getCanvas().clear(skia.ColorTRANSPARENT)
+    draw_frame(surf.getCanvas(), tr, t, w, h, False)
+    return surf.makeImageSnapshot()
+
+
+def render_cover(theme: str, headline: str, kicker: str = "", visual: tuple[dict, dict] | None = None,
+                 portrait: bool = True, brand: str = "") -> bytes:
+    """A cover in the production's template: a kicker, the headline, the first iconflow or cards scene as the visual,
+    and a small brand badge. 9:16 covers are 1080x1920 with everything between y 240 and 1680 (the area feeds and
+    profile grids keep); 16:9 covers are 1920x1080. Returns PNG bytes."""
+    tpl = design.template(theme)
+    design.set_active(tpl)
+    T = tpl.T
+    W, H = (1080, 1920) if portrait else (1920, 1080)
+    surf = skia.Surface(W, H)
+    c = surf.getCanvas()
+    design.background(c, tpl, W, H)
+    acc = design.text_on(tpl, tpl.conn["active"] if tpl.dark else T["accent"])
+    if portrait:
+        x0, maxw, y = 80.0, 920.0, 300.0
+    else:
+        x0, maxw, y = 110.0, 760.0, 260.0
+    if kicker:
+        f = design.make_font(40, "Bold")
+        xx = x0
+        for ch in kicker.upper():                          # letter-spaced kicker
+            design.put_text(c, ch, xx, y, f, col(acc))
+            xx += f.measureText(ch) + 9
+        y += 40
+    rows, sz = design.fit_block(headline, maxw, 3, 132 if portrait else 120, 80, "Bold")
+    for j, r in enumerate(rows):
+        design.draw_text(c, r, x0, y + sz * 0.95 + j * sz * 1.04, sz, col(T["text"]), "Bold")
+    y += sz * 0.95 + (len(rows) - 1) * sz * 1.04 + 60
+    if portrait:
+        box = (60.0, y, 960.0, 1580.0 - y)
+    else:
+        box = (960.0, 140.0, 860.0, 800.0)
+    if visual:
+        spec, timing = visual
+        vw, vh = (1080, 1920) if portrait else (1920, 1080)
+        img = _visual_still(spec, timing, theme, vw, vh)
+        sy0, sy1 = (design.PORTRAIT_BAND[0] - 14, design.PORTRAIT_BAND[1] + 14) if portrait else (60, 1040)
+        src = skia.Rect.MakeLTRB(0, sy0, vw, sy1)
+        bx, by, bw, bh = box
+        k = min(bw / src.width(), bh / src.height())
+        dw, dh = src.width() * k, src.height() * k
+        dst = skia.Rect.MakeXYWH(bx + (bw - dw) / 2, by + (bh - dh) / 2, dw, dh)
+        c.drawImageRect(img, src, dst, skia.SamplingOptions(skia.FilterMode.kLinear))
+    if brand:                                              # small badge, bottom left of the safe area
+        f = design.make_font(36, "Bold")
+        tw = f.measureText(brand)
+        bx, by = (80.0, 1600.0) if portrait else (110.0, 940.0)
+        r = skia.Rect.MakeXYWH(bx, by, tw + 104, 64)
+        c.drawRoundRect(r, 32, 32, design.paint(col(T["bg0"], 0.9)))
+        c.drawRoundRect(r, 32, 32, design.paint(col(tpl.conn["active"]), 3))
+        assets.draw_icon(c, "network", bx + 38, by + 32, 34, acc, 1.0, 2.75)
+        design.put_text(c, brand, bx + 66, by + 44, f, col(T["text"]))
+    return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 100))

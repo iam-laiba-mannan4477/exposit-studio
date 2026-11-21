@@ -88,7 +88,8 @@ def recent_structures(exclude: str = "", n: int = 10) -> list[dict]:
         s = store.read_json(p["id"], "strategy/strategy.json")
         if s:
             out.append({"title": p["title"], "structure": s.get("narrative_structure", "")[:160], "hook": s.get("hook", "")[:120],
-                        "treatments": sorted({sc.get("treatment", "") for sc in s.get("scene_breakdown", [])})})
+                        "treatments": sorted({sc.get("treatment", "") for sc in s.get("scene_breakdown", [])}),
+                        "style": s.get("template") or (p.get("brief") or {}).get("theme", ""), "effects": sorted(s.get("effects", []))})
         if len(out) >= n:
             break
     return out
@@ -129,6 +130,11 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
                "preferences": [{"title": k["title"], "body": k["body"]} for k in prefs],
                "recent_productions": recent_structures(pid), "treatments_available": schemas.TREATMENTS,
                "templates_available": list(engine.design.NEW_TEMPLATES) + ["premium-technical"],
+               "styles_available": [{"name": n, "best_for": st.best_for, "requires": st.requires}
+                                    for n, st in engine.styles.STYLES.items() if st.status == "ready"],
+               "styles_planned": list(engine.styles.PLANNED),
+               "effects_available": list(engine.motion.EFFECTS),
+               "last_three_productions": recent_structures(pid, 3),
                "tools_available": [t["name"] for t in knowledge.tools() if t["status"] in ("adopted", "optional")],
                "hardware": "8 GB RAM, CPU only, one render at a time", "budget_paid_usd": store.get_settings()["budget_paid_usd"],
                "scout_signals": scout.signals(), "scout_signals_caveat": scout.SIGNALS_CAVEAT}
@@ -140,7 +146,8 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
             gates._crit("Scene breakdown uses supported treatments", all(sc["treatment"] in schemas.TREATMENTS for sc in s["scene_breakdown"])),
             gates._crit("One known template, with a reason", (not s.get("template")) or (s["template"] in engine.design.TEMPLATES and bool(s.get("template_reason", "").strip())),
                         s.get("template") or "Not chosen: the brief's template is used"),
-            gates._crit("No more than two scenes in a row with the same treatment", gates.max_run([sc["treatment"] for sc in s["scene_breakdown"]]) <= 2)]
+            gates._crit("No more than two scenes in a row with the same treatment", gates.max_run([sc["treatment"] for sc in s["scene_breakdown"]]) <= 2),
+            *gates.style_criteria(s, recent_structures(pid, 1))]
     s = apply_overrides(s, p.get("overrides", {}))
     store.write_json(pid, "strategy/strategy.json", s)
     (store.pdir(pid) / "strategy" / "strategy.md").write_text(strategy_markdown(s, p["title"]), encoding="utf-8")
@@ -190,7 +197,7 @@ def run_storyboard(pid: str, ctx: Ctx) -> bool:
     for attempt in range(1 + _repairs()):
         ctx.say("Visual Planner: writing one specification per scene" + (" (repair)" if attempt else ""), 0.35)
         board = roles.run("visual_planner", payload, ctx.meta(pid)).model_dump(exclude_none=True)
-        gate = gates.storyboard_gate(board, script, facts)
+        gate = gates.storyboard_gate(board, script, facts, render_settings(pid)["theme"])
         store.write_json(pid, "storyboard/board.json", board)
         if gate["passed"]:
             break

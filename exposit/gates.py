@@ -3,7 +3,7 @@ from __future__ import annotations
 import re, statistics
 from . import schemas
 from .render.engine import norm_word, Scene, TREATMENTS, TRANSITIONS
-from .render import assets, design
+from .render import assets, design, motion, styles
 
 WPS = 2.45  # words per second at a natural narration pace
 
@@ -120,12 +120,37 @@ def spec_icons(spec: dict) -> list[str]:
     return out
 
 
-def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
+def style_criteria(strategy: dict, previous: list[dict]) -> list[dict]:
+    """Strategy checks for the animation style and motion effects: known and available, 2-4 effects, requirements met,
+    and not the same style-and-effects combination as the previous video (the variety rule)."""
+    style = strategy.get("template", "")
+    effects = list(strategy.get("effects", []))
+    st = styles.STYLES.get(style)
+    known = (not style) or (style in design.TEMPLATES and not (st and st.status != "ready"))
+    bad_fx = [e for e in effects if e not in motion.EFFECTS]
+    req_ok = not (st and st.requires and st.requires not in effects)
+    prev = previous[0] if previous else None
+    same = bool(prev and style and prev.get("style") == style and sorted(prev.get("effects", [])) == sorted(effects))
+    return [
+        _crit("Animation style is known and available", known, style or "Not chosen: the brief's template is used"),
+        _crit("Two to four known motion effects, with a reason", 2 <= len(effects) <= 4 and not bad_fx and bool(strategy.get("effects_reason", "").strip()),
+              ("Unknown: " + ", ".join(bad_fx)) if bad_fx else f"{len(effects)} effects"),
+        _crit("Style requirements are met", req_ok, f"{style} needs {st.requires}" if not req_ok else ""),
+        _crit("Not the same style and effects as the previous video", not same,
+              f"Previous: {prev.get('title')} ({prev.get('style')}, {', '.join(prev.get('effects', []))})" if same else ""),
+    ]
+
+
+def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None = None) -> dict:
     comps = {c["id"] for c in facts.get("model", {}).get("components", [])}
     sids = [s["id"] for s in script.get("scenes", [])]
     problems, sparse, refs, unknown_names = [], [], [], []
     if board.get("template") and board["template"] not in design.TEMPLATES:
         unknown_names.append(f"unknown template {board['template']}")
+    st = styles.STYLES.get(template or "")
+    if st and st.requires == "model_3d" and not any(s.get("treatment") == "motion" and s.get("effect") == "model_3d"
+                                                    for s in board.get("scenes", [])):
+        unknown_names.append(f"style {template} is only for videos with a 3D model scene")
     for spec in board.get("scenes", []):
         sc_script = next((s for s in script["scenes"] if s["id"] == spec["id"]), None)
         if sc_script is None:
@@ -140,6 +165,14 @@ def storyboard_gate(board: dict, script: dict, facts: dict) -> dict:
             unknown_names.append(f"{spec['id']}: unknown template {spec['theme']}")
         if spec.get("transition", "fade") not in TRANSITIONS:
             unknown_names.append(f"{spec['id']}: unknown transition {spec.get('transition')}")
+        for e in spec.get("effects", []):
+            name = e.get("type") if isinstance(e, dict) else e
+            if name not in motion.WRAPPERS:
+                unknown_names.append(f"{spec['id']}: unknown effect {name}")
+        if spec.get("treatment") == "motion" and spec.get("effect") not in motion.CONTENT:
+            unknown_names.append(f"{spec['id']}: unknown effect {spec.get('effect')}")
+        if spec.get("theme") in styles.PLANNED:
+            unknown_names.append(f"{spec['id']}: style {spec['theme']} is planned, not available")
         spoken = {norm_word(w) for s in sc_script["sentences"] for w in words(s["text"])}
         eids = {e["id"] for e in spec.get("elements", [])} | {"_in"}
         for c in spec.get("cues", []) + (spec.get("lines") or []) + (spec.get("items") or []) + (spec.get("messages") or []):

@@ -34,6 +34,9 @@ def wait_job(client, jid: str, timeout: float = 900) -> dict:
     raise AssertionError(f"job {jid} did not finish")
 
 
+_CD_CALLS = [0]                                  # shared across tests, so every production gets a new combination
+
+
 @pytest.fixture()
 def fake_agent():
     """Stands in for a coding agent on the bridge: answers each role's task with the prepared example output."""
@@ -42,13 +45,21 @@ def fake_agent():
                "visual_planner": example("board.json"),
                "scene_editor": dict(example("board.json")["scenes"][3], pad_end=1.1), "reviewer": {"passed": True, "accuracy_issues": [], "engagement_notes": [], "summary": "Test reviewer."}}
     seen, stop = [], threading.Event()
+    combos = [["focus_frame", "parallax"], ["parallax", "stacking_cards"], ["focus_frame", "line_reveal"], ["parallax", "line_reveal"]]
+
+    def answer(role):
+        a = answers[role]
+        if role == "creative_director":                     # a new style-and-effects combination each time (variety rule)
+            _CD_CALLS[0] += 1
+            a = dict(a, effects=combos[_CD_CALLS[0] % len(combos)])
+        return a
 
     def loop():
         while not stop.is_set():
             for t in providers.bridge_pending():
                 if t["id"] not in [s[0] for s in seen] and t["role"] in answers:
                     seen.append((t["id"], t["role"]))
-                    providers.bridge_submit(t["id"], json.dumps(answers[t["role"]]))
+                    providers.bridge_submit(t["id"], json.dumps(answer(t["role"])))
             time.sleep(0.2)
     th = threading.Thread(target=loop, daemon=True)
     th.start()

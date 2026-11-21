@@ -174,7 +174,35 @@
    "pad_end": 0.5,
    "reason": "Three named parts and one returned answer: icons and a dashed reply show the lookup as it really works.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "effects": [
+    {
+     "type": "focus_frame",
+     "targets": [
+      {
+       "id": "browser",
+       "at": {
+        "word": "asks",
+        "occurrence": 1
+       }
+      },
+      {
+       "id": "dns",
+       "at": {
+        "word": "resolver",
+        "occurrence": 1
+       }
+      },
+      {
+       "id": "lb",
+       "at": {
+        "word": "decision",
+        "occurrence": 1
+       }
+      }
+     ]
+    }
+   ]
   },
   {
    "id": "s3",
@@ -606,7 +634,13 @@
    "pad_end": 0.5,
    "reason": "The Service sits between NGINX and the pods as a name; the live link goes from NGINX straight to one pod, as the controller does.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "effects": [
+    {
+     "type": "parallax",
+     "layers": 3
+    }
+   ]
   },
   {
    "id": "s6",

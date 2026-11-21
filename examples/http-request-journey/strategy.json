@@ -174,5 +174,10 @@
   "ex-one-arrangement"
  ],
  "template": "noir-network",
- "template_reason": "A dark, glowing network look reads well on a phone feed and suits a path-through-infrastructure story; paper would suit the 16:9 course cut."
+ "template_reason": "A dark, glowing network look reads well on a phone feed and suits a path-through-infrastructure story; paper would suit the 16:9 course cut.",
+ "effects": [
+  "focus_frame",
+  "parallax"
+ ],
+ "effects_reason": "A focus frame walks the DNS lookup one hop at a time; parallax gives the pod-selection scene depth without decoration."
 }

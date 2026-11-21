@@ -1421,6 +1421,14 @@ def render_cover(theme: str, headline: str, kicker: str = "", visual: tuple[dict
         c.drawRoundRect(r, 32, 32, design.paint(col(tpl.conn["active"]), 3))
         assets.draw_icon(c, "network", bx + 38, by + 32, 34, acc, 1.0, 2.75)
         design.put_text(c, brand, bx + 66, by + 44, f, col(T["text"]))
+    st = styles.style_of(tpl)                              # the cover carries the video's style: textures, pixels
+    if st and st.post:
+        styles.overlay(c, st.post, W, H, 0)
+        if styles.needs_pixels(st.post):
+            arr = np.zeros((H, W, 4), dtype=np.uint8)
+            surf.readPixels(skia.ImageInfo.Make(W, H, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType), arr)
+            styles.post_process(arr, st.post, 0)
+            return bytes(skia.Image.fromarray(arr, skia.kRGBA_8888_ColorType).encodeToData(skia.kPNG, 100))
     return bytes(surf.makeImageSnapshot().encodeToData(skia.kPNG, 100))
 
 

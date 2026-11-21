@@ -93,8 +93,10 @@ class Strategy(BaseModel):
     dropoff: list[Dropoff] = []
     experiment: str = ""
     recipes_used: list[str] = []
-    template: str = ""                 # one template for the whole video (design.TEMPLATES)
+    template: str = ""                 # one template or animation style for the whole video (design.TEMPLATES)
     template_reason: str = ""
+    effects: list[str] = []            # 2-4 motion effects (render.motion.EFFECTS)
+    effects_reason: str = ""
 
 
 class Sentence(BaseModel):

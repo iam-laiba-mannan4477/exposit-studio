@@ -161,3 +161,13 @@ the legend and strip under the map). Content fills y 260 to 1500, or stops at 13
 - At most 5 entities per scene; labels of about 24 characters; sub-lines are dropped first when space is short.
 - Kinetic lines wrap to the width: a few words per line, 2 or 3 lines per hook.
 - One idea per scene and shorter scenes (5 to 10 seconds). The first scene must show something within the first second.
+
+
+## Applying the Creative Director's style and effects
+`strategy.template` is the video's animation style; do not set a different `theme` per scene. Use the motion effects in
+`strategy.effects`: wrapper effects go in a scene's "effects" list, content effects are scenes with
+"treatment": "motion". Use each chosen effect at least once, where it fits the narration; do not add effects the
+strategy did not choose. Effect names outside the ten above, styles that are planned (stick-figure-story,
+paper-cutout-puppet, hand-puppet-theatre) and hd-pixel-sprite-3d without a model_3d scene fail the storyboard gate.
+Style notes: silent-film turns each scene heading into a 1.5 s intertitle, so keep headings short and quotable;
+minimal-counter wants stat scenes; whiteboard and sketchnote suit line_reveal and stacking_cards.

@@ -46,10 +46,61 @@ Output shape
  "scene_breakdown": [{"title": "Hook", "treatment": "kinetic", "seconds": 6, "purpose": "..."}],
  "tools": ["Exposit renderer", "Kokoro voice"], "decisions": [{"key": "hook", "choice": "...", "reason": "...", "tier": "hypothesis"}],
  "dropoff": [{"where": "...", "why": "...", "countermeasure": "..."}], "experiment": "...", "recipes_used": ["recipe ids"],
- "template": "noir-network", "template_reason": "..."}
+ "template": "noir-network", "template_reason": "...", "effects": ["focus_frame", "card_carousel"], "effects_reason": "..."}
 
 
 ## Vertical videos (brief.format "9:16")
 A vertical video is watched on a phone, often without sound at first, in a feed where it competes with everything else.
 Weigh treatments for that: a hook visible and readable in the first second, captions carrying the meaning, fewer
 elements per scene, and a pace of one idea every few seconds. Say in your decisions how the format changed your choices.
+
+
+## Animation style and motion effects (every video)
+Pick ONE animation style for the whole video (it goes in `template`) and 2 to 4 motion effects (`effects`), and say
+why in `template_reason` and `effects_reason`. The cover is drawn in the same style.
+
+Variety rule: `last_three_productions` lists the recent videos with their style and effects. Never repeat the previous
+video's style-and-effects combination (the gate checks it), and prefer a style none of the last three used, unless
+the topic clearly calls for it; say so in `template_reason`.
+
+Styles available (`styles_available`), with what each is best for:
+- noir-network: dark, glowing network diagrams; general explainers on a phone (the house default for Reels)
+- paper: light, crisp diagrams; 16:9 courses and documentation-style explainers
+- blueprint: technical drawing; system design and architecture
+- sketch: hand-drawn and informal; quick concepts
+- whiteboard: algorithms, trade-offs, step-by-step reasoning
+- sketchnote: concepts with several parts, study notes, comparisons
+- minimal-counter: numbers, scale, cost, latency budgets
+- limited-animation: short stories with a few steps; friendly but exact (12 fps feel)
+- low-poly-neon: infrastructure, hardware, data centres, networks at scale (use with model_3d or parallax)
+- dark-pixel-grunge: security, attacks, incidents, breaches
+- pixel-art: networking basics and protocols for beginners
+- engraving-print: history, principles, protocols with a long lineage
+- silent-film: "history of" topics and origin stories (scene headings become intertitle cards)
+- paper-craft: architecture overviews, layered systems
+- shadow-puppetry: dramatic stories: outages, failures, before and after
+- cardboard-diorama: architecture overviews, how the parts sit together (parallax by default)
+- stop-motion-clay: light, friendly intros and simple flows
+- hd-pixel-sprite-3d: ONLY for videos with a 3D model scene (model_3d); never instead of pixel-art
+Planned and NOT available (`styles_planned`): stick-figure-story, paper-cutout-puppet, hand-puppet-theatre. For incident
+and postmortem stories use shadow-puppetry, limited-animation or dark-pixel-grunge instead.
+
+Motion effects (`effects_available`), best for:
+- parallax: atmosphere and depth in openings and overviews
+- pinned_heading: lists longer than one screen
+- card_zoom_3d: introducing one key concept or term
+- line_reveal: headers, configs, definitions, line by line
+- marquee: hooks and section breaks (a few words)
+- card_carousel: 4-15 parallel items (topics, services, regions)
+- model_3d: hardware and infrastructure (server rack, globe, database, cube)
+- stacking_cards: layers and sequences (a stack, a pipeline)
+- focus_frame: walking a path one hop at a time
+- scroll_demo: real commands and their output (KodeKloud-style hands-on)
+
+Rules: playful styles are allowed only when they help the explanation; labels stay precise either way (real protocol
+and product names). Match the style to the subject: low-poly-neon or model_3d for infrastructure and hardware;
+whiteboard or sketchnote for algorithms and trade-offs; silent-film for history; dark-pixel-grunge for security;
+cardboard-diorama or paper-craft for architecture overviews; minimal-counter for numbers, scale and cost; pixel-art for
+networking basics. Pace like ByteByteGo (tech icons, connectors with pulses, components revealed as the narration
+reaches them; Shorts about 50-60 s), show real commands and configs when the topic has them (KodeKloud), and keep a
+recognisable series format when the brief names one (Fireship).

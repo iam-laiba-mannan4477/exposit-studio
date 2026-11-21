@@ -28,8 +28,10 @@ def test_full_pipeline_through_the_bridge(client, fake_agent):
     g = p["gates"]["final"]
     assert g["passed"], [c for c in g["criteria"] if not c["passed"]]
     m = p["manifest"]
-    assert (m["settings"]["w"], m["settings"]["h"]) == (960, 540) and len(m["scenes"]) == 6
-    assert 57 <= m["duration"] <= 65
+    n_end = 1 if store_settings()["end_slide"] else 0                     # + the end slide
+    assert (m["settings"]["w"], m["settings"]["h"]) == (960, 540) and len(m["scenes"]) == 6 + n_end
+    content = m["duration"] - sum(x["duration"] for x in m["scenes"] if x.get("end_slide"))
+    assert 57 <= content <= 65
     assert j["paid"] == 0
 
 
@@ -46,6 +48,17 @@ def test_exports_are_real_files(client):
         assert any(n.endswith(need) for n in names), need
     assert client.get(f"/api/productions/{pid}/media/still/s3").headers["content-type"].startswith("image/")
     assert client.get(f"/api/productions/{pid}/file/../../exposit.db").status_code in (400, 404)
+
+
+def director_end_spec():
+    from exposit import director, store
+    s = store.get_settings()
+    board = get_board_last_transition()
+    return director.end_slide_spec(s["end_slide_lines"], s["end_slide_spoken"], board)
+
+
+def get_board_last_transition():
+    return "push"                                     # the example board's last scene enters with a push
 
 
 def store_settings():
@@ -112,7 +125,11 @@ def test_script_edit_renarrates_one_scene(client):
     pid = state["pid"]
     sc = get(client)["script"]["scenes"][5]
     plan = client.put(f"/api/productions/{pid}/script/{sc['id']}", json={"sentences": [s["text"] for s in sc["sentences"]][:-1] + ["Now you can follow it."]}).json()
-    assert plan["narrations"] == 1 and [s["scene"] for s in plan["scenes"]] == [sc["id"]]
+    board = get(client)["board"]["scenes"]
+    order = [s["id"] for s in board] + (["end"] if store_settings()["end_slide"] else [])
+    end = director_end_spec() if store_settings()["end_slide"] else None
+    expect = transition_dependents(board + ([end] if end else []), order, {sc["id"]})   # and the end slide after it
+    assert plan["narrations"] == 1 and {s["scene"] for s in plan["scenes"]} == expect
     client.post(f"/api/productions/{pid}/undo")
 
 
@@ -158,7 +175,8 @@ def test_versions_override_and_final_approval(client):
     board = get(client)["board"]["scenes"]
     ids = [s["id"] for s in board]
     new = ids[:4] + [ids[5], ids[4]]
-    moved = reorder_dependents(board, ids, new)        # only scenes whose transition neighbours changed re-render
+    end = [director_end_spec()] if store_settings()["end_slide"] else []   # the end slide follows the last scene
+    moved = reorder_dependents(board + end, ids + [e["id"] for e in end], new + [e["id"] for e in end])
     plan = client.post(f"/api/productions/{pid}/reorder", json={"ids": new}).json()
     assert plan["renders"] == len([x for x in plan["scenes"] if x["clip"] == "render"]) and plan["rejoin"]
     assert {x["scene"] for x in plan["scenes"] if x["clip"] in ("render", "restore from cache")} == moved

@@ -269,3 +269,50 @@ def test_storyboard_gate_counts_timed_card_items_as_visual_changes():
                       "items": [{"icon": "cloud", "title": "x", "at": {"word": w.strip(",.:")}} for w in words[:6]]}
     crit = {c["name"]: c for c in gates.storyboard_gate(b, script, facts)["criteria"]}
     assert crit["A visual change at least every 6 seconds"]["passed"], crit["A visual change at least every 6 seconds"]["detail"]
+
+
+def test_creative_director_knows_every_style_and_effect():
+    from exposit.render import styles, motion
+    root = __import__("pathlib").Path(__file__).resolve().parent.parent / "exposit" / "skills"
+    cd = (root / "creative_director.md").read_text(encoding="utf-8")
+    vp = (root / "visual_planner.md").read_text(encoding="utf-8")
+    for n in styles.READY:
+        assert f"- {n}:" in cd, n
+    for n in styles.PLANNED:
+        assert n in cd and n in vp
+    for e in motion.EFFECTS:
+        assert f"- {e}:" in cd and e in vp, e
+
+
+def test_style_criteria_variety_and_requirements():
+    good = {"template": "low-poly-neon", "effects": ["model_3d", "parallax"], "effects_reason": "infra", "template_reason": "x"}
+    crit = {c["name"]: c["passed"] for c in gates.style_criteria(good, [])}
+    assert all(crit.values()), crit
+    prev = [{"title": "Last", "style": "low-poly-neon", "effects": ["parallax", "model_3d"]}]
+    assert not {c["name"]: c["passed"] for c in gates.style_criteria(good, prev)}["Not the same style and effects as the previous video"]
+    bad = dict(good, template="hd-pixel-sprite-3d", effects=["parallax", "marquee"])
+    crit = {c["name"]: c["passed"] for c in gates.style_criteria(bad, [])}
+    assert not crit["Style requirements are met"]
+    assert not {c["name"]: c["passed"] for c in gates.style_criteria(dict(good, template="stick-figure-story"), [])}["Animation style is known and available"]
+    assert not {c["name"]: c["passed"] for c in gates.style_criteria(dict(good, effects=["warp_drive", "parallax"]), [])}["Two to four known motion effects, with a reason"]
+
+
+@pytest.mark.parametrize("fault", ["effect", "content_effect", "planned_style"])
+def test_storyboard_gate_rejects_unknown_effects_and_planned_styles(fault):
+    facts, script, board = (example(f) for f in ("facts.json", "script.json", "board.json"))
+    bad = copy.deepcopy(board)
+    sc = bad["scenes"][1]
+    if fault == "effect":
+        sc["effects"] = [{"type": "warp_drive"}]
+    elif fault == "content_effect":
+        sc.update(treatment="motion", effect="hologram")
+    else:
+        sc["theme"] = "stick-figure-story"
+    crit = next(c for c in gates.storyboard_gate(bad, script, facts)["criteria"] if c["name"].startswith("Icons, templates"))
+    assert not crit["passed"]
+
+
+def test_hd_pixel_sprite_needs_a_model_scene():
+    facts, script, board = (example(f) for f in ("facts.json", "script.json", "board.json"))
+    crit = next(c for c in gates.storyboard_gate(board, script, facts, "hd-pixel-sprite-3d")["criteria"] if c["name"].startswith("Icons, templates"))
+    assert not crit["passed"] and "3D model" in crit["detail"]

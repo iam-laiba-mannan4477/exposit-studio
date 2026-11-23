@@ -13,7 +13,7 @@ _kokoro = None
 PRONUNCIATION = {  # written form -> spoken form, applied before synthesis only
     "NGINX": "engine X", "nginx": "engine X", "kubectl": "kube control", "DNS": "D N S", "NLB": "N L B",
     "HTTP": "H T T P", "HTTPS": "H T T P S", "AWS": "A W S", "IP": "I P", "URL": "U R L",
-    "CI/CD": "C I C D", "LLMOps": "L L M ops", "DevSecOps": "dev sec ops", "AI": "A I", "IaC": "I A C",
+    "CI/CD": "C I C D", "LLMOps": "L L M ops", "DevSecOps": "dev sec ops", "AI": "eh eye", "IaC": "eye eh see",   # spelled so the tokenizer reads eɪ aɪ / aɪ eɪ siː
 }
 
 
@@ -80,7 +80,7 @@ def _trim(a: np.ndarray, thr: float = 0.004) -> np.ndarray:
 
 
 def synth_sentence(text: str, voice: str, speed: float, lang: str = "en-us", pron: dict | None = None) -> np.ndarray:
-    key = store.sha("kokoro", text, voice, speed, lang, pron or {})
+    key = store.sha("kokoro", spoken(text, pron), voice, speed, lang)      # the spoken form: table changes take effect
     f = config.DATA / "cache" / "tts" / f"{key}.npy"
     if f.exists():
         return np.load(f)

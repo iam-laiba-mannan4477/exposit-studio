@@ -809,6 +809,15 @@ class Cards(ProTreatment):
             D.badge(c, tpl, assets.resolve(it.get("icon")) or "circle-check", x, y, R, ease_out(kk), 0, 0, spring(kk), tone=it.get("tone"), seed=i)
             D.label_under(c, tpl, it.get("title", ""), x, y + R + 14, maxw, self.S["label"], ease_out(kk))
 
+    def _pill_room(self) -> float:
+        """Width the step pill (count cues) takes at the top right, plus a gap; 0 without one."""
+        counts = self.sc.events_of("count")
+        if not counts:
+            return 0.0
+        w = max(D.text_width(f"{e.get('n', 1)} / {e.get('total', 4)}", 28, "SemiBold") + D.text_width(e.get("label", ""), 26, "Medium") + 76
+                for e in counts)
+        return w + 40
+
     def _benefits(self, c, t):
         sc, tpl, T = self.sc, self.tpl, self.tpl.T
         n = max(1, len(self.items))
@@ -817,7 +826,9 @@ class Cards(ProTreatment):
         if self.portrait:
             y0 = D.PORTRAIT_BAND[0] + 10
             if head:
-                rows, sz = D.fit_block(head, 940, 2, hs, 72, "Bold")
+                maxw = 940.0 - self._pill_room()                   # leave room for the step pill beside the heading
+                one, s1 = D.fit_block(head, maxw, 1, hs, 72, "Bold")
+                rows, sz = (one, s1) if D.text_width(one[0], s1, "Bold") <= maxw and not one[0].endswith("…") else                     D.fit_block(head, maxw, 2, hs, 72, "Bold")
                 for j, r in enumerate(rows):
                     D.draw_text(c, r, 70, y0 + sz * 0.9 + j * sz * 1.08, sz, col(T["text"], ease_out(t / 0.5)), "Bold")
                 y0 += len(rows) * sz * 1.08 + 50

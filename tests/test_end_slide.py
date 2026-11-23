@@ -119,3 +119,47 @@ def test_narration_hash_counts_only_pronunciations_that_apply():
     from exposit import tts
     assert tts.applied(["Linux and databases."]) == {}
     assert set(tts.applied(["AI agents and CI/CD."])) == {"AI", "CI/CD"}
+
+
+def test_ai_and_iac_are_spelled_out_as_letters():
+    import pytest
+    from exposit import tts
+    assert tts.spoken("AI agents and AI infrastructure") == "eh eye agents and eh eye infrastructure"
+    assert tts.spoken("IaC") == "eye eh see"
+    try:
+        tok = tts.kokoro().tokenizer
+    except Exception:
+        pytest.skip("voice model not installed")
+    assert tok.phonemize(tts.spoken("AI agents"), "en-us").startswith("ˈeɪ ˈaɪ")
+    assert tok.phonemize(tts.spoken("IaC"), "en-us").startswith("ˈaɪ ˈeɪ")
+
+
+def test_synthesis_cache_follows_the_spoken_form(monkeypatch):
+    from exposit import tts
+    keys = []
+    monkeypatch.setattr(tts.store, "sha", lambda *a: keys.append(a) or "k")
+    monkeypatch.setattr(tts, "kokoro", lambda: (_ for _ in ()).throw(RuntimeError("stop")))
+    for text in ("AI agents",):
+        try:
+            tts.synth_sentence(text, "am_michael", 1.0)
+        except RuntimeError:
+            pass
+    assert keys and keys[0][1] == "eh eye agents", "the cache key is the spoken text, so table changes take effect"
+
+
+def test_cards_heading_leaves_room_for_the_step_pill():
+    from exposit.render import design
+    spec = {"id": "x", "treatment": "cards", "variant": "benefits", "title": "What you'll get",
+            "items": [{"icon": "cpu", "title": "AI infrastructure", "text": "GPUs", "at": 0.2}],
+            "cues": [{"action": "count", "at": 0.3, "n": 4, "total": 4, "label": "Real architectures"}]}
+    tm = {"duration": 3.0, "sentences": [], "words": []}
+    design.TEXT_LOG = []
+    try:
+        engine.render_still(spec, tm, 2.0, 1080, 1920, "noir-network", False)
+        log = design.TEXT_LOG
+    finally:
+        design.TEXT_LOG = None
+    head = [t for t in log if "What" in t["text"] or "get" in t["text"]]
+    pill = [t for t in log if "Real architectures" in t["text"]]
+    assert head and pill and all(h["size"] >= 72 for h in head)
+    assert max(h["rect"][2] for h in head) < min(p["rect"][0] for p in pill), "the heading ends before the pill begins"

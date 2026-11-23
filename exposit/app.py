@@ -180,7 +180,7 @@ def production(pid: str):
             "engagement": gates.engagement(script, None, target) if script else None,
             "plan": director.plan(pid) if rj("storyboard/board.json") else None,
             "uploads": [f.name for f in (store.pdir(pid) / "uploads").glob("*")],
-            "exports": [{"name": f.name, "size": f.stat().st_size} for f in sorted((store.pdir(pid) / "export").glob("*")) if f.suffix in (".mp4", ".srt", ".vtt", ".md", ".zip") and f.name != "silent.mp4"]
+            "exports": [{"name": f.name, "size": f.stat().st_size} for f in sorted((store.pdir(pid) / "export").glob("*")) if (f.suffix in (".mp4", ".srt", ".vtt", ".md", ".zip") and f.name != "silent.mp4") or f.name == "cover.png"]
             + ([{"name": "strategy.md", "size": (store.pdir(pid) / "strategy" / "strategy.md").stat().st_size}] if (store.pdir(pid) / "strategy" / "strategy.md").exists() else []),
             "all_jobs": store.list_jobs(20, pid)}
 
@@ -190,7 +190,7 @@ async def put_brief(pid: str, req: Request):
     need(pid)
     b = await req.json()
     brief = store.read_json(pid, "brief.json", {})
-    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format", "engine_version"):
+    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format", "engine_version", "cover_headline"):
         if k in b:
             brief[k] = b[k]
     if brief.get("format", "16:9") not in ("16:9", "9:16"):
@@ -298,6 +298,14 @@ async def add_scene(pid: str, req: Request):
     need(pid)
     b = await req.json()
     return guard(lambda: director.insert_scene(pid, b["after"], b["script"], b["spec"]))
+
+
+@app.post("/api/productions/{pid}/cover")
+def regenerate_cover(pid: str):
+    """Re-renders only export/cover.png, in the video's template and style (headline: brief.cover_headline or title)."""
+    need(pid)
+    out = guard(lambda: director.write_cover(pid, director.render_settings(pid), {}))
+    return {"ok": True, "name": out.name, "size": out.stat().st_size}
 
 
 @app.post("/api/productions/{pid}/reorder")

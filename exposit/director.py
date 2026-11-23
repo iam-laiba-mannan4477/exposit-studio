@@ -419,7 +419,10 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     (ex / "script.md").write_text(f"# {p['title']}\n\n" + "\n\n".join(f"## {s['title']}\n\n" + " ".join(x["text"] for x in s["sentences"]) for s in script["scenes"]) + "\n", encoding="utf-8")
     (ex / "sources.md").write_text(f"# Sources for {p['title']}\n\nArrangement depicted: {facts.get('arrangement','')}\n\n" + "\n".join(
         f"- **{c['id']}** {c['text']}\n" + "".join(f"  - [{s['title']}]({s['url']}) ({s.get('kind','')})\n" for s in c.get("sources", [])) for c in facts["claims"]), encoding="utf-8")
-    write_cover(pid, rs, man)
+    try:                                                   # the cover never blocks an export, and a failure is logged
+        write_cover(pid, rs, man)
+    except Exception as e:                                 # noqa: BLE001
+        store.job_log(ctx.job_id, f"Cover not written: {e}") if ctx.job_id else None
     ctx.say("Quality Reviewer: automated checks on the final video", 0.97)
     brief = _brief(pid)
     tail = sum(s["duration"] for s in man["scenes"] if s.get("end_slide"))
@@ -454,7 +457,8 @@ def write_cover(pid: str, rs: dict, man: dict) -> Path:
     if vis and (d / "audio" / f"{vis['id']}.timing.json").exists():
         visual = (vis, json.loads((d / "audio" / f"{vis['id']}.timing.json").read_text(encoding="utf-8")))
     brand = next((l.get("text", "") for l in store.get_settings().get("end_slide_lines", []) if isinstance(l, dict) and l.get("brand")), "")
-    png = engine.render_cover(rs["theme"], p["title"], brand, visual, rs["h"] > rs["w"], brand)
+    headline = (_brief(pid).get("cover_headline") or "").strip() or p["title"]
+    png = engine.render_cover(rs["theme"], headline, brand, visual, rs["h"] > rs["w"], brand)
     out = d / "export" / "cover.png"
     out.write_bytes(png)
     return out

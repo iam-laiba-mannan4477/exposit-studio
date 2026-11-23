@@ -311,6 +311,18 @@ function Export({ p, reload }) {
           <Line k="Render on this machine"><Badge tone="ok">In use · $0</Badge></Line><Line k="Cloud rendering"><Planned>Optional, paid · off</Planned></Line>
         </Card>
         <PlanBox p={p} reload={reload} />
+        <Card title="Cover">
+          {p.exports.some(f => f.name === 'cover.png')
+            ? <img alt="Cover" src={`/api/productions/${p.id}/file/cover.png?v=${p.updated}`} style={{ width: '100%', maxWidth: p.brief.format === '9:16' ? 220 : 360, borderRadius: 8, display: 'block' }} />
+            : <span className="sec">The cover is written with every export, in the video's style.</span>}
+          <Field label="Cover headline" hint="Empty uses the production title. Regenerate to apply it; only the cover is re-rendered.">
+            <input defaultValue={p.brief.cover_headline || ''} placeholder={p.title} key={'ch' + p.updated}
+              onBlur={e => e.target.value !== (p.brief.cover_headline || '') && setBrief({ cover_headline: e.target.value })} /></Field>
+          <div className="row" style={{ gap: 8 }}>
+            <Btn sm busy={busy === 'cov'} onClick={() => act('cov', () => api(`/productions/${p.id}/cover`, { method: 'POST' }), 'Cover regenerated').then(reload)}>Regenerate cover</Btn>
+            {p.exports.some(f => f.name === 'cover.png') && <a className="btn sm" href={`/api/productions/${p.id}/file/cover.png`}>Download cover</a>}
+          </div>
+        </Card>
         <Card title="Files">{p.exports.length === 0 ? <span className="sec">Files appear here as they are written.</span> : p.exports.map(f => <div className="line" key={f.name}><span><span className="mono">{f.name}</span> <span className="muted">· {fmtSize(f.size)}</span></span><a className="btn sm" href={`/api/productions/${p.id}/file/${f.name}`}>Download</a></div>)}
           <span className="muted">project.zip holds the editable production: brief, facts, strategy, script, scene specifications, narration and subtitles.</span></Card>
         <Card title="Publishing" right={<Planned />}><span className="sec">Uploading to a channel is not built. When it is, every upload will ask you first.</span></Card>

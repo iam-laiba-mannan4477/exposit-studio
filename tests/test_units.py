@@ -294,7 +294,7 @@ def test_style_criteria_variety_and_requirements():
     crit = {c["name"]: c["passed"] for c in gates.style_criteria(bad, [])}
     assert not crit["Style requirements are met"]
     assert not {c["name"]: c["passed"] for c in gates.style_criteria(dict(good, template="stick-figure-story"), [])}["Animation style is known and available"]
-    assert not {c["name"]: c["passed"] for c in gates.style_criteria(dict(good, effects=["warp_drive", "parallax"]), [])}["Two to four known motion effects, with a reason"]
+    assert not {c["name"]: c["passed"] for c in gates.style_criteria(dict(good, effects=["warp_drive", "parallax"]), [])}["Two to six known motion effects, with a reason"]
 
 
 @pytest.mark.parametrize("fault", ["effect", "content_effect", "planned_style"])

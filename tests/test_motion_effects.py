@@ -16,8 +16,8 @@ def _px(png):
     return np.asarray(Image.open(io.BytesIO(png)).convert("RGB")).astype(int)
 
 
-def test_ten_effects_are_listed_and_in_the_gallery():
-    assert len(motion.EFFECTS) == 10 and set(gallery.EFFECTS) == set(motion.EFFECTS)
+def test_twelve_effects_are_listed_and_in_the_gallery():
+    assert len(motion.EFFECTS) == 12 and set(gallery.EFFECTS) == set(motion.EFFECTS)
 
 
 @pytest.mark.parametrize("name", list(motion.EFFECTS))

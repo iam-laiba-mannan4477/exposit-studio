@@ -422,11 +422,8 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     board_now = store.read_json(pid, "storyboard/board.json", {"scenes": []})
     if any(sc.get("effect") in ("globe", "flat_map") for sc in board_now.get("scenes", [])):   # credit off screen, here
         with (ex / "sources.md").open("a", encoding="utf-8") as f:
-            f.write(f"
-## Imagery credit
-
-{engine.earth.CREDIT}
-")
+            from .render import earth
+            f.write(f"{chr(10)}## Imagery credit{chr(10)}{chr(10)}{earth.CREDIT}{chr(10)}")
     try:                                                   # the cover never blocks an export, and a failure is logged
         write_cover(pid, rs, man)
     except Exception as e:                                 # noqa: BLE001

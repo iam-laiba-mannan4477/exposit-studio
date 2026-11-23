@@ -43,3 +43,27 @@ def test_export_writes_cover_png(client):
     out = director.write_cover(pid, rs, {"scenes": []})
     assert out.name == "cover.png" and out.exists()
     assert Image.open(out).size == (1080, 1920)
+
+
+def test_export_tab_lists_cover_png_for_download(client):
+    pid = cli.create_from_example(fmt="9:16")
+    director.write_cover(pid, director.render_settings(pid), {"scenes": []})
+    names = [f["name"] for f in client.get(f"/api/productions/{pid}").json()["exports"]]
+    assert "cover.png" in names
+    r = client.get(f"/api/productions/{pid}/file/cover.png")
+    assert r.status_code == 200 and r.content[:4] == b"\x89PNG"
+
+
+def test_regenerate_cover_uses_the_cover_headline(client):
+    pid = cli.create_from_example(fmt="9:16")
+    assert client.put(f"/api/productions/{pid}/brief", json={"cover_headline": "Where tech makes sense."}).status_code == 200
+    from exposit.render import design
+    design.TEXT_LOG = []
+    try:
+        r = client.post(f"/api/productions/{pid}/cover")
+        texts = " ".join(t["text"] for t in design.TEXT_LOG)
+    finally:
+        design.TEXT_LOG = None
+    assert r.status_code == 200 and r.json()["name"] == "cover.png"
+    assert "makes sense." in texts and "HTTP request" not in texts.split("makes sense.")[0][-40:]
+    assert "cover.png" in [f["name"] for f in client.get(f"/api/productions/{pid}").json()["exports"]]

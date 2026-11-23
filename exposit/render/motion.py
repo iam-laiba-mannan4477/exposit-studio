@@ -605,20 +605,39 @@ class MotionScene(ProTreatment):
 
     # ---- 7 fixed 3D model
     def _model_3d(self, c, t):
+        """A rotating model. Options: "headline" (large text above the model, shown from the first frame), and for the
+        globe "points" ({lat, lon, hub?}: glowing lights on the land) and "globe_arcs" ({from: [lat, lon], to}: arcs
+        that draw on over the surface with a travelling packet). "start" sets the starting turn (radians)."""
         sp, tpl = self.sc.spec, self.tpl
         name = sp.get("model", "server_rack")
         k = ease_out(t / 0.8)
-        cy = self.top + (self.bottom - self.top) * (0.44 if sp.get("label") else 0.5)
+        top = self.top
+        if sp.get("headline"):
+            top = self._headline(c, sp["headline"], t)
+        cy = top + (self.bottom - top) * (0.44 if sp.get("label") else 0.5)
         size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0))
         if tpl.glow:
             D.halo(c, self.CX, cy, size * 2.2, tpl.conn["active"], 0.25 * k)
         if name == "server_rack":                             # swings, so the front panel stays in view
             ay = 0.55 * math.sin(t * float(sp.get("spin", 0.55))) + 0.35
         else:
-            ay = t * float(sp.get("spin", 0.55)) + 0.6
+            ay = t * float(sp.get("spin", 0.55)) + float(sp.get("start", 0.6))
         draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, ay, alpha=k)
+        if name == "globe" and (sp.get("points") or sp.get("globe_arcs")):
+            globe_lights(c, tpl, sp.get("points", []), sp.get("globe_arcs", []), self.CX, cy, size, ay, t, k)
         if sp.get("label"):
             D.label_under(c, tpl, sp["label"], self.CX, cy + size * 1.9, 900, 52, k, sp.get("sub"), plate=True)
+
+    def _headline(self, c, text, t):
+        """Large text at the top of the band (72 px or more), readable from the first frame. Returns the y below it."""
+        tpl = self.tpl
+        maxw = self.W - 140
+        rows, sz = D.fit_block(text, maxw, 3, 96.0 if self.portrait else 88.0, 72, "Bold")
+        k = ease_out((t + 0.25) / 0.45)
+        y = self.top + 20
+        for j, r in enumerate(rows):
+            D.draw_text(c, r, self.CX, y + sz * 0.92 + j * sz * 1.1 + (1 - k) * 24, sz, col(tpl.T["text"], k), "Bold", "center")
+        return y + len(rows) * sz * 1.1 + 40
 
     # ---- 8 stacking cards
     def _stacking_cards(self, c, t):
@@ -635,7 +654,7 @@ class MotionScene(ProTreatment):
                 continue
             k = ease_out((t - times[i]) / 0.55)
             s = 0.92 ** depth
-            yy = base_y - depth * (110 if self.portrait else 70) + (1 - k) * 500
+            yy = base_y - depth * float(sp.get("peek", 110 if self.portrait else 70)) + (1 - k) * 500
             cw, ch = w * s, h * s
             cx0 = self.CX - cw / 2
             a = clamp(k * 3)                                  # quick fade: slides in nearly opaque
@@ -656,11 +675,17 @@ class MotionScene(ProTreatment):
         D.card(c, tpl, x0, y0, w, h, 1.0, fill=T["bg0"] if tpl.dark else "#0F1B2D")
         for i, colr in enumerate(("#FF5F57", "#FEBC2E", "#28C840")):
             c.drawCircle(x0 + 40 + i * 34, y0 + 38, 11, D.paint(col(colr)))
-        title = sp.get("title", "terminal")
+        title = sp.get("terminal_title") or sp.get("title", "terminal")
         D.draw_text(c, title, x0 + w / 2, y0 + 50, 30, col("#B8C7DD"), "Medium", "center", mono=True)
         c.drawLine(x0, y0 + 78, x0 + w, y0 + 78, D.paint(col("#FFFFFF", 0.12), 2))
-        size, lh = 32.0, 50.0
-        shown = [(l, tt) for l, tt in zip(lines, times) if t >= tt]
+        size = float(sp.get("font", 32))                       # larger for a phone when the lines are few
+        lh = size * 1.56
+        rows = []                                             # long lines wrap onto continuation rows
+        for l, tt in zip(lines, times):
+            room = (w - 120) if l.get("cmd") else (w - 90)
+            for j, part in enumerate(_wrap_mono(l["text"], room, size)):
+                rows.append((dict(l, text=part, cont=j > 0, full=l["text"], off=sum(len(p) for p in _wrap_mono(l["text"], room, size)[:j])), tt))
+        shown = [(l, tt) for l, tt in rows if t >= tt]
         view_top, view_h = y0 + 100, h - 130
         content_h = len(shown) * lh
         target = max(0.0, content_h - view_h)
@@ -673,9 +698,13 @@ class MotionScene(ProTreatment):
             yy = view_top + j * lh - scroll + size
             txt = l["text"]
             if l.get("cmd"):
-                n = int(len(txt) * clamp((t - tt) / max(0.3, 0.035 * len(txt))))
-                D.draw_text(c, "$", x0 + 34, yy, size, col("#7EE787"), mono=True)
-                D.draw_text(c, D.ellipsize(txt[:n], w - 120, size, mono=True), x0 + 74, yy, size, col("#F0F6FC"), mono=True)
+                full = l.get("full", txt)
+                n = int(len(full) * clamp((t - tt) / max(0.3, 0.035 * len(full)))) - l.get("off", 0)
+                if n <= 0:
+                    continue
+                if not l.get("cont"):
+                    D.draw_text(c, "$", x0 + 34, yy, size, col("#7EE787"), mono=True)
+                D.draw_text(c, txt[:n], x0 + 74, yy, size, col("#F0F6FC"), mono=True)
             else:
                 colr = {"ok": "#7EE787", "err": "#FF7B72", "dim": "#9DB0C8"}.get(l.get("tone", ""), "#C9D6E8")
                 D.draw_text(c, D.ellipsize(txt, w - 90, size, mono=True), x0 + 34, yy, size, col(colr), mono=True)
@@ -683,6 +712,66 @@ class MotionScene(ProTreatment):
         if shown and int(t * 2.2) % 2 == 0:
             c.drawRect(skia.Rect.MakeXYWH(x0 + 34, min(y1 - 40, view_top + len(shown) * lh - scroll + 6), 18, 34),
                        D.paint(col("#F0F6FC", 0.8)))
+
+
+def _wrap_mono(text: str, room: float, size: float) -> list[str]:
+    """Splits a monospace line to fit `room` px, preferring breaks after / . - or a space."""
+    cw = D.make_font(size, "Regular", mono=True).measureText("M") or size * 0.6
+    n = max(8, int(room / cw))
+    out = []
+    while len(text) > n:
+        cut = max((text.rfind(ch, 0, n) for ch in "/ .-"), default=-1)
+        cut = cut + 1 if cut > n // 2 else n
+        out.append(text[:cut])
+        text = text[cut:]
+    return out + [text]
+
+
+def _globe_xyz(lat: float, lon: float, r: float = 1.38) -> tuple:
+    la, lo = math.radians(lat), math.radians(lon)
+    return (math.cos(la) * math.sin(lo) * r, -math.sin(la) * r, -math.cos(la) * math.cos(lo) * r)
+
+
+def globe_lights(c, tpl, points, arcs, cx, cy, size, ay, t, alpha, ax: float = -0.42) -> None:
+    """Glowing points and drawn-on arcs on the globe's visible side (same projection as draw_model)."""
+    def scr(p):
+        q = rot(p, ax, ay)
+        return project((q[0] * size, q[1] * size, q[2] * size + 600), cx, cy, 1400.0)[:2], q[2] < -0.12 * size / size
+    glow = tpl.conn["active"]
+    for i, p in enumerate(points):
+        (x, y), vis = scr(_globe_xyz(float(p["lat"]), float(p["lon"])))
+        if not vis:
+            continue
+        k = alpha * ease_out(clamp((t - 0.15 - 0.04 * i) / 0.4))
+        pulse = 0.5 + 0.5 * math.sin(t * 4 + i)
+        hub = bool(p.get("hub"))
+        D.halo(c, x, y, (34 if hub else 20) * (1 + 0.25 * pulse), glow, 0.9 * k)
+        c.drawCircle(x, y, 7 if hub else 4.5, D.paint(col("#FFFFFF", k)))
+    for j, a in enumerate(arcs):
+        p0, p1 = _globe_xyz(*a["from"], r=1.0), _globe_xyz(*a["to"], r=1.0)
+        dot = max(-1.0, min(1.0, sum(u * v for u, v in zip(p0, p1))))
+        om = math.acos(dot) or 1e-6
+        start = float(a.get("at", 0.5))
+        f_end = ease_out(clamp((t - start) / 1.4))
+        pts = []
+        for s in range(41):
+            f = s / 40 * f_end
+            w0, w1 = math.sin((1 - f) * om) / math.sin(om), math.sin(f * om) / math.sin(om)
+            r = 1.38 + 0.32 * math.sin(math.pi * f)
+            v = [w0 * u + w1 * w for u, w in zip(p0, p1)]
+            pts.append(scr(tuple(x * r for x in v)))
+        path, on = skia.Path(), False
+        for (x, y), vis in pts:
+            if vis:
+                path.lineTo(x, y) if on else path.moveTo(x, y)
+            on = vis
+        if f_end > 0:
+            c.drawPath(path, D.blur(D.paint(col(glow, 0.6 * alpha), 10), 6))
+            c.drawPath(path, D.paint(col("#FFFFFF", 0.95 * alpha), 4))
+            (x, y), vis = pts[-1]
+            if vis and f_end < 1:
+                D.halo(c, x, y, 30, glow, alpha)
+                c.drawCircle(x, y, 8, D.paint(col("#FFFFFF", alpha)))
 
 
 def wrapper_spec(spec: dict, kind: str) -> dict | None:

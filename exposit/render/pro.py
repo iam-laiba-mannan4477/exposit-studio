@@ -336,11 +336,16 @@ class MapScene(ProTreatment):
         sc = self.sc
         items, title, strip = self._parts()
         aspect = 0.507                                      # Robinson world map, height / width
+        if sc.spec.get("window"):                           # a cropped region has its own aspect
+            pr = assets.MapProjection((0.0, 0.0, 1000.0, 1000.0), sc.spec.get("projection", "robinson"), tuple(sc.spec["window"]))
+            lo0, lo1, la0, la1 = sc.spec["window"]
+            (x0, y0), (x1, y1) = pr(lo0, la1), pr(lo1, la0)
+            aspect = max(0.3, min(1.2, abs(y1 - y0) / max(1.0, abs(x1 - x0))))
         if self.portrait:                                   # map, callout slot, one-row legend, compact strip
             self.strip_h = D.stat_strip(None, self.tpl, 0, 0, 960, strip, 0.0, False) if strip else 0.0
             self.legend_items, self.legend_title = [dict(i, sub=None) for i in items], None
             lg_h = D.legend_row(None, self.tpl, 0, 0, 960, self.legend_items, 0.0) if items else 0.0
-            self.card_h = 150.0 if sc.events_of("card") else 0.0
+            self.card_h = 170.0 if sc.events_of("card") else 0.0
             others = [h for h in (self.card_h, lg_h, self.strip_h) if h]
             map_h = min(1040 * aspect, self.bottom - self.top - sum(others) - 20 * len(others))
             map_w = map_h / aspect                          # the map gives way when the band is short (captions on)
@@ -544,7 +549,7 @@ class MapScene(ProTreatment):
 
     def _place_label(self, c, e, x, y, a, hl):
         tpl = self.tpl
-        size = 32
+        size = 40 if self.portrait else 32
         mono = tpl.label_mono
         lab = D.ellipsize(e["label"], 440, size, "SemiBold", mono)
         w = D.text_width(lab, size, "SemiBold", mono)
@@ -569,7 +574,7 @@ class MapScene(ProTreatment):
         if self.portrait:                                   # in its own slot under the map, with a leader line up
             sx, sy, sw, sh = self.card_slot
             w, h = sw, sh
-            rows, sz = D.fit_block(body, w - 48, 1, 34, 30)
+            rows, sz = D.fit_block(body, w - 48, 1, 38, 30)
             cx, cy = sx, sy
         else:
             cx = clamp(x - w / 2, px, px + pw - w)
@@ -580,11 +585,11 @@ class MapScene(ProTreatment):
         c.drawLine(x, y, lx, cy + (h if cy < y else 0), lp)
         D.card(c, tpl, cx, cy + (1 - k) * 18, w, h, k)
         yy = cy + (1 - k) * 18
-        ts = D.fit_size(title, w - 48, 36, 30, "Bold")
-        D.draw_text(c, D.ellipsize(title, w - 48, ts, "Bold"), cx + 24, yy + 50, ts,
+        ts = D.fit_size(title, w - 48, 44 if self.portrait else 36, 30, "Bold")
+        D.draw_text(c, D.ellipsize(title, w - 48, ts, "Bold"), cx + 24, yy + 54, ts,
                     col(D.text_on(tpl, tpl.conn["active"] if tpl.dark else tpl.T["accent"], tpl.card["fill"]), k), "Bold")
         for j, r in enumerate(rows):
-            D.draw_text(c, r, cx + 24, yy + 92 + j * sz * 1.22, sz, col(tpl.T["text"], k))
+            D.draw_text(c, r, cx + 24, yy + 104 + j * sz * 1.22, sz, col(tpl.T["text"], k))
 
 
 def _gc_dist(a, b):

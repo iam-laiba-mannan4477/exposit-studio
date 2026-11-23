@@ -120,3 +120,14 @@ def test_carousel_counter_is_optional_and_layout_does_not_depend_on_it():
     a = _px(gallery.still(spec, tm, True, 2.0, 0.25))[:300]
     b = _px(gallery.still(without, tm, True, 2.0, 0.25))[:300]
     assert np.abs(a - b).mean() < 1.0, "cards sit in the same place with or without the counter"
+
+
+def test_long_terminal_commands_wrap_and_globe_options_render():
+    from exposit.render import motion, engine
+    parts = motion._wrap_mono("curl -I https://d111111abcdef8.cloudfront.net/logo.png", 840, 40)
+    assert len(parts) > 1 and "".join(parts) == "curl -I https://d111111abcdef8.cloudfront.net/logo.png"
+    spec = {"id": "g", "treatment": "motion", "effect": "model_3d", "model": "globe", "headline": "Why is it fast?",
+            "points": [{"lat": 24.9, "lon": 67.0}, {"lat": 39.0, "lon": -77.5, "hub": True}],
+            "globe_arcs": [{"from": [39.0, -77.5], "to": [24.9, 67.0]}]}
+    png = engine.render_still(spec, {"duration": 3.0, "sentences": [], "words": []}, 2.0, 540, 960, "noir-network", False)
+    assert png[:4] == b"\x89PNG"

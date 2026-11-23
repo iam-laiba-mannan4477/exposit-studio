@@ -71,7 +71,7 @@ chips and packets. Up to 6 elements in 16:9, 5 in 9:16. Optional "col"/"row" gri
 
 map: places at real lat/lon (hub, edge, origin, user kinds), great-circle arcs, callout cards, a legend and a stat strip.
 Only real coordinates; places stand for examples unless the facts say otherwise. "auto_arcs": "nearest-hub" links each
-edge to its nearest hub. The strip shows a number only with "claim" (a fact id) or "source"; otherwise icons and labels.
+edge to its nearest hub. "window": [lon0, lon1, lat0, lat1] crops to a region (larger on a phone). The strip shows a number only with "claim" (a fact id) or "source"; otherwise icons and labels.
 {"treatment": "map", "heading": "Where requests are answered", "elements": [{"id": "fra", "kind": "hub", "label": "Frankfurt",
  "lat": 50.1, "lon": 8.7}, {"id": "lhr", "kind": "edge", "label": "London", "lat": 51.5, "lon": -0.1}],
  "arcs": [{"from": "lhr", "to": "fra"}], "legend": {"title": "Legend", "items": [{"mark": "hub", "label": "Regional cache"}]},
@@ -145,10 +145,15 @@ Content effects, with "treatment": "motion":
    parallel items (topics, services). {"effect": "card_carousel", "items": [...], "counter": "topics"}
 7. model_3d: a slowly rotating low-poly model (server_rack, cube, globe, database) with a label; for hardware and
    infrastructure. {"effect": "model_3d", "model": "server_rack", "label": "Edge server", "sub": "..."}
+   Options: "headline" (large hook text above the model, from the first frame); for the globe, "points" ([{lat, lon,
+   hub?}] glowing lights) and "globe_arcs" ([{from: [lat, lon], to: [lat, lon]}] arcs drawing on over the surface);
+   "start" (starting turn) and "spin".
 8. stacking_cards: cards slide up and stack with depth; for layered or sequential ideas (a stack, a pipeline).
+   "peek" (px each card below shows; about 250 keeps titles readable in 9:16).
    {"effect": "stacking_cards", "items": [{"icon": "layers", "title": "...", "at": {"word": "..."}}]}
 10. scroll_demo: a terminal (or UI) panel that types commands and scrolls output as the narration proceeds; for
-   real commands and their output ("cmd": true marks a command; "tone": ok, err or dim colours output lines).
+   real commands and their output ("cmd": true marks a command; "tone": ok, err or dim colours output lines;
+   long lines wrap; "font" (default 32, 40 for few lines on a phone); "terminal_title").
    {"effect": "scroll_demo", "title": "bash", "lines": [{"text": "kubectl get pods", "cmd": true, "at": {"word": "pods"}}, {"text": "web-7d9 1/1 Running", "tone": "ok"}]}
 
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.

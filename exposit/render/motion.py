@@ -723,7 +723,6 @@ class MotionScene(ProTreatment):
         self._earth_overlays(c, t, g.project)
         if sp.get("headline"):
             self._headline(c, sp["headline"], t, backdrop=True)
-        earth.credit(c, self.W, self.bottom - 8)
 
     def _flat_map(self, c, t):
         """A regional map from the same textures: "region": [lon0, lon1, lat0, lat1], "texture": night | day, Natural
@@ -744,7 +743,6 @@ class MotionScene(ProTreatment):
             x, y = fm.project(la, lo)
             return x, y - alt * 900, True
         self._earth_overlays(c, t, proj)
-        earth.credit(c, self.W, self.bottom - 8)
 
     # ---- 8 stacking cards
     def _stacking_cards(self, c, t):

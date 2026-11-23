@@ -161,7 +161,7 @@ Content effects, with "treatment": "motion":
    the first entry is the start view), glowing "cities" ([{"place" | "lat"/"lon", "label", "at", "tone", "hub",
    "side"}]; places are Natural Earth populated places such as "London", "Sao Paulo"), great-circle "arcs" ([{"from",
    "to", "at", "tone", "dashed"}]) that draw on and then carry light-trail packets, an optional "headline", and
-   "sun": {"lat", "lon"} for a day side (omit for night). The imagery credit line is drawn automatically.
+   "sun": {"lat", "lon"} for a day side (omit for night). No credit is drawn on screen; sources.md carries it.
    {"effect": "globe", "fly": [{"lat": 30, "lon": -30, "zoom": 1.0}, {"place": "London", "zoom": 2.4, "at": {"word": "London"}}],
     "cities": [{"place": "London", "at": {"word": "London"}}]}
 12. flat_map: a regional map from the same imagery with Natural Earth borders and coastlines: "region": [lon0, lon1,

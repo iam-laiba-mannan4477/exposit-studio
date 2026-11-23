@@ -20,7 +20,7 @@ appears in the lists below.
 | NASA Black Marble 2016 (Earth at Night), colour, 0.1 degree | BlackMarble_2016_01deg.jpg (3600x1800), fetched 2026-11-24 | https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps | As above (NASA image use policy); credit "NASA Earth Observatory" | `earth/night-4096.jpg`, resized to 4096x2048; the night side and city lights |
 | Natural Earth 1:50m: admin 0 boundary lines (land) 5.1.0, coastline 4.0.0, populated places 5.1.2 | ne_50m_*.zip, fetched 2026-11-24 from naciscdn.org | https://www.naturalearthdata.com/downloads/50m-cultural-vectors/, /50m-physical-vectors/ | Public domain: "All versions of Natural Earth raster + vector map data found on this website are in the public domain" (https://www.naturalearthdata.com/about/terms-of-use/, read 2026-11-24). Credit given anyway | `earth/vectors-50m.json` (borders, coastlines, places), converted by `scripts/build_earth_assets.py` (needs pyshp, a dev requirement only) |
 
-On screen, globe and map scenes carry the line "Imagery: NASA Earth Observatory. Map data: Natural Earth."
+Credit "Imagery: NASA Earth Observatory. Map data: Natural Earth." is written to sources.md of every video with a globe or flat_map scene (not drawn on screen).
 
 Not used, and why: AWS Architecture Icons (AWS permits them in diagrams, presentations and documents but its page
 does not mention video, so their use here is unclear); Tabler and Phosphor (not needed; one icon family keeps one style).

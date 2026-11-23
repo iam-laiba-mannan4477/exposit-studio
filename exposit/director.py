@@ -419,6 +419,14 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     (ex / "script.md").write_text(f"# {p['title']}\n\n" + "\n\n".join(f"## {s['title']}\n\n" + " ".join(x["text"] for x in s["sentences"]) for s in script["scenes"]) + "\n", encoding="utf-8")
     (ex / "sources.md").write_text(f"# Sources for {p['title']}\n\nArrangement depicted: {facts.get('arrangement','')}\n\n" + "\n".join(
         f"- **{c['id']}** {c['text']}\n" + "".join(f"  - [{s['title']}]({s['url']}) ({s.get('kind','')})\n" for s in c.get("sources", [])) for c in facts["claims"]), encoding="utf-8")
+    board_now = store.read_json(pid, "storyboard/board.json", {"scenes": []})
+    if any(sc.get("effect") in ("globe", "flat_map") for sc in board_now.get("scenes", [])):   # credit off screen, here
+        with (ex / "sources.md").open("a", encoding="utf-8") as f:
+            f.write(f"
+## Imagery credit
+
+{engine.earth.CREDIT}
+")
     try:                                                   # the cover never blocks an export, and a failure is logged
         write_cover(pid, rs, man)
     except Exception as e:                                 # noqa: BLE001

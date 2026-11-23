@@ -52,6 +52,13 @@ EFFECTS = {
                               {"text": "curl -sI https://example.com/new.js", "cmd": True, "at": 1.9},
                               {"text": "HTTP/2 200", "at": 2.4}, {"text": "x-cache: Miss from cloudfront", "tone": "err", "at": 2.6},
                               {"text": "via: 1.1 ...cloudfront.net (CloudFront)", "tone": "dim", "at": 2.8}]}},
+    "globe": {"narration": N, "spec": {"treatment": "motion", "effect": "globe",
+              "fly": [{"lat": 30, "lon": -30, "zoom": 1.0}, {"place": "London", "zoom": 2.0, "at": 1.0}],
+              "cities": [{"place": "London", "at": 0.6}, {"place": "New York", "at": 0.3}],
+              "arcs": [{"from": "New York", "to": "London", "at": 0.4}]}},
+    "flat_map": {"narration": N, "spec": {"treatment": "motion", "effect": "flat_map", "heading": "Europe",
+                 "region": [-12, 30, 36, 62], "cities": [{"place": "London", "at": 0.3}, {"place": "Frankfurt", "at": 0.6}],
+                 "arcs": [{"from": "London", "to": "Frankfurt", "at": 0.8}]}},
 }
 # extra 3D models on the still sheet
 MODELS = ["server_rack", "cube", "globe", "database"]

@@ -19,7 +19,8 @@ from .design import col, clamp, lerp, ease_out, ease_in_out, spring
 from .pro import ProTreatment
 
 WRAPPERS = ("parallax", "pinned_heading", "focus_frame")
-CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo")
+CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo",
+           "globe", "flat_map")
 EFFECTS = WRAPPERS + CONTENT
 MODELS = ("server_rack", "cube", "globe", "database")
 
@@ -338,47 +339,25 @@ _layer_cache: dict = {}
 
 
 def parallax_layers(c, tpl, W: float, H: float, t: float, dur: float, layers: int = 4, a: float = 1.0) -> None:
-    """3-5 depth layers of procedural shapes drifting sideways at different speeds (far slow and small, near fast and
-    large). Drawn as vectors each frame: a few hundred small shapes cost less than compositing full-screen layers."""
-    layers = int(clamp(layers, 3, 5))
+    """Depth without decoration: 2-3 faint line grids (far: fine and slow; near: wider and faster) drift sideways
+    and slightly up, so the scene reads as layered. No floating shapes or particles in any template."""
+    layers = int(clamp(layers, 2, 3)) if layers else 2
     pan = ease_in_out(t / max(0.1, dur))
     colr = tpl.conn["active"] if tpl.dark else tpl.T["line"]
-    span = W * 1.6
     for i in range(layers):
         depth = (i + 1) / layers                              # 0 far .. 1 near
-        dx = -pan * W * 0.5 * (0.15 + depth)
-        n = int(70 * (1.15 - depth)) + 10
-        if depth < 0.5:
-            p = D.paint(col(colr, (0.45 + 0.3 * depth) * a))
-        else:
-            p = D.paint(col(colr, (0.22 + 0.2 * depth) * a), 2.5 + depth * 3)
-        for j in range(n):
-            h1 = (math.sin(j * 12.9898 + i * 78.2) * 43758.5) % 1.0
-            h2 = (math.sin(j * 39.3468 + i * 11.1) * 24634.6) % 1.0
-            x, y = (h1 * span + dx) % span - W * 0.3, h2 * H
-            if x < -60 or x > W + 60:
-                continue
-            r = 2 + depth * 26 * ((j * 7) % 5 + 1) / 5
-            if depth < 0.5:
-                c.drawCircle(x, y, 2.5 + r * 0.5, p)
-            else:
-                c.drawPath(_hexagon(x, y, r, j), p)
-
-
-@functools.lru_cache(maxsize=2048)
-def _hex_unit(j: int) -> skia.Path:
-    p = skia.Path()
-    for k in range(6):
-        ang = math.pi / 3 * k + j
-        (p.moveTo if k == 0 else p.lineTo)(math.cos(ang), math.sin(ang))
-    p.close()
-    return p
-
-
-def _hexagon(x: float, y: float, r: float, j: int) -> skia.Path:
-    p = skia.Path(_hex_unit(j % 64))
-    p.transform(skia.Matrix.MakeAll(r, 0, x, 0, r, y, 0, 0, 1))
-    return p
+        step = 60.0 + 90.0 * depth
+        dx = -(pan * W * 0.12 * (0.3 + depth)) % step
+        dy = -(pan * H * 0.03 * depth) % step
+        p = D.paint(col(colr, (0.05 + 0.04 * depth) * a), 1.0 + depth)
+        x = dx
+        while x < W:
+            c.drawLine(x, 0, x, H, p)
+            x += step
+        y = dy
+        while y < H:
+            c.drawLine(0, y, W, y, p)
+            y += step
 
 
 def pinned_scroll(t: float, dur: float, distance: float, start: float = 0.15) -> float:
@@ -628,16 +607,142 @@ class MotionScene(ProTreatment):
         if sp.get("label"):
             D.label_under(c, tpl, sp["label"], self.CX, cy + size * 1.9, 900, 52, k, sp.get("sub"), plate=True)
 
-    def _headline(self, c, text, t):
-        """Large text at the top of the band (72 px or more), readable from the first frame. Returns the y below it."""
+    def _headline(self, c, text, t, draw=True, backdrop=False):
+        """Large text at the top of the band (72 px or more), readable from the first frame. Returns the y below it.
+        With backdrop, a cached dark gradient sits behind it so it stays readable over imagery (a zoomed globe)."""
         tpl = self.tpl
         maxw = self.W - 140
         rows, sz = D.fit_block(text, maxw, 3, 96.0 if self.portrait else 88.0, 72, "Bold")
         k = ease_out((t + 0.25) / 0.45)
         y = self.top + 20
+        if not draw:
+            return y + len(rows) * sz * 1.1 + 40
+        if backdrop:
+            bh = y + len(rows) * sz * 1.1 + 120
+            bg = tpl.T["bg0"]
+
+            def grad(cc, W=self.W, bh=bh, bg=bg):
+                p = skia.Paint()
+                p.setShader(skia.GradientShader.MakeLinear([skia.Point(0, bh * 0.55), skia.Point(0, bh)],
+                                                           [col(bg, 0.92), col(bg, 0.0)]))
+                cc.drawRect(skia.Rect.MakeWH(W, bh * 0.55), D.paint(col(bg, 0.92)))
+                cc.drawRect(skia.Rect.MakeXYWH(0, bh * 0.55, W, bh * 0.45), p)
+            D.sprite(c, ("headline-backdrop", tpl.name, int(self.W), int(bh)), 0, 0, self.W, bh, grad, 1.0)
         for j, r in enumerate(rows):
             D.draw_text(c, r, self.CX, y + sz * 0.92 + j * sz * 1.1 + (1 - k) * 24, sz, col(tpl.T["text"], k), "Bold", "center")
         return y + len(rows) * sz * 1.1 + 40
+
+    # ---- 11 the real Earth: textured globe with camera fly-to, city lights, arcs and light-trail packets
+    def _cam(self, t):
+        """Camera (lat, lon, zoom) at time t from "fly" keyframes; each move flies for "fly" s with a zoom dip."""
+        from . import earth
+        sp = self.sc.spec
+        keys = sp.get("fly") or [{"lat": 30, "lon": 0, "zoom": 1.0}]
+        times = self._times(keys, 1.5, 0.0)
+        cur = keys[0]
+        lat, lon = earth.resolve(cur) if ("place" in cur or "lat" in cur) else (30.0, 0.0)
+        zoom = float(cur.get("zoom", 1.0))
+        for k, tt in zip(keys[1:], times[1:]):
+            if t <= tt:
+                break
+            la1, lo1 = earth.resolve(k)
+            z1 = float(k.get("zoom", zoom))
+            f = clamp((t - tt) / float(k.get("fly", 1.6)))
+            e = ease_in_out(f)
+            dlon = (lo1 - lon + 540) % 360 - 180
+            dist = math.hypot(la1 - lat, dlon)
+            dip = 1.0 - min(0.45, dist / 200.0) * math.sin(math.pi * e) if zoom > 1.2 or z1 > 1.2 else 1.0
+            lat, lon = lat + (la1 - lat) * e, lon + dlon * e
+            zoom = (zoom + (z1 - zoom) * e) * dip
+            if f < 1:
+                break
+        lon += float(sp.get("drift", 1.2)) * t                 # a slow turn keeps it alive
+        return lat, lon, zoom
+
+    def _earth_overlays(self, c, t, proj, base_alt=0.0):
+        from . import earth
+        sp, tpl = self.sc.spec, self.tpl
+        for a in sp.get("arcs", []):
+            at = self.cue_t(a.get("at"), 0.6)
+            if t < at:
+                continue
+            p0, p1 = earth.resolve(a["from"] if isinstance(a["from"], dict) else {"place": a["from"]}), \
+                earth.resolve(a["to"] if isinstance(a["to"], dict) else {"place": a["to"]})
+            gc = earth.great_circle(p0, p1, 64)
+            span = math.radians(max(1.0, math.dist(p0, p1)))
+            pts, vis = [], []
+            for la, lo, f in gc:
+                x, y, v = proj(la, lo, float(a.get("lift", 0.12)) * min(1.0, span) * math.sin(math.pi * f))
+                pts.append((x, y)); vis.append(v)
+            draw = ease_out((t - at) / float(a.get("dur", 1.3)))
+            n = int(draw * (len(pts) - 1))
+            colr = D.role_color(tpl, a["tone"]) if a.get("tone") else tpl.conn["active"]
+            path, on = skia.Path(), False
+            for i in range(n + 1):
+                if vis[i]:
+                    path.lineTo(*pts[i]) if on else path.moveTo(*pts[i])
+                on = vis[i]
+            p = D.paint(col(colr, 0.95), 5)
+            if a.get("dashed"):
+                p.setPathEffect(skia.DashPathEffect.Make([18, 12], -t * 40))
+            c.drawPath(path, D.blur(D.paint(col(colr, 0.5), 12), 8))
+            c.drawPath(path, p)
+            if draw >= 1 and a.get("packets", 1):
+                per = float(a.get("period", 1.8))
+                q = ((t - at - float(a.get("dur", 1.3))) / per) % 1.0
+                seen = [pt for pt, v in zip(pts, vis) if v]
+                if len(seen) > 2:
+                    earth.light_trail(c, seen, q, colr if not a.get("packet_color") else a["packet_color"])
+        for i, ct in enumerate(sp.get("cities", [])):
+            at = self.cue_t(ct.get("at"), 0.3 + 0.12 * i)
+            k = ease_out((t - at) / 0.4)
+            if k <= 0:
+                continue
+            la, lo = earth.resolve(ct)
+            x, y, v = proj(la, lo, 0.0)
+            if not v or not (-50 < x < self.W + 50 and -50 < y < self.H + 50):
+                continue
+            colr = D.role_color(tpl, ct["tone"]) if ct.get("tone") else None
+            earth.city_marker(c, tpl, x, y, ct.get("label", ct.get("place")), k, t + i * 0.37, colr, ct.get("hub", False),
+                              ct.get("side", "right"), float(ct.get("size", 44)), self.W)
+
+    def _globe(self, c, t):
+        """The textured Earth. "fly": camera keyframes [{place | lat/lon, zoom, at, fly}]; "sun": {lat, lon} or omitted
+        for night; "cities": [{place | lat/lon, label, at, tone, hub, side}]; "arcs": [{from, to, at, tone, dashed,
+        packets}]; "headline"; "cy" (0..1 of the band)."""
+        from . import earth
+        sp = self.sc.spec
+        top = self._headline(c, sp["headline"], t, draw=False) if sp.get("headline") else self.top
+        lat, lon, zoom = self._cam(t)
+        R = (0.47 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
+        cy = top + (self.bottom - top) * float(sp.get("cy", 0.5))
+        g = earth.Globe(self.W, self.H, self.CX, cy, R, lat, lon)
+        sun = sp.get("sun")
+        g.render(c, (float(sun["lat"]), float(sun["lon"])) if sun else None, float(sp.get("night_gain", 1.7)),
+                 ease_out((t + 0.3) / 0.5))
+        self._earth_overlays(c, t, g.project)
+        if sp.get("headline"):
+            self._headline(c, sp["headline"], t, backdrop=True)
+
+    def _flat_map(self, c, t):
+        """A regional map from the same textures: "region": [lon0, lon1, lat0, lat1], "texture": night | day, Natural
+        Earth borders and coastlines, "cities" and "arcs" as for the globe (arcs bow upwards)."""
+        from . import earth
+        sp = self.sc.spec
+        x0, y0 = (60.0, self.top + 10) if self.portrait else (120.0, self.top + 10)
+        rect = (x0, y0, self.W - 2 * x0, self.bottom - y0 - 70)
+        fm = earth.FlatMap(rect, tuple(sp.get("region", (-12, 32, 34, 62))))
+        c.save()
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(*rect), 24, 24), skia.ClipOp.kIntersect, True)
+        fm.render(c, sp.get("texture", "night"), float(sp.get("night_gain", 1.7)), sp.get("borders", True),
+                  ease_out((t + 0.3) / 0.5))
+        c.restore()
+        c.drawRoundRect(skia.Rect.MakeXYWH(*rect), 24, 24, D.paint(col(self.tpl.conn["active"], 0.35), 2))
+
+        def proj(la, lo, alt):
+            x, y = fm.project(la, lo)
+            return x, y - alt * 900, True
+        self._earth_overlays(c, t, proj)
 
     # ---- 8 stacking cards
     def _stacking_cards(self, c, t):

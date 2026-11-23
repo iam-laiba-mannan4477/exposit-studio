@@ -124,9 +124,9 @@ are illustrative.
 motion: one content effect fills the scene ("effect" below). Wrapper effects go in any scene's "effects" list.
 {"treatment": "motion", "effect": "card_carousel", "items": [{"icon": "server", "title": "Edge locations", "text": "Answer users nearby", "at": {"word": "edge"}}], "counter": "CDN parts"}
 
-## Motion effects (ten; pick 2 to 4 per video where they help the explanation)
+## Motion effects (twelve; pick 2 to 6 per video where they help the explanation)
 Wrapper effects, on any treatment: "effects": [{"type": ...}]
-1. parallax: 3-5 depth layers of procedural shapes drift at different speeds behind the scene. Atmosphere for
+1. parallax: 2-3 faint line grids drift at different speeds behind the scene (no floating shapes, ever). Depth for
    overviews and openings. {"type": "parallax", "layers": 4}
 2. pinned_heading: the heading stays fixed while the content scrolls up under it; for lists longer than one screen.
    {"type": "pinned_heading", "distance": 380}
@@ -155,6 +155,18 @@ Content effects, with "treatment": "motion":
    real commands and their output ("cmd": true marks a command; "tone": ok, err or dim colours output lines;
    long lines wrap; "font" (default 32, 40 for few lines on a phone); "terminal_title").
    {"effect": "scroll_demo", "title": "bash", "lines": [{"text": "kubectl get pods", "cmd": true, "at": {"word": "pods"}}, {"text": "web-7d9 1/1 Running", "tone": "ok"}]}
+
+11. globe: the real Earth (NASA Blue Marble day, Black Marble night lights) on a textured sphere, with a camera that
+   flies between places and zooms ("fly": [{"place": "London", "zoom": 2.2, "at": {"word": "London"}, "fly": 1.6}];
+   the first entry is the start view), glowing "cities" ([{"place" | "lat"/"lon", "label", "at", "tone", "hub",
+   "side"}]; places are Natural Earth populated places such as "London", "Sao Paulo"), great-circle "arcs" ([{"from",
+   "to", "at", "tone", "dashed"}]) that draw on and then carry light-trail packets, an optional "headline", and
+   "sun": {"lat", "lon"} for a day side (omit for night). No credit is drawn on screen; sources.md carries it.
+   {"effect": "globe", "fly": [{"lat": 30, "lon": -30, "zoom": 1.0}, {"place": "London", "zoom": 2.4, "at": {"word": "London"}}],
+    "cities": [{"place": "London", "at": {"word": "London"}}]}
+12. flat_map: a regional map from the same imagery with Natural Earth borders and coastlines: "region": [lon0, lon1,
+   lat0, lat1], "texture": "night" or "day", "cities" and "arcs" as for the globe.
+   {"effect": "flat_map", "region": [-12, 30, 36, 62], "cities": [{"place": "Frankfurt"}]}
 
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.
 

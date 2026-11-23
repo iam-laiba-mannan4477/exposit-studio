@@ -13,7 +13,7 @@ _kokoro = None
 PRONUNCIATION = {  # written form -> spoken form, applied before synthesis only
     "NGINX": "engine X", "nginx": "engine X", "kubectl": "kube control", "DNS": "D N S", "NLB": "N L B",
     "HTTP": "H T T P", "HTTPS": "H T T P S", "AWS": "A W S", "IP": "I P", "URL": "U R L",
-    "CI/CD": "C I C D", "LLMOps": "L L M ops", "DevSecOps": "dev sec ops", "AI": "eh eye", "IaC": "eye eh see",   # spelled so the tokenizer reads eɪ aɪ / aɪ eɪ siː
+    "CI/CD": "C I C D", "LLMOps": "L L M ops", "DevSecOps": "dev sec ops", "AI": "eh eye", "IaC": "eye eh see", "us-east-1": "U S East 1", "CDN": "C D N",   # spelled so the tokenizer reads eɪ aɪ / aɪ eɪ siː
 }
 
 

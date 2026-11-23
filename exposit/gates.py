@@ -121,7 +121,7 @@ def spec_icons(spec: dict) -> list[str]:
 
 
 def style_criteria(strategy: dict, previous: list[dict]) -> list[dict]:
-    """Strategy checks for the animation style and motion effects: known and available, 2-4 effects, requirements met,
+    """Strategy checks for the animation style and motion effects: known and available, 2-6 effects, requirements met,
     and not the same style-and-effects combination as the previous video (the variety rule)."""
     style = strategy.get("template", "")
     effects = list(strategy.get("effects", []))
@@ -133,7 +133,7 @@ def style_criteria(strategy: dict, previous: list[dict]) -> list[dict]:
     same = bool(prev and style and prev.get("style") == style and sorted(prev.get("effects", [])) == sorted(effects))
     return [
         _crit("Animation style is known and available", known, style or "Not chosen: the brief's template is used"),
-        _crit("Two to four known motion effects, with a reason", 2 <= len(effects) <= 4 and not bad_fx and bool(strategy.get("effects_reason", "").strip()),
+        _crit("Two to six known motion effects, with a reason", 2 <= len(effects) <= 6 and not bad_fx and bool(strategy.get("effects_reason", "").strip()),
               ("Unknown: " + ", ".join(bad_fx)) if bad_fx else f"{len(effects)} effects"),
         _crit("Style requirements are met", req_ok, f"{style} needs {st.requires}" if not req_ok else ""),
         _crit("Not the same style and effects as the previous video", not same,

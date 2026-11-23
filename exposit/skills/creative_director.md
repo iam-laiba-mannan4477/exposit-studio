@@ -56,7 +56,7 @@ elements per scene, and a pace of one idea every few seconds. Say in your decisi
 
 
 ## Animation style and motion effects (every video)
-Pick ONE animation style for the whole video (it goes in `template`) and 2 to 4 motion effects (`effects`), and say
+Pick ONE animation style for the whole video (it goes in `template`) and 2 to 6 motion effects (`effects`), and say
 why in `template_reason` and `effects_reason`. The cover is drawn in the same style.
 
 Variety rule: `last_three_productions` lists the recent videos with their style and effects. Never repeat the previous
@@ -96,6 +96,8 @@ Motion effects (`effects_available`), best for:
 - stacking_cards: layers and sequences (a stack, a pipeline)
 - focus_frame: walking a path one hop at a time
 - scroll_demo: real commands and their output (KodeKloud-style hands-on)
+- globe: the real Earth at night or day, camera fly-to between cities, arcs with light-trail packets
+- flat_map: a regional view (Europe, Asia) of the same imagery with country borders and city labels
 
 Rules: playful styles are allowed only when they help the explanation; labels stay precise either way (real protocol
 and product names). Match the style to the subject: low-poly-neon or model_3d for infrastructure and hardware;

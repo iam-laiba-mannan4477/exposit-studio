@@ -1,0 +1,12 @@
+URL https://d1.awsstatic.com/onedam/marketing-channels/website/aws/en_US/product-categories/networking/approved/images/cc62b0dc-6a26-4c24-9e5d-3db36e68dd2c.7e4b1ae505d0f0a014c70f8ae340289e7674ac59.png
+== 2026-11-23T21:12:01Z request 1
+HTTP/1.1 200 OK
+Cache-Control: max-age=31536000
+X-Cache: Miss from cloudfront
+Via: 1.1 a2897f72515a8350a57c398127ef6588.cloudfront.net (CloudFront)
+== 2026-11-23T21:12:06Z request 2
+HTTP/1.1 200 OK
+Cache-Control: max-age=31536000
+X-Cache: Hit from cloudfront
+Via: 1.1 48a89eed3e813ba6c51e4b856c00eb52.cloudfront.net (CloudFront)
+Age: 6

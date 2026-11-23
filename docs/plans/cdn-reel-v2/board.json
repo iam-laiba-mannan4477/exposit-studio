@@ -1,0 +1,685 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Hook",
+   "treatment": "motion",
+   "effect": "globe",
+   "headline": "Netflix in London: instant. Why?",
+   "fly": [
+    {
+     "lat": 28,
+     "lon": -45,
+     "zoom": 1.0
+    },
+    {
+     "place": "London",
+     "zoom": 2.6,
+     "at": {
+      "word": "London"
+     },
+     "fly": 1.8
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "at": {
+      "word": "London"
+     }
+    }
+   ],
+   "drift": 0.0,
+   "cy": 0.55,
+   "objective": "Hook: real night Earth, fly into London",
+   "transition": "fade",
+   "reason": "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NASA night imagery. Camera fly-to (cinelume: maps that fly to places).",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s2",
+   "title": "Without a CDN",
+   "treatment": "motion",
+   "effect": "globe",
+   "fly": [
+    {
+     "lat": 45,
+     "lon": -38,
+     "zoom": 1.15
+    },
+    {
+     "lat": 52,
+     "lon": -170,
+     "zoom": 1.0,
+     "at": {
+      "word": "Seoul"
+     },
+     "fly": 1.6
+    }
+   ],
+   "cities": [
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "label": "Origin · us-east-1 (N. Virginia)",
+     "tone": "fail",
+     "side": "left",
+     "hub": true,
+     "at": {
+      "word": "origin"
+     }
+    },
+    {
+     "place": "London",
+     "at": {
+      "word": "London"
+     }
+    },
+    {
+     "place": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     },
+     "side": "right"
+    },
+    {
+     "place": "Seoul",
+     "at": {
+      "word": "Seoul"
+     },
+     "side": "left"
+    }
+   ],
+   "arcs": [
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "London",
+     "at": {
+      "word": "London"
+     },
+     "tone": "fail"
+    },
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     },
+     "tone": "fail"
+    },
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "Seoul",
+     "at": {
+      "word": "Seoul"
+     },
+     "tone": "fail",
+     "dur": 1.6
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "origin"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "wait"
+     },
+     "action": "pulse"
+    }
+   ],
+   "transition": "crossfade",
+   "objective": "One distant origin for every viewer",
+   "reason": "Long great-circle arcs from one origin make the distance physical; light-trail packets show the round trips.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s3",
+   "title": "The CDN idea",
+   "treatment": "stat",
+   "heading": "The CDN idea",
+   "value": "750",
+   "suffix": "+",
+   "icon": "server",
+   "label": "CloudFront points of presence, in 100+ cities",
+   "source": "aws.amazon.com/cloudfront/features (read 2026-11-24)",
+   "at": {
+    "word": "750"
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "copies"
+     },
+     "action": "pulse"
+    }
+   ],
+   "effects": [
+    {
+     "type": "parallax",
+     "layers": 2
+    }
+   ],
+   "transition": "push",
+   "objective": "The idea and the sourced scale",
+   "reason": "Kinetic number counter with a visible source line (cinelume bignumber).",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s4",
+   "title": "Across the globe",
+   "treatment": "motion",
+   "effect": "globe",
+   "fly": [
+    {
+     "lat": 45,
+     "lon": 5,
+     "zoom": 1.05
+    },
+    {
+     "lat": 30,
+     "lon": 132,
+     "zoom": 1.05,
+     "at": {
+      "word": "Seoul"
+     },
+     "fly": 1.0
+    },
+    {
+     "lat": -15,
+     "lon": -50,
+     "zoom": 1.05,
+     "at": {
+      "word": "Sao"
+     },
+     "fly": 1.0
+    },
+    {
+     "lat": -30,
+     "lon": 150,
+     "zoom": 1.05,
+     "at": {
+      "word": "Sydney"
+     },
+     "fly": 0.8
+    }
+   ],
+   "still_t": 99,
+   "cities": [
+    {
+     "place": "London",
+     "at": {
+      "word": "London"
+     },
+     "side": "left"
+    },
+    {
+     "place": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     }
+    },
+    {
+     "place": "New York",
+     "at": {
+      "word": "countries"
+     },
+     "side": "left"
+    },
+    {
+     "place": "Seoul",
+     "at": {
+      "word": "Seoul"
+     },
+     "side": "left"
+    },
+    {
+     "place": "Tokyo",
+     "at": {
+      "word": "Tokyo"
+     }
+    },
+    {
+     "place": "Sao Paulo",
+     "label": "São Paulo",
+     "at": {
+      "word": "Sao"
+     }
+    },
+    {
+     "place": "Sydney",
+     "at": {
+      "word": "Sydney"
+     }
+    }
+   ],
+   "drift": 0.0,
+   "cues": [
+    {
+     "at": {
+      "word": "countries"
+     },
+     "action": "pulse"
+    }
+   ],
+   "transition": "crossfade",
+   "objective": "Edge points light up across the globe",
+   "reason": "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NASA night imagery. Example cities only; no invented counts per region.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s5",
+   "title": "Netflix Open Connect",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "model": "server_rack",
+   "headline": "Netflix runs its own CDN",
+   "label": "Open Connect Appliance",
+   "sub": "Netflix's own servers",
+   "cues": [
+    {
+     "at": {
+      "word": "Connect"
+     },
+     "action": "pulse"
+    }
+   ],
+   "transition": "fade",
+   "objective": "Introduce Open Connect",
+   "reason": "A 3D rack makes the appliance concrete.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s6",
+   "title": "Inside your ISP",
+   "treatment": "iconflow",
+   "heading": "Inside your ISP",
+   "elements": [
+    {
+     "id": "viewer",
+     "kind": "user",
+     "label": "Viewer",
+     "sub": "London",
+     "model_ref": "viewer"
+    },
+    {
+     "id": "oca",
+     "kind": "server",
+     "icon": "server",
+     "label": "Open Connect Appliance",
+     "sub": "inside the ISP network",
+     "model_ref": "oca"
+    },
+    {
+     "id": "ixp",
+     "kind": "router",
+     "icon": "network",
+     "label": "Internet exchange point",
+     "sub": "storage appliances"
+    }
+   ],
+   "links": [
+    {
+     "from": "oca",
+     "to": "viewer",
+     "tone": "success"
+    },
+    {
+     "from": "ixp",
+     "to": "oca"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "providers"
+     },
+     "action": "packet",
+     "from": "oca",
+     "to": "viewer"
+    },
+    {
+     "at": {
+      "word": "providers"
+     },
+     "action": "chip",
+     "from": "oca",
+     "to": "viewer",
+     "text": "Short path",
+     "tone": "success"
+    },
+    {
+     "at": {
+      "word": "exchange"
+     },
+     "action": "packet",
+     "from": "ixp",
+     "to": "oca"
+    },
+    {
+     "at": {
+      "word": "pre-filled"
+     },
+     "action": "chip",
+     "from": "ixp",
+     "to": "oca",
+     "text": "Pre-filled",
+     "tone": "info"
+    }
+   ],
+   "effects": [
+    {
+     "type": "focus_frame",
+     "targets": [
+      {
+       "id": "oca",
+       "at": {
+        "word": "providers"
+       }
+      },
+      {
+       "id": "ixp",
+       "at": {
+        "word": "exchange"
+       }
+      },
+      {
+       "id": "oca",
+       "at": {
+        "word": "pre-filled"
+       }
+      }
+     ]
+    }
+   ],
+   "transition": "push",
+   "objective": "Where Open Connect servers sit",
+   "reason": "Reference 2 layout with the arrows corrected: content flows from the appliance to the viewer.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s7",
+   "title": "Miss vs hit",
+   "treatment": "compare",
+   "heading": "Miss vs hit",
+   "client": {
+    "icon": "user",
+    "label": "Viewer · Frankfurt"
+   },
+   "panel": {
+    "title": "Edge · Frankfurt POP",
+    "icon": "database-zap",
+    "label": "Edge cache"
+   },
+   "origin": {
+    "icon": "server-cog",
+    "label": "Origin · us-east-1"
+   },
+   "lanes": [
+    {
+     "title": "Cache hit",
+     "tone": "success",
+     "at": {
+      "word": "hit"
+     }
+    },
+    {
+     "title": "Cache miss",
+     "tone": "fail",
+     "at": {
+      "word": "miss"
+     },
+     "result": {
+      "label": "Copy stored",
+      "icon": "refresh-cw",
+      "tone": "info",
+      "at": {
+       "word": "next"
+      }
+     }
+    }
+   ],
+   "footer": [
+    {
+     "icon": "gauge",
+     "label": "Hit: short path"
+    },
+    {
+     "icon": "server-cog",
+     "label": "Miss: origin once"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "miss"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "next"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "hit"
+     },
+     "action": "pulse"
+    }
+   ],
+   "effects": [
+    {
+     "type": "parallax",
+     "layers": 2
+    }
+   ],
+   "transition": "fade",
+   "objective": "Split-screen miss versus hit",
+   "reason": "Reference 3 structure restyled; split-screen comparison with packets.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s8",
+   "title": "On a miss",
+   "treatment": "sequence",
+   "heading": "On a miss",
+   "elements": [
+    {
+     "id": "viewer",
+     "kind": "user",
+     "label": "Viewer"
+    },
+    {
+     "id": "edge",
+     "kind": "edge",
+     "label": "Edge",
+     "icon": "server"
+    },
+    {
+     "id": "origin",
+     "kind": "origin",
+     "label": "Origin",
+     "icon": "server-cog"
+    }
+   ],
+   "messages": [
+    {
+     "from": "viewer",
+     "to": "edge",
+     "text": "GET /video",
+     "at": {
+      "word": "On"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "edge",
+     "text": "Cache miss",
+     "at": {
+      "word": "miss"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "origin",
+     "text": "Fetch",
+     "at": {
+      "word": "fetches"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "edge",
+     "text": "Keep a copy",
+     "at": {
+      "word": "copy"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "viewer",
+     "text": "200 OK",
+     "dashed": true,
+     "at": {
+      "word": "responds"
+     }
+    }
+   ],
+   "transition": "push",
+   "objective": "Order of steps on a miss",
+   "reason": "Reference 4 structure, arrows in the right direction.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s9",
+   "title": "Real proof",
+   "treatment": "motion",
+   "effect": "scroll_demo",
+   "terminal_title": "real response · 2026-11-23 21:12 UTC",
+   "font": 34,
+   "lines": [
+    {
+     "text": "curl -I https://d1.awsstatic.com/…/cc62b0dc…ac59.png",
+     "cmd": true,
+     "at": {
+      "word": "real"
+     }
+    },
+    {
+     "text": "HTTP/1.1 200 OK",
+     "tone": "dim"
+    },
+    {
+     "text": "X-Cache: Miss from cloudfront",
+     "tone": "err",
+     "at": {
+      "word": "Miss"
+     }
+    },
+    {
+     "text": "Via: 1.1 a2897f72515a8350a57c398127ef6588.cloudfront.net (CloudFront)",
+     "tone": "dim"
+    },
+    {
+     "text": "curl -I https://d1.awsstatic.com/…/cc62b0dc…ac59.png",
+     "cmd": true,
+     "at": {
+      "word": "Five"
+     }
+    },
+    {
+     "text": "HTTP/1.1 200 OK",
+     "tone": "dim"
+    },
+    {
+     "text": "X-Cache: Hit from cloudfront",
+     "tone": "ok",
+     "at": {
+      "word": "Hit"
+     }
+    },
+    {
+     "text": "Age: 6",
+     "tone": "ok",
+     "at": {
+      "word": "Age"
+     }
+    }
+   ],
+   "transition": "fade",
+   "objective": "Real headers prove miss then hit",
+   "reason": "KodeKloud-style proof with a real response captured on 2026-11-23 (URL path shortened with an ellipsis only).",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s10",
+   "title": "Why it is fast",
+   "treatment": "motion",
+   "effect": "stacking_cards",
+   "heading": "Why it is fast",
+   "peek": 250,
+   "items": [
+    {
+     "icon": "gauge",
+     "title": "Lower latency",
+     "text": "Served from a nearby POP",
+     "at": {
+      "word": "latency"
+     }
+    },
+    {
+     "icon": "server-cog",
+     "title": "Less origin load",
+     "text": "Hits never reach the origin",
+     "at": {
+      "word": "origin"
+     }
+    },
+    {
+     "icon": "shield-check",
+     "title": "Absorbs traffic spikes",
+     "text": "The edge answers repeat requests",
+     "at": {
+      "word": "spikes"
+     }
+    },
+    {
+     "icon": "zap",
+     "title": "Already near you",
+     "text": "That is why it starts fast",
+     "at": {
+      "word": "near"
+     }
+    }
+   ],
+   "transition": "fade",
+   "objective": "Benefits and the payoff",
+   "reason": "Staggered build, one focal card per beat; the last card answers the hook.",
+   "tier": "hypothesis",
+   "recipes": []
+  }
+ ]
+}

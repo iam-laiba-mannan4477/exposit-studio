@@ -126,7 +126,7 @@ motion: one content effect fills the scene ("effect" below). Wrapper effects go 
 
 ## Motion effects (ten; pick 2 to 4 per video where they help the explanation)
 Wrapper effects, on any treatment: "effects": [{"type": ...}]
-1. parallax: 3-5 depth layers of procedural shapes drift at different speeds behind the scene. Atmosphere for
+1. parallax: 2-3 faint line grids drift at different speeds behind the scene (no floating shapes, ever). Depth for
    overviews and openings. {"type": "parallax", "layers": 4}
 2. pinned_heading: the heading stays fixed while the content scrolls up under it; for lists longer than one screen.
    {"type": "pinned_heading", "distance": 380}

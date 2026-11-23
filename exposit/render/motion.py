@@ -338,47 +338,25 @@ _layer_cache: dict = {}
 
 
 def parallax_layers(c, tpl, W: float, H: float, t: float, dur: float, layers: int = 4, a: float = 1.0) -> None:
-    """3-5 depth layers of procedural shapes drifting sideways at different speeds (far slow and small, near fast and
-    large). Drawn as vectors each frame: a few hundred small shapes cost less than compositing full-screen layers."""
-    layers = int(clamp(layers, 3, 5))
+    """Depth without decoration: 2-3 faint line grids (far: fine and slow; near: wider and faster) drift sideways
+    and slightly up, so the scene reads as layered. No floating shapes or particles in any template."""
+    layers = int(clamp(layers, 2, 3)) if layers else 2
     pan = ease_in_out(t / max(0.1, dur))
     colr = tpl.conn["active"] if tpl.dark else tpl.T["line"]
-    span = W * 1.6
     for i in range(layers):
         depth = (i + 1) / layers                              # 0 far .. 1 near
-        dx = -pan * W * 0.5 * (0.15 + depth)
-        n = int(70 * (1.15 - depth)) + 10
-        if depth < 0.5:
-            p = D.paint(col(colr, (0.45 + 0.3 * depth) * a))
-        else:
-            p = D.paint(col(colr, (0.22 + 0.2 * depth) * a), 2.5 + depth * 3)
-        for j in range(n):
-            h1 = (math.sin(j * 12.9898 + i * 78.2) * 43758.5) % 1.0
-            h2 = (math.sin(j * 39.3468 + i * 11.1) * 24634.6) % 1.0
-            x, y = (h1 * span + dx) % span - W * 0.3, h2 * H
-            if x < -60 or x > W + 60:
-                continue
-            r = 2 + depth * 26 * ((j * 7) % 5 + 1) / 5
-            if depth < 0.5:
-                c.drawCircle(x, y, 2.5 + r * 0.5, p)
-            else:
-                c.drawPath(_hexagon(x, y, r, j), p)
-
-
-@functools.lru_cache(maxsize=2048)
-def _hex_unit(j: int) -> skia.Path:
-    p = skia.Path()
-    for k in range(6):
-        ang = math.pi / 3 * k + j
-        (p.moveTo if k == 0 else p.lineTo)(math.cos(ang), math.sin(ang))
-    p.close()
-    return p
-
-
-def _hexagon(x: float, y: float, r: float, j: int) -> skia.Path:
-    p = skia.Path(_hex_unit(j % 64))
-    p.transform(skia.Matrix.MakeAll(r, 0, x, 0, r, y, 0, 0, 1))
-    return p
+        step = 60.0 + 90.0 * depth
+        dx = -(pan * W * 0.12 * (0.3 + depth)) % step
+        dy = -(pan * H * 0.03 * depth) % step
+        p = D.paint(col(colr, (0.05 + 0.04 * depth) * a), 1.0 + depth)
+        x = dx
+        while x < W:
+            c.drawLine(x, 0, x, H, p)
+            x += step
+        y = dy
+        while y < H:
+            c.drawLine(0, y, W, y, p)
+            y += step
 
 
 def pinned_scroll(t: float, dur: float, distance: float, start: float = 0.15) -> float:

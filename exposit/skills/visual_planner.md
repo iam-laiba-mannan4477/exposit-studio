@@ -138,7 +138,9 @@ Content effects, with "treatment": "motion":
 4. line_reveal: text or code lines wipe in on their spoken words ("code": true for a monospace panel); for headers,
    configs and definitions. {"effect": "line_reveal", "code": true, "lines": [{"text": "cache-control: max-age=86400", "at": {"word": "lifetime"}}]}
 5. marquee: rows of large text slide sideways across the frame; for hooks and section breaks, a few words per row.
-   {"effect": "marquee", "rows": [{"text": "Edge"}, {"text": "Cache hit", "accent": true}]}
+   {"effect": "marquee", "rows": [{"text": "Edge"}, {"text": "Cache hit", "accent": true}],
+    "lines": [{"text": "Where tech makes sense.", "at": {"word": "sense"}}]}  (a "lines" caption shows at 72 px+ on its
+   own band, and the rows stop moving behind it)
 6. card_carousel: cards on a perspective arc; the arc turns to bring each card to the front on its word; for 4-15
    parallel items (topics, services). {"effect": "card_carousel", "items": [...], "counter": "topics"}
 7. model_3d: a slowly rotating low-poly model (server_rack, cube, globe, database) with a label; for hardware and

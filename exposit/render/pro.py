@@ -153,6 +153,22 @@ class IconFlow(ProTreatment):
         e = self.sc.els[eid]
         return 16 + D.label_block_h(e.get("label", eid), self._maxw(), self.S["label"], self._sub(e))
 
+    def draw_labels(self, c, t):
+        """Only the labels (on their plates), drawn again above an effect such as the focus frame's dimming."""
+        sc, tpl = self.sc, self.tpl
+        for eid in sc.order:
+            e = sc.els[eid]
+            k = self.appear(eid, t)
+            if k <= 0:
+                continue
+            x, y, w, h = self.pos[eid]
+            cx, cy = x + w / 2, y + h / 2
+            if self.side:
+                self._label_side(c, e, cx, cy, ease_out(k), sc.highlight(eid, t), 0.0)
+            else:
+                D.label_under(c, tpl, e.get("label", eid), cx, cy + self.r + 16, self._maxw(), self.S["label"],
+                              ease_out((k - 0.2) / 0.8), self._sub(e), hl=sc.highlight(eid, t), plate=True)
+
     def _gap_mid(self, l, y):
         """For a vertical link, the middle of the clear gap between the upper label block and the lower badge."""
         a, b = self.center(l["from"]), self.center(l["to"])

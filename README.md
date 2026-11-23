@@ -112,6 +112,17 @@ Every setting is optional. `install.ps1` creates `.env` from `.env.example`, whi
 - **Treatments**: iconflow, map, sequence, cards (title or benefits), compare (hit versus miss), stat, kinetic, flow2d,
   isometric, cutaway, chart. `exposit/skills/visual_planner.md` documents each with an example specification.
 - **Transitions** per scene: fade, crossfade, slide, push, match cut.
+- **Animation styles** (one per video, chosen by the Creative Director with a reason): 14 ready style packs on top of
+  the templates: whiteboard, sketchnote, minimal-counter, limited-animation, low-poly-neon, dark-pixel-grunge,
+  pixel-art, engraving-print, silent-film, paper-craft, shadow-puppetry, cardboard-diorama, stop-motion-clay and
+  hd-pixel-sprite-3d (only with a 3D model scene). Stick figure, paper cut-out puppet and hand puppet theatre are
+  planned. Gallery: `python scripts/render_style_gallery.py [--bench]` into `docs/style-packs/`.
+- **Motion effects** (2-4 per video): parallax, pinned heading, 3D card zoom, line reveal, marquee, card carousel,
+  low-poly 3D models, stacking cards, focus frame and a terminal scroll demo. Gallery and 3 s clips:
+  `python scripts/render_motion_gallery.py` into `docs/motion-gallery/`.
+- **Variety rule**: the Creative Director sees the last three productions and may not repeat the previous video's
+  style-and-effects combination; the strategy gate checks it. TechHub's constants stay the same in every video: the
+  cover layout, the end slide, the badge and the narrator voice.
 - **Style gallery**: `python scripts/render_gallery.py [--thumbs]` renders every treatment in every template, both
   formats, into `docs/style-gallery/`; `python scripts/combine_references.py` puts it beside the reference images;
   `python scripts/bench_frames.py` measures frame times.

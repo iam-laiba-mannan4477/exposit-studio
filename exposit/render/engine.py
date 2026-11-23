@@ -1209,7 +1209,7 @@ def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: 
           captions: bool = False) -> Treatment:
     """`captions`: burned-in captions will be drawn, so 9:16 content keeps clear of them (stops at y 1340)."""
     st = styles.style_of(design.template(spec.get("theme") or theme))
-    if st and st.effects and not spec.get("effects"):        # a style's default motion effects
+    if st and st.effects and "effects" not in spec:          # a style's default motion effects ([] means none)
         spec = dict(spec, effects=[{"type": e} for e in st.effects])
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
@@ -1357,8 +1357,9 @@ def _visual_still(spec: dict, timing: dict, theme: str, w: int, h: int) -> skia.
     v = {k: x for k, x in spec.items() if k not in ("heading",)}
     if v.get("treatment") == "cards":
         v.pop("title", None)
-    v["cues"] = [c for c in v.get("cues", []) if c.get("action") not in ("count", "callout")]
+    v["cues"] = [c for c in v.get("cues", []) if c.get("action") not in ("count", "callout", "highlight")]
     v["camera"] = {}
+    v["effects"] = []                                     # no focus dimming, scrolling or parallax on a cover
     tr = build(v, timing, theme, portrait=h > w)
     tr.fade_out = False
     tr.no_background = True                               # drawn straight onto the cover's own background

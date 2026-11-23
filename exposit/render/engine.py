@@ -1470,6 +1470,8 @@ def _effects_after_stage(canvas, tr, t: float, W: float, H: float) -> None:
         times.append(prev)
     W2, H2 = (1080, 1920) if tr.portrait else (1920, 1080)
     motion.focus_frame(canvas, tr.sc.tpl, rects, times, t, W2, H2 + 2000)
+    if rects and t >= times[0] and hasattr(tr, "draw_labels"):    # labels stay readable above the dimming
+        tr.draw_labels(canvas, t)
 
 
 def _effects_after(canvas, tr, t: float, W: float, H: float) -> None:

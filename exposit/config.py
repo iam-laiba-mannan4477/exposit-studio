@@ -40,7 +40,7 @@ HEIGHT = int(env("EXPOSIT_HEIGHT", "1080"))
 FPS = int(env("EXPOSIT_FPS", "30"))
 X264_PRESET = env("EXPOSIT_X264_PRESET", "veryfast")
 X264_CRF = env("EXPOSIT_X264_CRF", "19")
-ENGINE_VERSION = "4"
+ENGINE_VERSION = "5"
 
 for d in (DATA, DATA / "productions", DATA / "bridge" / "tasks", DATA / "bridge" / "results",
           DATA / "references", DATA / "cache" / "tts"):

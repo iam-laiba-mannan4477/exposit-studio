@@ -92,7 +92,7 @@ def card_height(item: dict, w: float, big: bool = False) -> float:
     """The height a card needs for its icon, title and body at width w: cards are sized to their content."""
     S = BIG if big else SMALL
     h = S["pad"] + 2 * S["R"] + 30
-    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 36, "Bold")
+    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 48, "Bold")
     h += len(rows) * sz * 1.08 + 12
     if item.get("text"):
         brows, bs = D.fit_block(item["text"], w - 2 * S["pad"] - 10, 3, S["body"], 30)
@@ -117,9 +117,10 @@ def card_image(tpl, w: int, h: int, item: dict, key, accent: bool = False, big: 
     D.card(c, tpl, 6, 6, w - 12, h - 12, 1.0, 1.0 if accent else 0.0, 0.0, seed=hash(str(key)) % 97)
     S = BIG if big else SMALL
     R = min(S["R"], h * 0.2)
-    D.badge(c, tpl, assets.resolve(item.get("icon")) or "box", w / 2, S["pad"] + R, R, 1.0, tone=item.get("tone"), seed=3)
-    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 36, "Bold")
-    y = S["pad"] + 2 * R + 30
+    top = max(0.0, (h - card_height(item, w, big)) / 2)       # content centred when the card is taller than it
+    D.badge(c, tpl, assets.resolve(item.get("icon")) or "box", w / 2, top + S["pad"] + R, R, 1.0, tone=item.get("tone"), seed=3)
+    rows, sz = D.fit_block(item.get("title", ""), w - 2 * S["pad"], 2, S["title"], 48, "Bold")
+    y = top + S["pad"] + 2 * R + 30
     for j, r in enumerate(rows):
         D.draw_text(c, r, w / 2, y + sz * 0.9 + j * sz * 1.08, sz, col(T["text"]), "Bold", "center")
     y += len(rows) * sz * 1.08 + 12
@@ -398,6 +399,9 @@ def heading_mask(c, tpl, W: float, top: float) -> None:
     D.sprite(c, ("heading-mask", tpl.name, int(W), int(top)), 0, 0, W, top + 10, band, 0.97)
 
 
+FOCUS_DIM = 0.45                                             # the rest keeps about 55% of its strength
+
+
 def focus_frame(c, tpl, rects: list, times: list, t: float, W: float, H: float, a: float = 1.0) -> None:
     """A rounded highlight frame that slides between rectangles at their times, dimming everything outside it."""
     if not rects or t < times[0]:
@@ -418,7 +422,7 @@ def focus_frame(c, tpl, rects: list, times: list, t: float, W: float, H: float, 
         cc.drawColor(col(tpl.T["bg0"]))
         hole = skia.Paint(AntiAlias=True, BlendMode=skia.BlendMode.kClear)
         cc.drawRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(q[0] + M, q[1] + M, q[2], q[3]), 26, 26), hole)
-    D.sprite(c, ("focus-dim", tpl.name, tuple(q), int(W), int(H)), -M, -M, W + 2 * M, H + 2 * M, dim, 0.62 * appear)
+    D.sprite(c, ("focus-dim", tpl.name, tuple(q), int(W), int(H)), -M, -M, W + 2 * M, H + 2 * M, dim, FOCUS_DIM * appear)
     if tpl.glow:                                              # glow from widening strokes: no per-size blur cache
         frame = skia.Path()
         frame.addRRect(rr)
@@ -527,8 +531,14 @@ class MotionScene(ProTreatment):
 
     # ---- 5 sideways text
     def _marquee(self, c, t):
+        """Rows of large text sliding sideways. Optional "lines" are captions ({"text", "at"}): from its spoken word a
+        caption shows at 72 px or more on its own opaque band across the middle, and the rows stop moving behind it."""
         sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
         rows = sp.get("rows") or [{"text": sp.get("text", "TECHHUB")}]
+        caps = sp.get("lines") or []
+        ctimes = self._times(caps, 1.5, 1.0) if caps else []
+        first = ctimes[0] if ctimes else None
+        tm = min(t, first) if first is not None else t           # the rows pause while a caption is up
         n = len(rows)
         size = sp.get("size", 190 if self.portrait else 210)
         span = self.bottom - self.top
@@ -538,13 +548,29 @@ class MotionScene(ProTreatment):
             tw = f.measureText(txt)
             d = 1 if i % 2 == 0 else -1
             speed = float(r.get("speed", 260 + 70 * i))
-            off = (t * speed * d) % tw
+            off = (tm * speed * d) % tw
             y = self.top + span * (i + 0.5) / n + size * 0.35
             colr = D.text_on(tpl, tpl.conn["active"]) if r.get("accent") else T["text"]
             x = -off
             while x < self.W:
                 D.draw_text(c, txt, x, y, size, col(colr, 1.0 if r.get("accent") or i % 2 == 0 else 0.92), "Bold")
                 x += tw
+        cur = max((j for j, tt in enumerate(ctimes) if t >= tt), default=None)
+        if cur is not None:
+            k = ease_out((t - ctimes[cur]) / 0.35)
+            cap = caps[cur]
+            maxw = (self.W - 160)
+            rows_, sz = D.fit_block(cap["text"], maxw, 2, float(cap.get("size", 96)), 72, "Bold")
+            bh = len(rows_) * sz * 1.12 + 120
+            by = self.top + span / 2 - bh / 2
+            band = tpl.T["bg0"] if tpl.dark else tpl.card["fill"]
+            D.sprite(c, ("marquee-band", tpl.name, int(self.W), int(bh)), 0, by, self.W, bh,
+                     lambda cc: (cc.drawColor(col(band)),
+                                 cc.drawLine(0, 3, self.W, 3, D.paint(col(tpl.conn["active"]), 6)),
+                                 cc.drawLine(0, bh - 3, self.W, bh - 3, D.paint(col(tpl.conn["active"]), 6))), k)
+            colr = D.text_on(tpl, tpl.conn["active"], band) if cap.get("accent") else D.text_on(tpl, T["text"], band)
+            for j, r in enumerate(rows_):
+                D.draw_text(c, r, self.W / 2, by + 60 + sz * 0.9 + j * sz * 1.12 + (1 - k) * 20, sz, col(colr, k), "Bold", "center")
 
     # ---- 6 card arc carousel
     def _card_carousel(self, c, t):
@@ -554,8 +580,9 @@ class MotionScene(ProTreatment):
             return
         times = self._times(items, 1.0, 0.3)
         act = sum(ease_in_out((t - tt) / 0.6) for tt in times[1:])   # continuous index of the card in front
-        w, h = (560.0, 540.0) if self.portrait else (460.0, 470.0)
-        cy = self.top + (self.bottom - self.top) * 0.5
+        band = self.bottom - self.top - (110 if sp.get("counter") else 20)
+        w, h = (640.0, min(900.0, band - 40)) if self.portrait else (480.0, min(640.0, band - 40))
+        cy = self.top + band / 2 + 10
         R = 900.0 if self.portrait else 1100.0
         step = 0.42 if self.portrait else 0.36
         order = []
@@ -568,7 +595,7 @@ class MotionScene(ProTreatment):
         order.sort(key=lambda o: -o[0])
         for z, i, it, th, x in order:
             front = 1 - clamp(abs(th) / step)
-            img = card_image(tpl, int(w), int(h), it, ("car", i, it.get("title")), front > 0.5)
+            img = card_image(tpl, int(w), int(h), it, ("car", i, it.get("title")), front > 0.5, big=self.portrait)
             quad, _ = card_quad(w, h, (x, 0, z), 0.0, th * 0.9, self.CX, cy)
             draw_image_quad(c, img, w, h, quad, 1.0, 0.72 * clamp(abs(th) / 1.2), tpl.T["bg0"])
         lab = sp.get("counter")

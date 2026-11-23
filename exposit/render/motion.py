@@ -714,7 +714,7 @@ class MotionScene(ProTreatment):
         sp = self.sc.spec
         top = self._headline(c, sp["headline"], t, draw=False) if sp.get("headline") else self.top
         lat, lon, zoom = self._cam(t)
-        R = (0.43 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
+        R = (0.47 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
         cy = top + (self.bottom - top) * float(sp.get("cy", 0.5))
         g = earth.Globe(self.W, self.H, self.CX, cy, R, lat, lon)
         sun = sp.get("sun")

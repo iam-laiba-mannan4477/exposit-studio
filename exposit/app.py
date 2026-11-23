@@ -190,7 +190,7 @@ async def put_brief(pid: str, req: Request):
     need(pid)
     b = await req.json()
     brief = store.read_json(pid, "brief.json", {})
-    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format"):
+    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format", "engine_version"):
         if k in b:
             brief[k] = b[k]
     if brief.get("format", "16:9") not in ("16:9", "9:16"):
@@ -290,6 +290,14 @@ def apply_proposal(pid: str, sid: str):
     res = guard(lambda: director.update_scene(pid, sid, {k: pr["spec"].get(k) for k in director.EDITABLE if k in pr["spec"]}, f"Instruction: {pr['instruction'][:60]}"))
     (store.pdir(pid) / "storyboard" / f"proposal-{sid}.json").unlink(missing_ok=True)
     return res
+
+
+@app.post("/api/productions/{pid}/scenes")
+async def add_scene(pid: str, req: Request):
+    """Insert one scene: {"after": "<scene id>", "script": {id, title, sentences}, "spec": {...}}."""
+    need(pid)
+    b = await req.json()
+    return guard(lambda: director.insert_scene(pid, b["after"], b["script"], b["spec"]))
 
 
 @app.post("/api/productions/{pid}/reorder")

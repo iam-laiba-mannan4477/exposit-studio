@@ -580,7 +580,7 @@ class MotionScene(ProTreatment):
             return
         times = self._times(items, 1.0, 0.3)
         act = sum(ease_in_out((t - tt) / 0.6) for tt in times[1:])   # continuous index of the card in front
-        band = self.bottom - self.top - (110 if sp.get("counter") else 20)
+        band = self.bottom - self.top - 110                    # same layout with or without the (optional) counter
         w, h = (640.0, min(900.0, band - 40)) if self.portrait else (480.0, min(640.0, band - 40))
         cy = self.top + band / 2 + 10
         R = 900.0 if self.portrait else 1100.0

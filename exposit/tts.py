@@ -17,6 +17,21 @@ PRONUNCIATION = {  # written form -> spoken form, applied before synthesis only
 }
 
 
+# The table as it was before entries were added (2026-11-23). Narration recorded with it stays valid while none of the
+# added entries applies to its words.
+LEGACY_PRONUNCIATION = {
+    "NGINX": "engine X", "nginx": "engine X", "kubectl": "kube control", "DNS": "D N S", "NLB": "N L B",
+    "HTTP": "H T T P", "HTTPS": "H T T P S", "AWS": "A W S", "IP": "I P", "URL": "U R L",
+}
+
+
+def applied(sentences: list[str], table: dict | None = None) -> dict:
+    """The pronunciation entries that actually change these sentences (the part that matters for a cache key)."""
+    table = PRONUNCIATION if table is None else table
+    text = " ".join(sentences)
+    return {k: v for k, v in table.items() if re.search(rf"(?<![A-Za-z0-9]){re.escape(k)}(?![A-Za-z0-9])", text)}
+
+
 def spoken(text: str, extra: dict | None = None) -> str:
     table = dict(PRONUNCIATION, **(extra or {}))
     for k in sorted(table, key=len, reverse=True):

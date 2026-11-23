@@ -89,3 +89,33 @@ def test_end_slide_renders_in_both_formats_and_templates():
         for w, h in ((540, 960), (960, 540)):
             png = engine.render_still(spec, tm, 5.0, w, h, tp)
             assert png[:4] == b"\x89PNG"
+
+
+def test_insert_scene_renders_only_the_new_scene_and_its_transition_neighbour(client):
+    pid = _prod()
+    try:
+        _set(end_slide=False)
+        before = {s["id"]: s for s in director.scene_hashes(pid)}
+        board = example("board.json")["scenes"]
+        after_id = board[1]["id"]
+        plan = director.insert_scene(pid, after_id,
+            {"id": "s2b", "title": "More", "terms": [], "sentences": [{"text": "And beyond that: Linux and databases.", "claims": []}]},
+            {"treatment": "motion", "effect": "card_carousel", "transition": board[2].get("transition", "fade"),
+             "items": [{"icon": "terminal", "title": "Linux", "at": {"word": "Linux"}}, {"icon": "database", "title": "Databases", "at": {"word": "databases"}}]})
+        now = {s["id"]: s for s in director.scene_hashes(pid)}
+        changed = {k for k in now if k not in before or now[k]["clip_hash"] != before[k]["clip_hash"]}
+        nxt = board[2]["id"]
+        expect = {"s2b"} | ({nxt} if engine.needs_prev(board[2]) else set())
+        assert changed == expect, changed
+        assert [k for k in now if k not in before or now[k]["audio_hash"] != before[k]["audio_hash"]] == ["s2b"]
+        import pytest
+        with pytest.raises(ValueError):
+            director.insert_scene(pid, after_id, {"id": "s2b", "title": "dup", "sentences": [{"text": "x"}]}, {"treatment": "kinetic"})
+    finally:
+        store.set_settings({"end_slide": True})
+
+
+def test_narration_hash_counts_only_pronunciations_that_apply():
+    from exposit import tts
+    assert tts.applied(["Linux and databases."]) == {}
+    assert set(tts.applied(["AI agents and CI/CD."])) == {"AI", "CI/CD"}

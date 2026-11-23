@@ -221,7 +221,8 @@ def render_settings(pid: str) -> dict:
         w, h = w // 2, h // 2
     return {"w": w, "h": h, "fps": int(b.get("fps", config.FPS)), "theme": resolve_template(pid, b),
             "captions": bool(s.get("burn_captions", True)), "caption_style": s.get("caption_style", "phrase") if s.get("caption_style") in engine.CAPTION_STYLES else "phrase", "voice": b.get("voice") or s["voice"], "speed": float(b.get("voice_speed") or s["voice_speed"]),
-            "music": bool(s.get("music", True)), "sfx": bool(s.get("sfx", True))}
+            "music": bool(s.get("music", True)), "sfx": bool(s.get("sfx", True)),
+            "engine": str(b.get("engine_version") or config.ENGINE_VERSION)}   # a production may pin its clips' engine version
 
 
 def scene_hashes(pid: str) -> list[dict]:
@@ -233,11 +234,11 @@ def scene_hashes(pid: str) -> list[dict]:
     for spec in board["scenes"]:
         sc = next((s for s in script["scenes"] if s["id"] == spec["id"]), None)
         sentences = [s["text"] for s in sc["sentences"]] if sc else []
-        ah = store.sha("audio", sentences, rs["voice"], rs["speed"], tts.PRONUNCIATION)
-        ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
+        ah = audio_hash(pid, spec["id"], ("audio", sentences, rs["voice"], rs["speed"]), sentences)
+        ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], rs["engine"],
                       *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))   # Phrase hashes unchanged
         out.append({"id": spec["id"], "title": spec.get("title", ""), "audio_hash": ah, "clip_hash": ch, "sentences": sentences, "spec": spec})
-    end = end_slide(rs, out[-1]["spec"] if out else None)
+    end = end_slide(rs, out[-1]["spec"] if out else None, pid)
     if end:
         out.append(end)
     # Transitions: a scene that enters from the previous one depends on that scene's picture, and a scene the next one
@@ -274,7 +275,19 @@ def end_slide_spec(lines: list[dict], spoken: list[str], transition: str = "cros
             "reason": "Added at export from Settings; not part of the AI script."}
 
 
-def end_slide(rs: dict, last_spec: dict | None) -> dict | None:
+def audio_hash(pid: str, sid: str, parts: tuple, sentences: list[str]) -> str:
+    """The narration cache key: the inputs plus only the pronunciation entries that apply to these words. Narration
+    recorded under the earlier full-table key is kept while none of the newer entries applies to it."""
+    new = store.sha(*parts, tts.applied(sentences))
+    legacy = store.sha(*parts, tts.LEGACY_PRONUNCIATION)
+    hfile = store.pdir(pid) / "audio" / f"{sid}.hash" if pid else None
+    if hfile and hfile.exists() and hfile.read_text() == legacy and \
+            set(tts.applied(sentences)) <= set(tts.LEGACY_PRONUNCIATION):
+        return legacy
+    return new
+
+
+def end_slide(rs: dict, last_spec: dict | None, pid: str = "") -> dict | None:
     """The end slide entry for scene_hashes, or None when it is switched off. Its narration and clip are hashed from
     the end-slide settings and the production's voice, speed, template, format and captions only."""
     s = store.get_settings()
@@ -285,8 +298,8 @@ def end_slide(rs: dict, last_spec: dict | None) -> dict | None:
         return None
     tr = (last_spec or {}).get("transition", "fade")
     spec = end_slide_spec(s.get("end_slide_lines", []), spoken, tr if tr in engine.TRANSITIONS[1:] else "crossfade")
-    ah = store.sha("audio-end", spoken, rs["voice"], rs["speed"], END_GAP, tts.PRONUNCIATION)
-    ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], config.ENGINE_VERSION,
+    ah = audio_hash(pid, END_ID, ("audio-end", spoken, rs["voice"], rs["speed"], END_GAP), spoken)
+    ch = store.sha("clip", spec, ah, rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"], rs["engine"],
                    *([rs["caption_style"]] if rs["caption_style"] != "phrase" else []))
     return {"id": END_ID, "title": "End slide", "audio_hash": ah, "clip_hash": ch, "sentences": spoken, "spec": spec,
             "gap": END_GAP, "end_slide": True}
@@ -564,7 +577,11 @@ def restore_version(pid: str, vid: str) -> dict:
 
 
 EDITABLE = ("title", "heading", "treatment", "theme", "elements", "links", "cues", "lines", "code", "ui", "data", "camera", "pad_start", "pad_end",
-            "motion_scale", "objective", "container_label", "reason")
+            "motion_scale", "objective", "container_label", "reason",
+            # transitions, motion effects and the newer treatments' content
+            "transition", "effects", "effect", "items", "rows", "messages", "lanes", "panel", "client", "origin", "footer",
+            "strip", "legend", "arcs", "auto_arcs", "variant", "subtitle", "value", "label", "source", "icon", "model",
+            "card", "counter", "backdrop", "window")
 
 
 def update_scene(pid: str, sid: str, patch: dict, label: str = "") -> dict:
@@ -595,6 +612,33 @@ def update_script(pid: str, sid: str, sentences: list[str]) -> dict:
     sc["sentences"] = [{"text": t.strip(), "claims": (old[i]["claims"] if i < len(old) else [])} for i, t in enumerate(sentences) if t.strip()]
     store.write_json(pid, "script/script.json", script)
     push_history(pid, f"Edited narration of {sid}")
+    return plan(pid)
+
+
+def insert_scene(pid: str, after: str, script_scene: dict, spec: dict) -> dict:
+    """Adds one scene (its narration and its specification) after scene `after`. The other scenes are untouched, so
+    only the new scene is narrated and rendered (and a neighbour whose transition depends on it). Returns the plan."""
+    board = store.read_json(pid, "storyboard/board.json")
+    script = store.read_json(pid, "script/script.json")
+    sc = schemas.ScriptScene.model_validate(script_scene).model_dump()
+    sp = schemas.SceneSpec.model_validate(dict(spec, id=sc["id"])).model_dump(exclude_none=True)
+    if sc["id"] in {s["id"] for s in board["scenes"]} or sc["id"] == END_ID:
+        raise ValueError(f"A scene with id {sc['id']} already exists")
+    ids = [s["id"] for s in board["scenes"]]
+    if after not in ids:
+        raise ValueError(f"No scene {after}")
+    i = ids.index(after) + 1
+    new_board = dict(board, scenes=board["scenes"][:i] + [sp] + board["scenes"][i:])
+    new_script = dict(script, scenes=[s for s in script["scenes"] if s["id"] in ids[:i]] + [sc] +
+                      [s for s in script["scenes"] if s["id"] in ids[i:]])
+    gate = gates.storyboard_gate({"scenes": [sp]}, {"scenes": [sc]}, store.read_json(pid, "research/facts.json", {}),
+                                 render_settings(pid)["theme"])
+    bad = [c for c in gate["criteria"] if not c["passed"] and c["name"] != "One specification per script scene"]
+    if bad:
+        raise ValueError("; ".join(f"{c['name']}: {c['detail']}" for c in bad))
+    store.write_json(pid, "storyboard/board.json", new_board)
+    store.write_json(pid, "script/script.json", new_script)
+    push_history(pid, f"Added scene {sc['id']} after {after}")
     return plan(pid)
 
 

@@ -103,3 +103,20 @@ def test_focus_frame_keeps_labels_readable(template):
             test_design.test_text_size_and_contrast("focus_frame", template, portrait)
     finally:
         test_design.SCENES.remove(scene)
+
+
+def test_carousel_counter_is_optional_and_layout_does_not_depend_on_it():
+    from exposit.render import design
+    spec, tm = gallery.scene("card_carousel", "noir-network")
+    without = dict(spec)
+    without.pop("counter", None)
+    design.TEXT_LOG = []
+    try:
+        gallery.still(without, tm, True, 2.0, 0.25)
+        texts = [t["text"] for t in design.TEXT_LOG]
+    finally:
+        design.TEXT_LOG = None
+    assert not any("/" in t and "CDN parts" in t for t in texts) and not any(t.strip().endswith("parts") for t in texts)
+    a = _px(gallery.still(spec, tm, True, 2.0, 0.25))[:300]
+    b = _px(gallery.still(without, tm, True, 2.0, 0.25))[:300]
+    assert np.abs(a - b).mean() < 1.0, "cards sit in the same place with or without the counter"

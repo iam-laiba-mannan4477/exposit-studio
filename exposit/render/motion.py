@@ -1014,6 +1014,12 @@ class MotionScene(ProTreatment):
         node("user", "Viewer", vx, cy, c0)
         ha = self.cue_t(sp.get("hit_at"), 0.5)
         hk = ease_out((t - ha) / 0.5)
+        if t < ha + 0.3:                                      # the request goes in and the edge checks its cache
+            req = skia.Path(); req.moveTo(vx - R - 16, cy - 30); req.lineTo(ex + R + 16, cy - 30)
+            D.packet(c, tpl, req, ((t - 0.2) / 1.1) % 1.0, c0 * (1.0 - clamp((t - ha) / 0.3)), info)
+            for cx_, cy_ in ((ex, cy), (ex2_pre := x + 200, y + h + 30 + h * 0.62)):
+                q = (t * 1.2) % 1.0
+                c.drawCircle(cx_, cy_, R + 8 + 30 * q, D.paint(col(info, 0.6 * (1 - q) * c0), 3))
         p = leg(ex + R + 16, cy, vx - R - 16, cy, max(0.2, hk) * c0, ok, seed=1)
         if t > ha + 0.5:
             D.packet(c, tpl, p, ((t - ha - 0.5) / 1.0) % 1.0, 1.0, ok)

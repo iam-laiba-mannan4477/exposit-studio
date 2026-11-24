@@ -106,3 +106,6 @@ Produced as p0bac96c577: all final checks pass (63.6 s content + 8.2 s end slide
 
 ## Status v3 (2026-11-24)
 Produced as pef4318f39e: footage opening (play at 3.0 s, pixel-identical join into the globe), camera journey (space, Europe, Asia, building, rack), all final checks pass including No empty frames (64.2 s content + 8.2 s end slide). Files: board_v3.py, script_v3.json, strategy_v3.json, research_v3.json, v3-scene-stills.png.
+
+## Status v4 (2026-11-24)
+Produced as p4f0889c150 from the user script (two phrases changed to match sources): 72.6 s content (73 s approved) + 8.2 s end slide; all final checks pass incl. No empty frames. Files: board_v4.py, script_v4.json, strategy_v4.json, research_v4.json, v4-final-stills.png.

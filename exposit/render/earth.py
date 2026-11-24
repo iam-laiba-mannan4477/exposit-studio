@@ -475,8 +475,8 @@ def small_ring(c, x, y, a=1.0, color="#FFB84D") -> None:
 
 def small_point(c, x, y, a=1.0, color="#38D6F5") -> None:
     """A CloudFront edge location in the background layer."""
-    D.halo(c, x, y, 11, color, 0.7 * a)
-    c.drawCircle(x, y, 3.2, D.paint(col("#FFFFFF", 0.95 * a)))
+    D.halo(c, x, y, 17, color, 0.95 * a)                  # reads on a phone at full-globe scale
+    c.drawCircle(x, y, 4.6, D.paint(col("#FFFFFF", a)))
 
 
 def focus_pulse(c, x, y, k, t, color="#38D6F5") -> None:

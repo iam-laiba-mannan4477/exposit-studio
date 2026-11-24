@@ -68,6 +68,7 @@ class SceneOutline(BaseModel):
     title: str
     treatment: str
     seconds: float
+    effect: str = ""                    # for "motion" scenes: the content effect (a different effect is a different shot)
     purpose: str = ""
 
 

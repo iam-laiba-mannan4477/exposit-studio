@@ -105,7 +105,7 @@ class Globe:
 
 @functools.lru_cache(maxsize=6)
 def _globe_image(W, H, cx, cy, R, lat0, lon0, sun, night_gain):
-    S = 0.5 if R <= 520 else max(0.3, 0.5 * 520 / R)       # half resolution; less when zoomed in (the texture is coarser)
+    S = 0.5 if R <= 520 else max(0.1, min(0.5, 4096 / (2 * math.pi * R) * 1.3))   # about one sample per texel when zoomed in: the linear upscale stays smooth, never blocky
     A = 1.10                                                  # atmosphere reaches 10% beyond the limb
     x0, x1 = max(0.0, cx - R * A), min(float(W), cx + R * A)
     y0, y1 = max(0.0, cy - R * A), min(float(H), cy + R * A)
@@ -277,3 +277,148 @@ def city_marker(c, tpl, x, y, label: str | None, k: float, t: float, color: str 
 def credit(c, W, y, a: float = 1.0) -> None:
     """The imagery credit: a small line in the bottom corner, inside the safe area."""
     D.draw_text(c, CREDIT, W - 60, y, 30, col("#AEBBD0", 0.9 * a), "Regular", "right")
+
+
+# ------------------------------------------------------------------ camera view on the flat (equirectangular) map
+@functools.lru_cache(maxsize=2)
+def world_image(tex: str, gain: float) -> skia.Image:
+    """The whole texture as one BGRA image with the brightness gain applied (built once)."""
+    t = texture(tex).astype(np.float32) * gain
+    rgba = np.empty(t.shape[:2] + (4,), np.uint8)
+    rgba[:, :, :3] = np.clip(t, 0, 255).astype(np.uint8)[:, :, [2, 1, 0]]
+    rgba[:, :, 3] = 255
+    return skia.Image.fromarray(np.ascontiguousarray(rgba), skia.kBGRA_8888_ColorType, skia.kPremul_AlphaType)
+
+
+@functools.lru_cache(maxsize=1)
+def _line_boxes():
+    v = vectors()
+    out = []
+    for key in ("coast", "borders"):
+        for line in v[key]:
+            a = np.asarray(line, np.float32)
+            out.append((key, a, float(a[:, 0].min()), float(a[:, 0].max()), float(a[:, 1].min()), float(a[:, 1].max())))
+    return out
+
+
+@functools.lru_cache(maxsize=8)
+def border_paths(lon0: int, lon1: int, lat0: int, lat1: int) -> tuple:
+    """Coastlines and borders inside a (10-degree rounded) window, as paths in texture-pixel coordinates."""
+    paths = {"coast": skia.Path(), "borders": skia.Path()}
+    for key, a, x0, x1, y0, y1 in _line_boxes():
+        if x1 < lon0 or x0 > lon1 or y1 < lat0 or y0 > lat1:
+            continue
+        px = (a[:, 0] + 180.0) / 360.0 * 4096.0
+        py = (90.0 - a[:, 1]) / 180.0 * 2048.0
+        paths[key].addPoly([skia.Point(float(x), float(y)) for x, y in zip(px, py)], False)
+    return paths["coast"], paths["borders"]
+
+
+class View:
+    """A camera on the flat map: centre (lat_c, lon_c) and `span` degrees of longitude across `rect`. Latitude keeps
+    the right local proportion (equirectangular with a cos(latitude) correction)."""
+
+    @classmethod
+    def at(cls, rect, lat, lon, span):
+        v = cls()
+        x, y, w, h = rect
+        v.rect, v.lat_c, v.lon_c, v.span = rect, lat, lon, span
+        v.lat_span = span * math.cos(math.radians(lat)) * h / w
+        return v
+
+    @classmethod
+    def region(cls, rect, region):
+        lon0, lon1, lat0, lat1 = region
+        x, y, w, h = rect
+        lc = (lat0 + lat1) / 2
+        span = max(lon1 - lon0, (lat1 - lat0) * w / h / max(0.2, math.cos(math.radians(lc))))
+        return cls.at(rect, lc, (lon0 + lon1) / 2, span)
+
+    def project(self, lat, lon, depth: float = 1.0):
+        x, y, w, h = self.rect
+        sx = (lon - self.lon_c) / self.span * depth
+        sy = (self.lat_c - lat) / self.lat_span * depth
+        return x + w / 2 + sx * w, y + h / 2 + sy * h
+
+    def _src(self):
+        lon0 = self.lon_c - self.span / 2
+        lat1 = self.lat_c + self.lat_span / 2
+        return ((lon0 + 180.0) / 360.0 * 4096.0, (90.0 - lat1) / 180.0 * 2048.0,
+                self.span / 360.0 * 4096.0, self.lat_span / 180.0 * 2048.0)
+
+    def draw(self, c, tex: str = "night", gain: float = 1.7, alpha: float = 1.0) -> None:
+        sx, sy, sw, sh = self._src()
+        c.drawImageRect(world_image(tex, round(gain, 2)), skia.Rect.MakeXYWH(sx, sy, sw, sh), skia.Rect.MakeXYWH(*self.rect),
+                        skia.SamplingOptions(skia.FilterMode.kLinear), skia.Paint(Alphaf=alpha))
+
+    def borders(self, c) -> None:
+        sx, sy, sw, sh = self._src()
+        x, y, w, h = self.rect
+        lon0, lat1 = self.lon_c - self.span / 2, self.lat_c + self.lat_span / 2
+        win = (int(math.floor((lon0 - 5) / 10) * 10), int(math.ceil((lon0 + self.span + 5) / 10) * 10),
+               int(math.floor((lat1 - self.lat_span - 5) / 10) * 10), int(math.ceil((lat1 + 5) / 10) * 10))
+        coast, bord = border_paths(*win)
+        kx, ky = w / sw, h / sh
+        c.save()
+        c.translate(x, y)
+        c.scale(kx, ky)
+        c.translate(-sx, -sy)
+        wd = 1.0 / math.sqrt(kx * ky)
+        c.drawPath(coast, D.paint(col("#7FB4E6", 0.55), 1.7 * wd))
+        c.drawPath(bord, D.paint(col("#9CC8F0", 0.45), 1.3 * wd))
+        c.restore()
+
+
+def region_marker(c, tpl, x, y, label, code, k, t, color=None, side="right", W=1080) -> None:
+    """An AWS Region: a large ring with a slow pulse, the city label and the Region code."""
+    if k <= 0:
+        return
+    colr = color or "#FFB84D"
+    pulse = (t * 0.6) % 1.0
+    D.halo(c, x, y, 44, colr, 0.8 * k)
+    c.drawCircle(x, y, 22, D.paint(col(colr, k), 4))
+    c.drawCircle(x, y, 22 + 26 * pulse, D.paint(col(colr, 0.5 * (1 - pulse) * k), 3))
+    c.drawCircle(x, y, 7, D.paint(col("#FFFFFF", k)))
+    size, cs = 44.0, 32.0
+    w = max(D.text_width(label, size, "SemiBold"), D.text_width(code, cs, "Regular", mono=True))
+    slide = (1 - k) * 30
+    lx = (x + 40 + slide) if side == "right" else (x - 40 - w - slide)
+    lx = clamp(lx, 50, W - 50 - w)
+    top = y - size * 0.95
+    c.drawRoundRect(skia.Rect.MakeXYWH(lx - 14, top - 8, w + 28, size * 1.3 + cs * 1.25 + 14), 12, 12, D.paint(col("#050B16", 0.85 * k)))
+    D.draw_text(c, label, lx, y + size * 0.3, size, col("#F2F6FC", k), "SemiBold")
+    if code:
+        D.draw_text(c, code, lx, y + size * 0.3 + cs * 1.2, cs, col(colr, k), "Regular", mono=True)
+
+
+def edge_point(c, tpl, x, y, k, t, color=None, label=None, W=1080) -> None:
+    """A CloudFront edge location: a small bright point that flares as it lights up."""
+    if k <= 0:
+        return
+    colr = color or tpl.conn["active"]
+    flare = max(0.0, 1.0 - k) * 2 + 0.3 * (0.5 + 0.5 * math.sin(t * 3))
+    D.halo(c, x, y, 18 + 14 * flare, colr, 0.9 * k)
+    c.drawCircle(x, y, 5, D.paint(col("#FFFFFF", k)))
+    if label:
+        size = 32.0
+        w = D.text_width(label, size, "Medium")
+        lx = clamp(x + 18 + (1 - k) * 20, 50, W - 50 - w)
+        c.drawRoundRect(skia.Rect.MakeXYWH(lx - 10, y - size * 0.8, w + 20, size * 1.2), 10, 10, D.paint(col("#050B16", 0.78 * k)))
+        D.draw_text(c, label, lx, y + size * 0.3, size, col("#DCE7F5", k), "Medium")
+
+
+def legend(c, tpl, items, x, y) -> None:
+    """A small legend plate: AWS Region ring, edge location point (30 px labels)."""
+    size = 30.0
+    w = max(D.text_width(i["label"], size) for i in items) + 90
+    h = len(items) * 50 + 24
+    c.drawRoundRect(skia.Rect.MakeXYWH(x, y, w, h), 14, 14, D.paint(col("#050B16", 0.82)))
+    for j, it in enumerate(items):
+        cy = y + 37 + j * 50
+        if it.get("mark") == "region":
+            c.drawCircle(x + 34, cy, 13, D.paint(col("#FFB84D"), 3.5))
+            c.drawCircle(x + 34, cy, 4, D.paint(col("#FFFFFF")))
+        else:
+            D.halo(c, x + 34, cy, 14, tpl.conn["active"], 0.9)
+            c.drawCircle(x + 34, cy, 5, D.paint(col("#FFFFFF")))
+        D.draw_text(c, it["label"], x + 64, cy + size * 0.35, size, col("#DCE7F5"))

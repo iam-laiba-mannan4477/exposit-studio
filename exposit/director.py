@@ -146,7 +146,7 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
             gates._crit("Scene breakdown uses supported treatments", all(sc["treatment"] in schemas.TREATMENTS for sc in s["scene_breakdown"])),
             gates._crit("One known template, with a reason", (not s.get("template")) or (s["template"] in engine.design.TEMPLATES and bool(s.get("template_reason", "").strip())),
                         s.get("template") or "Not chosen: the brief's template is used"),
-            gates._crit("No more than two scenes in a row with the same treatment", gates.max_run([sc["treatment"] for sc in s["scene_breakdown"]]) <= 2),
+            gates._crit("No more than two scenes in a row with the same treatment", gates.max_run([(sc["treatment"], sc.get("effect", "")) for sc in s["scene_breakdown"]]) <= 2),
             *gates.style_criteria(s, recent_structures(pid, 1))]
     s = apply_overrides(s, p.get("overrides", {}))
     store.write_json(pid, "strategy/strategy.json", s)
@@ -511,7 +511,7 @@ def write_cover(pid: str, rs: dict, man: dict) -> Path:
     d = store.pdir(pid)
     p = store.get_production(pid)
     board = store.read_json(pid, "storyboard/board.json", {"scenes": []})
-    vis = next((s for s in board["scenes"] if s.get("treatment") in ("iconflow", "cards")), None)
+    vis = next((s for kind in ("iconflow", "cards", "compare", "sequence") for s in board["scenes"] if s.get("treatment") == kind), None)
     visual = None
     if vis and (d / "audio" / f"{vis['id']}.timing.json").exists():
         visual = (vis, json.loads((d / "audio" / f"{vis['id']}.timing.json").read_text(encoding="utf-8")))

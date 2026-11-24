@@ -22,7 +22,7 @@ WRAPPERS = ("parallax", "pinned_heading", "focus_frame")
 CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo",
            "globe", "flat_map")
 EFFECTS = WRAPPERS + CONTENT
-MODELS = ("server_rack", "cube", "globe", "database")
+MODELS = ("server_rack", "cube", "globe", "database", "datacenter")
 
 
 # ================================================================== 3D helpers
@@ -178,6 +178,14 @@ def mesh(name: str) -> tuple:
         for i in range(RACK_UNITS):                            # rack units standing out of the front
             y0 = -1.32 + i * 0.44
             tris += _box(-0.64, y0, -0.70, 0.64, y0 + 0.34, -0.6, tag=2)
+    elif name == "datacenter":                                # a long, low building: window bands, rooftop units
+        tris = _box(-1.7, -0.55, -0.85, 1.7, 0.75, 0.85)
+        for r in range(3):                                     # glowing window bands on the front face
+            y0 = -0.38 + r * 0.36
+            tris += _box(-1.52, y0, -0.9, 1.52, y0 + 0.13, -0.85, tag=1)
+        for x in (-1.2, -0.4, 0.5, 1.2):                       # rooftop cooling units
+            tris += _box(x - 0.22, -0.85, -0.35, x + 0.22, -0.55, 0.15, tag=2)
+        tris += _box(-0.25, 0.25, -0.95, 0.25, 0.75, -0.85, tag=2)   # door
     elif name == "database":
         seg = 24
         for k in range(3):                                     # three stacked discs
@@ -223,7 +231,7 @@ def draw_model(c, tpl, name: str, cx: float, cy: float, size: float, ay: float, 
     if name == "globe":                                        # dark ocean, bright land
         base = {0: D.mix(T["bg0"], body, 0.55) if tpl.dark else "#AFC4DA", 1: tpl.conn["active"] if tpl.dark else "#2F8F5B"}
     else:
-        base = {0: (D.mix(body, "#0B1220", 0.55) if name == "server_rack" else body) if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#0B1220", 0.45) if tpl.dark else "#8BA0BA"}
+        base = {0: (D.mix(body, "#0B1220", 0.55 if name == "server_rack" else 0.62) if name in ("server_rack", "datacenter") else body) if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#0B1220", 0.45) if tpl.dark else "#8BA0BA"}
     lx, ly, lz = -0.35, -0.62, -0.70                         # towards the light: up, left, towards the viewer
     out = []
     for p0, p1, p2, tag in mesh(name):
@@ -587,9 +595,10 @@ class MotionScene(ProTreatment):
 
     # ---- 7 fixed 3D model
     def _model_3d(self, c, t):
-        """A rotating model. Options: "headline" (large text above the model, shown from the first frame), and for the
-        globe "points" ({lat, lon, hub?}: glowing lights on the land) and "globe_arcs" ({from: [lat, lon], to}: arcs
-        that draw on over the surface with a travelling packet). "start" sets the starting turn (radians)."""
+        """A rotating model. Options: "headline" (large text above the model, shown from the first frame); "zoom_in"
+        ({"from": 0.55, "dur": 1.0}: grows into place, continuing a camera push from the previous shot); "push_out"
+        ({"at_end": 0.8, "to": 2.6}: the camera pushes into the model at the end, fading, into the next shot); for the
+        globe "points" and "globe_arcs"; "start" sets the starting turn (radians)."""
         sp, tpl = self.sc.spec, self.tpl
         name = sp.get("model", "server_rack")
         k = ease_out(t / 0.8)
@@ -597,18 +606,30 @@ class MotionScene(ProTreatment):
         if sp.get("headline"):
             top = self._headline(c, sp["headline"], t)
         cy = top + (self.bottom - top) * (0.44 if sp.get("label") else 0.5)
-        size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0))
-        if tpl.glow:
-            D.halo(c, self.CX, cy, size * 2.2, tpl.conn["active"], 0.25 * k)
-        if name == "server_rack":                             # swings, so the front panel stays in view
-            ay = 0.3 * math.sin(t * float(sp.get("spin", 0.55))) + 0.28   # front panel mostly to camera
+        mult, fade = 1.0, 1.0
+        zi = sp.get("zoom_in")
+        if zi:
+            k = 1.0                                           # on screen from the first frame, already growing
+            mult *= lerp(float(zi.get("from", 0.55)), 1.0, ease_out(t / float(zi.get("dur", 1.0))))
+        po = sp.get("push_out")
+        if po:
+            t0 = self.sc.dur - float(po.get("at_end", 0.8))
+            f = ease_in_out(clamp((t - t0) / max(0.1, self.sc.dur - t0)))
+            mult *= lerp(1.0, float(po.get("to", 2.6)), f)
+            fade = 1.0 - 0.85 * f
+        size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0)) * mult
+        if tpl.glow:                                          # fixed radius: one cached glow even while zooming
+            D.halo(c, self.CX, cy, (300.0 if self.portrait else 250.0) * 2.2 * float(sp.get("scale", 1.0)), tpl.conn["active"], 0.25 * k * fade)
+        if name in ("server_rack", "datacenter"):            # swings, so the front stays in view
+            ay = 0.3 * math.sin(t * float(sp.get("spin", 0.55))) + float(sp.get("start", 0.28))
         else:
             ay = t * float(sp.get("spin", 0.55)) + float(sp.get("start", 0.6))
-        draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, ay, alpha=k)
+        draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, ay, alpha=k * fade)
         if name == "globe" and (sp.get("points") or sp.get("globe_arcs")):
             globe_lights(c, tpl, sp.get("points", []), sp.get("globe_arcs", []), self.CX, cy, size, ay, t, k)
         if sp.get("label"):
-            D.label_under(c, tpl, sp["label"], self.CX, cy + size * 1.9, 900, 52, k, sp.get("sub"), plate=True)
+            ly = min(self.bottom - 120, cy + size * (1.25 if name == "datacenter" else 1.9))
+            D.label_under(c, tpl, sp["label"], self.CX, ly, 900, 52, k * fade, sp.get("sub"), plate=True)
 
     def _headline(self, c, text, t, draw=True, backdrop=False):
         """Large text at the top of the band (72 px or more), readable from the first frame. Returns the y below it.
@@ -635,38 +656,60 @@ class MotionScene(ProTreatment):
             D.draw_text(c, r, self.CX, y + sz * 0.92 + j * sz * 1.1 + (1 - k) * 24, sz, col(tpl.T["text"], k), "Bold", "center")
         return y + len(rows) * sz * 1.1 + 40
 
-    # ---- 11 the real Earth: textured globe with camera fly-to, city lights, arcs and light-trail packets
-    def _cam(self, t):
-        """Camera (lat, lon, zoom) at time t from "fly" keyframes; each move flies for "fly" s with a zoom dip."""
+    # ---- 11 the real Earth: textured globe and regional map, one camera language (fly-to, zoom, motion blur)
+    def _key_time(self, k, i, prev):
+        if "at_end" in k:
+            return self.sc.dur - float(k["at_end"])
+        if i == 0:
+            return 0.0
+        return self.cue_t(k.get("at"), prev + 1.5)
+
+    def _cam(self, t, flat=False):
+        """Camera (lat, lon, zoom) at time t from "fly" keyframes [{place | lat/lon, zoom | span, at | at_end, fly}].
+        Each move eases over "fly" s; long globe moves dip the zoom (fly-to). For flat maps "span" is the width in
+        degrees of longitude (zoom = 60 / span)."""
         from . import earth
         sp = self.sc.spec
         keys = sp.get("fly") or [{"lat": 30, "lon": 0, "zoom": 1.0}]
-        times = self._times(keys, 1.5, 0.0)
+        zof = lambda k, z: (60.0 / float(k["span"])) if "span" in k else float(k.get("zoom", z))
         cur = keys[0]
         lat, lon = earth.resolve(cur) if ("place" in cur or "lat" in cur) else (30.0, 0.0)
-        zoom = float(cur.get("zoom", 1.0))
-        for k, tt in zip(keys[1:], times[1:]):
+        zoom = zof(cur, 1.0)
+        prev = 0.0
+        for i, k in enumerate(keys[1:], 1):
+            tt = self._key_time(k, i, prev)
+            prev = tt
             if t <= tt:
                 break
-            la1, lo1 = earth.resolve(k)
-            z1 = float(k.get("zoom", zoom))
+            la1, lo1 = earth.resolve(k) if ("place" in k or "lat" in k) else (lat, lon)
+            z1 = zof(k, zoom)
             f = clamp((t - tt) / float(k.get("fly", 1.6)))
             e = ease_in_out(f)
             dlon = (lo1 - lon + 540) % 360 - 180
             dist = math.hypot(la1 - lat, dlon)
-            dip = 1.0 - min(0.45, dist / 200.0) * math.sin(math.pi * e) if zoom > 1.2 or z1 > 1.2 else 1.0
+            dip = 1.0
+            if not flat and (zoom > 1.2 or z1 > 1.2):
+                dip = 1.0 - min(0.45, dist / 200.0) * math.sin(math.pi * e)
             lat, lon = lat + (la1 - lat) * e, lon + dlon * e
-            zoom = (zoom + (z1 - zoom) * e) * dip
+            zoom = math.exp(math.log(zoom) + (math.log(z1) - math.log(zoom)) * e) * dip
             if f < 1:
                 break
-        lon += float(sp.get("drift", 1.2)) * t                 # a slow turn keeps it alive
+        if not flat:
+            lon += float(sp.get("drift", 1.2)) * t                 # a slow turn keeps it alive
         return lat, lon, zoom
 
-    def _earth_overlays(self, c, t, proj, base_alt=0.0):
+    def _at(self, item, i, default):
+        if "at_frac" in item:
+            return float(item["at_frac"]) * self.sc.dur
+        return self.cue_t(item.get("at"), default)
+
+    def _earth_overlays(self, c, t, proj, base_alt=0.0, depth=1.0):
+        """Arcs (draw on, then light-trail packets) and places: "kind": "region" (large ring, label and Region code),
+        "edge" (small bright point, label optional) or a city marker. Labels slide in."""
         from . import earth
         sp, tpl = self.sc.spec, self.tpl
         for a in sp.get("arcs", []):
-            at = self.cue_t(a.get("at"), 0.6)
+            at = self._at(a, 0, 0.6)
             if t < at:
                 continue
             p0, p1 = earth.resolve(a["from"] if isinstance(a["from"], dict) else {"place": a["from"]}), \
@@ -685,7 +728,7 @@ class MotionScene(ProTreatment):
                 if vis[i]:
                     path.lineTo(*pts[i]) if on else path.moveTo(*pts[i])
                 on = vis[i]
-            p = D.paint(col(colr, 0.95), 5)
+            p = D.paint(col(colr, 0.95), float(a.get("width", 5)))
             if a.get("dashed"):
                 p.setPathEffect(skia.DashPathEffect.Make([18, 12], -t * 40))
             c.drawPath(path, D.blur(D.paint(col(colr, 0.5), 12), 8))
@@ -697,7 +740,7 @@ class MotionScene(ProTreatment):
                 if len(seen) > 2:
                     earth.light_trail(c, seen, q, colr if not a.get("packet_color") else a["packet_color"])
         for i, ct in enumerate(sp.get("cities", [])):
-            at = self.cue_t(ct.get("at"), 0.3 + 0.12 * i)
+            at = self._at(ct, i, 0.3 + 0.12 * i)
             k = ease_out((t - at) / 0.4)
             if k <= 0:
                 continue
@@ -706,46 +749,110 @@ class MotionScene(ProTreatment):
             if not v or not (-50 < x < self.W + 50 and -50 < y < self.H + 50):
                 continue
             colr = D.role_color(tpl, ct["tone"]) if ct.get("tone") else None
-            earth.city_marker(c, tpl, x, y, ct.get("label", ct.get("place")), k, t + i * 0.37, colr, ct.get("hub", False),
-                              ct.get("side", "right"), float(ct.get("size", 44)), self.W)
+            kind = ct.get("kind", "city")
+            if kind == "region":
+                earth.region_marker(c, tpl, x, y, ct.get("label", ct.get("place")), ct.get("code", ""), k, t + i * 0.37,
+                                    colr, ct.get("side", "right"), self.W)
+            elif kind == "edge":
+                earth.edge_point(c, tpl, x, y, k, t + i * 0.53, colr, ct.get("label"), self.W)
+            else:
+                earth.city_marker(c, tpl, x, y, ct.get("label", ct.get("place")), k, t + i * 0.37, colr, ct.get("hub", False),
+                                  ct.get("side", "right"), float(ct.get("size", 44)), self.W)
 
     def _globe(self, c, t):
-        """The textured Earth. "fly": camera keyframes [{place | lat/lon, zoom, at, fly}]; "sun": {lat, lon} or omitted
-        for night; "cities": [{place | lat/lon, label, at, tone, hub, side}]; "arcs": [{from, to, at, tone, dashed,
-        packets}]; "headline"; "cy" (0..1 of the band)."""
+        """The textured Earth. "fly": camera keyframes; "sun": {lat, lon} or omitted for night; "cities", "arcs";
+        "headline" (with "headline_at": it appears on that cue, over the globe); "cy" (0..1 of the band) or "cy_px";
+        "from_point": {"bg": [r, g, b], "point": [r, g, b], "fade": s}: the first frame is that flat colour with a
+        glowing point at the centre of the frame (a clip's last frame), which opens into the globe."""
         from . import earth
         sp = self.sc.spec
-        top = self._headline(c, sp["headline"], t, draw=False) if sp.get("headline") else self.top
+        over = sp.get("headline_at") is not None
+        top = self._headline(c, sp["headline"], t, draw=False) if sp.get("headline") and not over else self.top
         lat, lon, zoom = self._cam(t)
         R = (0.5 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
-        cy = top + (self.bottom - top) * float(sp.get("cy", 0.54))
+        cy = float(sp["cy_px"]) if "cy_px" in sp else top + (self.bottom - top) * float(sp.get("cy", 0.54))
         g = earth.Globe(self.W, self.H, self.CX, cy, R, lat, lon)
         sun = sp.get("sun")
+        fp = sp.get("from_point")
         g.render(c, (float(sun["lat"]), float(sun["lon"])) if sun else None, float(sp.get("night_gain", 1.7)),
-                 ease_out((t + 0.3) / 0.5))
+                 1.0 if fp else ease_out((t + 0.3) / 0.5))
         self._earth_overlays(c, t, g.project)
+        if fp:
+            k = clamp(t / float(fp.get("fade", 0.6)))
+            if k < 1:
+                bg = "#%02x%02x%02x" % tuple(fp.get("bg", (5, 12, 26)))
+                pt = "#%02x%02x%02x" % tuple(fp.get("point", (56, 214, 255)))
+                c.drawRect(skia.Rect.MakeWH(self.W, self.H), D.paint(col(bg, 1.0 - ease_in_out(k))))
+                D.halo(c, self.CX, cy, 46, pt, 1.0 - k)
+                c.drawCircle(self.CX, cy, 9, D.paint(col("#FFFFFF", 1.0 - k)))
         if sp.get("headline"):
-            self._headline(c, sp["headline"], t, backdrop=True)
+            if over:
+                ha = self.cue_t(sp.get("headline_at"), 0.5)
+                hu = self.cue_t(sp.get("headline_until"), 1e9) if sp.get("headline_until") is not None else 1e9
+                if ha <= t < hu + 0.4:
+                    c.saveLayerAlpha(None, int(255 * (1.0 - clamp((t - hu) / 0.4)))) if t > hu else c.save()
+                    self._headline(c, sp["headline"], t - ha, backdrop=True)
+                    c.restore()
+            else:
+                self._headline(c, sp["headline"], t, backdrop=True)
 
     def _flat_map(self, c, t):
-        """A regional map from the same textures: "region": [lon0, lon1, lat0, lat1], "texture": night | day, Natural
-        Earth borders and coastlines, "cities" and "arcs" as for the globe (arcs bow upwards)."""
+        """A regional map of the same NASA imagery with Natural Earth borders and coastlines, under a camera:
+        "fly": [{place | lat/lon, span (degrees of longitude across), at | at_end, fly}] pans and zooms smoothly, with
+        motion blur while it moves; "cities" with "kind" region / edge / city ("at_frac" staggers them); "arcs";
+        "legend": [{"mark": "region" | "edge", "label"}]; "counter": {"value", "suffix", "label", "source", "at"} counts
+        up from the first frame beside the map. "region" ([lon0, lon1, lat0, lat1]) is a fixed view without "fly"."""
         from . import earth
-        sp = self.sc.spec
-        x0, y0 = (60.0, self.top + 10) if self.portrait else (120.0, self.top + 10)
-        rect = (x0, y0, self.W - 2 * x0, self.bottom - y0 - 70)
-        fm = earth.FlatMap(rect, tuple(sp.get("region", (-12, 32, 34, 62))))
+        sp, tpl = self.sc.spec, self.tpl
+        x0, y0 = (40.0, self.top + 10) if self.portrait else (100.0, self.top + 10)
+        rect = (x0, y0, self.W - 2 * x0, self.bottom - y0 - 10)
+        if sp.get("fly"):
+            views = []
+            for dt in ((0.0, 1.0),) if self.sc.spec.get("motion_blur") is False else ((2 / 90, 1.0), (1 / 90, 0.5), (0.0, 0.34)):
+                lat, lon, zoom = self._cam(max(0.0, t - dt[0]), flat=True)
+                views.append((earth.View.at(rect, lat, lon, 60.0 / zoom), dt[1]))
+            moving = abs(views[0][0].lon_c - views[-1][0].lon_c) + abs(views[0][0].lat_c - views[-1][0].lat_c) > 0.004 * views[-1][0].span \
+                or abs(views[0][0].span / views[-1][0].span - 1) > 0.004
+            if not moving:
+                views = views[-1:]
+                views[0] = (views[0][0], 1.0)
+            view = views[-1][0]
+        else:
+            view = earth.View.region(rect, tuple(sp.get("region", (-12, 32, 34, 62))))
+            views = [(view, 1.0)]
         c.save()
         c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(*rect), 24, 24), skia.ClipOp.kIntersect, True)
-        fm.render(c, sp.get("texture", "night"), float(sp.get("night_gain", 1.7)), sp.get("borders", True),
-                  ease_out((t + 0.3) / 0.5))
+        c.drawRect(skia.Rect.MakeXYWH(*rect), D.paint(col("#02060E")))
+        for v, a in views:
+            v.draw(c, sp.get("texture", "night"), float(sp.get("night_gain", 1.7)), a)
+        if sp.get("borders", True):
+            view.borders(c)
+        self._earth_overlays(c, t, lambda la, lo, alt: (*view.project(la, lo, depth=1.03), True))
         c.restore()
-        c.drawRoundRect(skia.Rect.MakeXYWH(*rect), 24, 24, D.paint(col(self.tpl.conn["active"], 0.35), 2))
+        c.drawRoundRect(skia.Rect.MakeXYWH(*rect), 24, 24, D.paint(col(tpl.conn["active"], 0.35), 2))
+        if sp.get("legend"):
+            earth.legend(c, tpl, sp["legend"], rect[0] + 24, rect[1] + 24)
+        if sp.get("counter"):
+            self._map_counter(c, t, sp["counter"], rect)
 
-        def proj(la, lo, alt):
-            x, y = fm.project(la, lo)
-            return x, y - alt * 900, True
-        self._earth_overlays(c, t, proj)
+    def _map_counter(self, c, t, ctr, rect):
+        """A sourced counter in a card at the foot of the map: on screen at once, counting up to its spoken word."""
+        tpl, T = self.tpl, self.tpl.T
+        cue = self.cue_t(ctr.get("at"), 1.5)
+        k = ease_out(clamp((t - 0.05) / max(0.8, cue + 0.4)))
+        val = float(ctr.get("value", 0))
+        shown = f"{val * k:,.0f}{ctr.get('suffix', '') if k > 0.98 else ''}"
+        w, h = rect[2] - 60, 250.0
+        x, y = rect[0] + 30, rect[1] + rect[3] - h - 30
+        D.card(c, tpl, x, y, w, h, 1.0)
+        acc = D.text_on(tpl, tpl.conn["active"])
+        D.draw_text(c, shown, x + 40, y + 150, 140, col(acc), "Bold")
+        lw = D.text_width(f"{val:,.0f}{ctr.get('suffix', '')}", 140, "Bold") + 70
+        rows, ls = D.fit_block(ctr.get("label", ""), w - lw - 40, 2, 48, 36, "SemiBold")
+        for j, r in enumerate(rows):
+            D.draw_text(c, r, x + lw, y + 92 + j * ls * 1.15, ls, col(T["text"]), "SemiBold")
+        if ctr.get("source"):
+            D.draw_text(c, D.ellipsize("Source: " + ctr["source"], w - 80, 30), x + 40, y + h - 28, 30, col(T["text2"]))
 
     # ---- 8 stacking cards
     def _stacking_cards(self, c, t):

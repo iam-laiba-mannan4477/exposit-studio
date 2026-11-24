@@ -1,0 +1,195 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Press play",
+   "sentences": [
+    {
+     "text": "You press play on Netflix in London.",
+     "claims": [
+      "c6"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "One distant origin",
+   "sentences": [
+    {
+     "text": "It starts instantly. Why?",
+     "claims": [
+      "c6"
+     ]
+    },
+    {
+     "text": "Without a CDN, the video lives on one origin in us-east-1.",
+     "claims": [
+      "c1"
+     ]
+    },
+    {
+     "text": "London, Frankfurt and Seoul all wait on it.",
+     "claims": [
+      "c1"
+     ]
+    }
+   ],
+   "terms": [
+    "CDN"
+   ]
+  },
+  {
+   "id": "s3",
+   "title": "Copies near viewers",
+   "sentences": [
+    {
+     "text": "A CDN keeps copies of popular content near viewers.",
+     "claims": [
+      "c2",
+      "c3"
+     ]
+    },
+    {
+     "text": "CloudFront runs more than 750 points of presence.",
+     "claims": [
+      "c5"
+     ]
+    }
+   ],
+   "terms": [
+    "point of presence"
+   ]
+  },
+  {
+   "id": "s4",
+   "title": "Across the world",
+   "sentences": [
+    {
+     "text": "Over 50 countries, from London and Frankfurt to Seoul and Tokyo.",
+     "claims": [
+      "c5",
+      "c12"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s5",
+   "title": "Netflix Open Connect",
+   "sentences": [
+    {
+     "text": "Netflix runs its own CDN, called Open Connect.",
+     "claims": [
+      "c6"
+     ]
+    }
+   ],
+   "terms": [
+    "Open Connect"
+   ]
+  },
+  {
+   "id": "s6",
+   "title": "Inside your ISP",
+   "sentences": [
+    {
+     "text": "Its servers sit inside internet providers and at exchange points, pre-filled by region.",
+     "claims": [
+      "c6",
+      "c7",
+      "c8"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s7",
+   "title": "Miss vs hit",
+   "sentences": [
+    {
+     "text": "The first viewer in Frankfurt causes a cache miss.",
+     "claims": [
+      "c4"
+     ]
+    },
+    {
+     "text": "The next viewer gets a hit, from the edge.",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": [
+    "cache miss"
+   ]
+  },
+  {
+   "id": "s8",
+   "title": "On a miss",
+   "sentences": [
+    {
+     "text": "On a miss, the edge fetches from the origin, keeps a copy, and responds.",
+     "claims": [
+      "c4"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s9",
+   "title": "Real proof",
+   "sentences": [
+    {
+     "text": "A real CloudFront response:",
+     "claims": [
+      "c11"
+     ]
+    },
+    {
+     "text": "First request: Miss from cloudfront.",
+     "claims": [
+      "c9",
+      "c11"
+     ]
+    },
+    {
+     "text": "Five seconds later: Hit, and Age is six.",
+     "claims": [
+      "c9",
+      "c10",
+      "c11"
+     ]
+    }
+   ],
+   "terms": [
+    "Age header"
+   ]
+  },
+  {
+   "id": "s10",
+   "title": "Why it is fast",
+   "sentences": [
+    {
+     "text": "Lower latency, less origin load, room for traffic spikes.",
+     "claims": [
+      "c2",
+      "c3"
+     ]
+    },
+    {
+     "text": "It starts fast: the video was already near you.",
+     "claims": [
+      "c6",
+      "c8"
+     ]
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

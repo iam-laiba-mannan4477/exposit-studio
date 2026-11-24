@@ -1,0 +1,944 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Press play",
+   "treatment": "footage",
+   "src": "cdn-opening-9x16.mp4",
+   "align": {
+    "word": "play",
+    "beat": "play_pressed"
+   },
+   "transition": "cut",
+   "objective": "Hook: the viewer presses play",
+   "reason": "The channel owner's opening clip, played as-is with its own sound.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s2",
+   "title": "One distant origin",
+   "treatment": "motion",
+   "effect": "globe",
+   "transition": "cut",
+   "from_point": {
+    "bg": [
+     5,
+     12,
+     26
+    ],
+    "point": [
+     56,
+     214,
+     255
+    ],
+    "fade": 0.6
+   },
+   "cy_px": 960,
+   "drift": 0.0,
+   "headline": "It starts instantly. Why?",
+   "headline_at": {
+    "word": "starts"
+   },
+   "headline_until": {
+    "word": "Without"
+   },
+   "fly": [
+    {
+     "place": "London",
+     "zoom": 14.0
+    },
+    {
+     "place": "London",
+     "zoom": 1.35,
+     "at": 0.05,
+     "fly": 2.2
+    },
+    {
+     "lat": 44,
+     "lon": -36,
+     "zoom": 1.1,
+     "at": {
+      "word": "Without"
+     },
+     "fly": 1.6
+    },
+    {
+     "lat": 60,
+     "lon": 30,
+     "zoom": 0.95,
+     "at": {
+      "word": "Seoul"
+     },
+     "fly": 1.4
+    },
+    {
+     "lat": 50,
+     "lon": 8,
+     "zoom": 2.6,
+     "at_end": 1.0,
+     "fly": 1.0
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "at": 0.0,
+     "side": "left"
+    },
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "kind": "region",
+     "label": "N. Virginia",
+     "code": "us-east-1",
+     "side": "left",
+     "at": {
+      "word": "origin"
+     }
+    },
+    {
+     "place": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     }
+    },
+    {
+     "place": "Seoul",
+     "at": {
+      "word": "Seoul"
+     },
+     "side": "left"
+    }
+   ],
+   "arcs": [
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "London",
+     "at": {
+      "word": "London"
+     },
+     "tone": "fail"
+    },
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     },
+     "tone": "fail",
+     "width": 4
+    },
+    {
+     "from": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "to": "Seoul",
+     "at": {
+      "word": "Seoul"
+     },
+     "tone": "fail",
+     "width": 4,
+     "dur": 1.6
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "starts"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Without"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "origin"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "wait"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Wide space shot: one distant origin",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Continues from the clip's final frame (navy, cyan point = London), pulls out to the real night Earth; us-east-1 glows and long arcs show the problem.",
+   "pad_end": 0.25
+  },
+  {
+   "id": "s3",
+   "title": "Copies near viewers",
+   "treatment": "motion",
+   "effect": "flat_map",
+   "transition": "crossfade",
+   "fly": [
+    {
+     "lat": 48,
+     "lon": 8,
+     "span": 46
+    },
+    {
+     "lat": 48.5,
+     "lon": 9,
+     "span": 38,
+     "at": 0.3,
+     "fly": 7.0
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "kind": "region",
+     "label": "London",
+     "code": "eu-west-2",
+     "side": "left",
+     "at_frac": 0.02
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "region",
+     "label": "Frankfurt",
+     "code": "eu-central-1",
+     "side": "right",
+     "at_frac": 0.02
+    },
+    {
+     "place": "London",
+     "kind": "edge",
+     "at_frac": 0.05
+    },
+    {
+     "place": "Manchester",
+     "kind": "edge",
+     "at_frac": 0.07
+    },
+    {
+     "place": "Dublin",
+     "kind": "edge",
+     "at_frac": 0.091
+    },
+    {
+     "place": "Paris",
+     "kind": "edge",
+     "at_frac": 0.111
+    },
+    {
+     "place": "Marseille",
+     "kind": "edge",
+     "at_frac": 0.131
+    },
+    {
+     "place": "Amsterdam",
+     "kind": "edge",
+     "at_frac": 0.152
+    },
+    {
+     "place": "Brussels",
+     "kind": "edge",
+     "at_frac": 0.172
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "edge",
+     "at_frac": 0.193
+    },
+    {
+     "place": "Hamburg",
+     "kind": "edge",
+     "at_frac": 0.213
+    },
+    {
+     "place": "Berlin",
+     "kind": "edge",
+     "at_frac": 0.233
+    },
+    {
+     "place": "Munich",
+     "kind": "edge",
+     "at_frac": 0.254
+    },
+    {
+     "place": "Zurich",
+     "kind": "edge",
+     "at_frac": 0.274
+    },
+    {
+     "place": "Milan",
+     "kind": "edge",
+     "at_frac": 0.294
+    },
+    {
+     "place": "Rome",
+     "kind": "edge",
+     "at_frac": 0.315
+    },
+    {
+     "place": "Vienna",
+     "kind": "edge",
+     "at_frac": 0.335
+    },
+    {
+     "place": "Prague",
+     "kind": "edge",
+     "at_frac": 0.355
+    },
+    {
+     "place": "Warsaw",
+     "kind": "edge",
+     "at_frac": 0.376
+    },
+    {
+     "place": "Budapest",
+     "kind": "edge",
+     "at_frac": 0.396
+    },
+    {
+     "place": "Zagreb",
+     "kind": "edge",
+     "at_frac": 0.416
+    },
+    {
+     "place": "Sofia",
+     "kind": "edge",
+     "at_frac": 0.437
+    },
+    {
+     "place": "Bucharest",
+     "kind": "edge",
+     "at_frac": 0.457
+    },
+    {
+     "place": "Athens",
+     "kind": "edge",
+     "at_frac": 0.477
+    },
+    {
+     "place": "Madrid",
+     "kind": "edge",
+     "at_frac": 0.498
+    },
+    {
+     "place": "Barcelona",
+     "kind": "edge",
+     "at_frac": 0.518
+    },
+    {
+     "place": "Lisbon",
+     "kind": "edge",
+     "at_frac": 0.539
+    },
+    {
+     "place": "København",
+     "kind": "edge",
+     "at_frac": 0.559
+    },
+    {
+     "place": "Oslo",
+     "kind": "edge",
+     "at_frac": 0.579
+    },
+    {
+     "place": "Stockholm",
+     "kind": "edge",
+     "at_frac": 0.6
+    },
+    {
+     "place": "Helsinki",
+     "kind": "edge",
+     "at_frac": 0.62
+    }
+   ],
+   "legend": [
+    {
+     "mark": "region",
+     "label": "AWS Region"
+    },
+    {
+     "mark": "edge",
+     "label": "CloudFront edge location"
+    }
+   ],
+   "counter": {
+    "value": 750,
+    "suffix": "+",
+    "label": "CloudFront points of presence",
+    "source": "aws.amazon.com/cloudfront/features",
+    "at": {
+     "word": "750"
+    }
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "copies"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "viewers"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "750"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Regional map: edge locations light up across Europe while the sourced count runs up",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Dive from space into Europe: Regions as large rings with codes, edge locations as small points; counter from the first frame (no empty start).",
+   "pad_end": 0.25
+  },
+  {
+   "id": "s4",
+   "title": "Across the world",
+   "treatment": "motion",
+   "effect": "flat_map",
+   "transition": "crossfade",
+   "fly": [
+    {
+     "lat": 48.5,
+     "lon": 9,
+     "span": 38
+    },
+    {
+     "lat": 42,
+     "lon": 72,
+     "span": 70,
+     "at": {
+      "word": "to"
+     },
+     "fly": 1.3
+    },
+    {
+     "lat": 36.5,
+     "lon": 132,
+     "span": 17,
+     "at": {
+      "word": "Seoul"
+     },
+     "fly": 1.2
+    },
+    {
+     "place": "Seoul",
+     "span": 9,
+     "at_end": 0.7,
+     "fly": 0.7
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "kind": "region",
+     "label": "London",
+     "code": "eu-west-2",
+     "side": "left",
+     "at_frac": 0.02
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "region",
+     "label": "Frankfurt",
+     "code": "eu-central-1",
+     "side": "right",
+     "at_frac": 0.02
+    },
+    {
+     "place": "Seoul",
+     "kind": "region",
+     "label": "Seoul",
+     "code": "ap-northeast-2",
+     "side": "left",
+     "at": {
+      "word": "Seoul"
+     }
+    },
+    {
+     "place": "Tokyo",
+     "kind": "region",
+     "label": "Tokyo",
+     "code": "ap-northeast-1",
+     "side": "right",
+     "at": {
+      "word": "Tokyo"
+     }
+    },
+    {
+     "place": "Seoul",
+     "kind": "edge",
+     "at_frac": 0.35
+    },
+    {
+     "place": "Tokyo",
+     "kind": "edge",
+     "at_frac": 0.433
+    },
+    {
+     "place": "Osaka",
+     "kind": "edge",
+     "at_frac": 0.517
+    },
+    {
+     "place": "Taipei",
+     "kind": "edge",
+     "at_frac": 0.6
+    },
+    {
+     "place": "London",
+     "kind": "edge",
+     "at_frac": 0.0
+    },
+    {
+     "place": "Manchester",
+     "kind": "edge",
+     "at_frac": 0.006
+    },
+    {
+     "place": "Dublin",
+     "kind": "edge",
+     "at_frac": 0.011
+    },
+    {
+     "place": "Paris",
+     "kind": "edge",
+     "at_frac": 0.017
+    },
+    {
+     "place": "Marseille",
+     "kind": "edge",
+     "at_frac": 0.022
+    },
+    {
+     "place": "Amsterdam",
+     "kind": "edge",
+     "at_frac": 0.028
+    },
+    {
+     "place": "Brussels",
+     "kind": "edge",
+     "at_frac": 0.033
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "edge",
+     "at_frac": 0.039
+    },
+    {
+     "place": "Hamburg",
+     "kind": "edge",
+     "at_frac": 0.044
+    },
+    {
+     "place": "Berlin",
+     "kind": "edge",
+     "at_frac": 0.05
+    }
+   ],
+   "legend": [
+    {
+     "mark": "region",
+     "label": "AWS Region"
+    },
+    {
+     "mark": "edge",
+     "label": "CloudFront edge location"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "countries"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Seoul"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Tokyo"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "City close-up: pan to Asia, Seoul and Tokyo with their edge points, then dive into Seoul",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Continuous camera from Europe to North-East Asia; ends on a close-up of one city.",
+   "pad_end": 0.25
+  },
+  {
+   "id": "s5",
+   "title": "Netflix Open Connect",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "model": "datacenter",
+   "transition": "crossfade",
+   "headline": "Netflix runs its own CDN",
+   "label": "An ISP's data centre",
+   "sub": "Seoul (example)",
+   "start": 0.45,
+   "scale": 1.25,
+   "zoom_in": {
+    "from": 0.45,
+    "dur": 1.1
+   },
+   "push_out": {
+    "at_end": 0.8,
+    "to": 2.8
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "Netflix"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Connect"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Building: zoom from the city into an ISP site",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "The camera keeps moving forward: city close-up, the building, then into it.",
+   "pad_end": 0.25
+  },
+  {
+   "id": "s6",
+   "title": "Inside your ISP",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "model": "server_rack",
+   "transition": "crossfade",
+   "headline": "Open Connect",
+   "label": "Open Connect Appliance",
+   "sub": "inside ISP networks and at exchange points",
+   "zoom_in": {
+    "from": 0.5,
+    "dur": 1.0
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "providers"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "exchange"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "pre-filled"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Rack: the appliance inside the ISP",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Inside the building: the Open Connect Appliance rack.",
+   "pad_end": 0.25
+  },
+  {
+   "id": "s7",
+   "title": "Miss vs hit",
+   "treatment": "compare",
+   "heading": "Miss vs hit",
+   "client": {
+    "icon": "user",
+    "label": "Viewer · Frankfurt"
+   },
+   "panel": {
+    "title": "Edge · Frankfurt POP",
+    "icon": "database-zap",
+    "label": "Edge cache"
+   },
+   "origin": {
+    "icon": "server-cog",
+    "label": "Origin · us-east-1"
+   },
+   "lanes": [
+    {
+     "title": "Cache hit",
+     "tone": "success",
+     "at": {
+      "word": "hit"
+     }
+    },
+    {
+     "title": "Cache miss",
+     "tone": "fail",
+     "at": {
+      "word": "miss"
+     },
+     "result": {
+      "label": "Copy stored",
+      "icon": "refresh-cw",
+      "tone": "info",
+      "at": {
+       "word": "next"
+      }
+     }
+    }
+   ],
+   "footer": [
+    {
+     "icon": "gauge",
+     "label": "Hit: short path"
+    },
+    {
+     "icon": "server-cog",
+     "label": "Miss: origin once"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "miss"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "next"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "hit"
+     },
+     "action": "pulse"
+    }
+   ],
+   "effects": [
+    {
+     "type": "parallax",
+     "layers": 2
+    }
+   ],
+   "transition": "fade",
+   "objective": "Split-screen miss versus hit",
+   "reason": "Reference 3 structure restyled; split-screen comparison with packets.",
+   "tier": "hypothesis",
+   "recipes": [],
+   "pad_end": 0.25
+  },
+  {
+   "id": "s8",
+   "title": "On a miss",
+   "treatment": "sequence",
+   "heading": "On a miss",
+   "elements": [
+    {
+     "id": "viewer",
+     "kind": "user",
+     "label": "Viewer"
+    },
+    {
+     "id": "edge",
+     "kind": "edge",
+     "label": "Edge",
+     "icon": "server"
+    },
+    {
+     "id": "origin",
+     "kind": "origin",
+     "label": "Origin",
+     "icon": "server-cog"
+    }
+   ],
+   "messages": [
+    {
+     "from": "viewer",
+     "to": "edge",
+     "text": "GET /video",
+     "at": {
+      "word": "On"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "edge",
+     "text": "Cache miss",
+     "at": {
+      "word": "miss"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "origin",
+     "text": "Fetch",
+     "at": {
+      "word": "fetches"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "edge",
+     "text": "Keep a copy",
+     "at": {
+      "word": "copy"
+     }
+    },
+    {
+     "from": "edge",
+     "to": "viewer",
+     "text": "200 OK",
+     "dashed": true,
+     "at": {
+      "word": "responds"
+     }
+    }
+   ],
+   "transition": "push",
+   "objective": "Order of steps on a miss",
+   "reason": "Reference 4 structure, arrows in the right direction.",
+   "tier": "hypothesis",
+   "recipes": [],
+   "pad_end": 0.25
+  },
+  {
+   "id": "s9",
+   "title": "Real proof",
+   "treatment": "motion",
+   "effect": "scroll_demo",
+   "terminal_title": "real response · 2026-11-23 21:12 UTC",
+   "font": 34,
+   "lines": [
+    {
+     "text": "curl -I https://d1.awsstatic.com/…/cc62b0dc…ac59.png",
+     "cmd": true,
+     "at": {
+      "word": "real"
+     }
+    },
+    {
+     "text": "HTTP/1.1 200 OK",
+     "tone": "dim"
+    },
+    {
+     "text": "X-Cache: Miss from cloudfront",
+     "tone": "err",
+     "at": {
+      "word": "Miss"
+     }
+    },
+    {
+     "text": "Via: 1.1 a2897f72515a8350a57c398127ef6588.cloudfront.net (CloudFront)",
+     "tone": "dim"
+    },
+    {
+     "text": "curl -I https://d1.awsstatic.com/…/cc62b0dc…ac59.png",
+     "cmd": true,
+     "at": {
+      "word": "Five"
+     }
+    },
+    {
+     "text": "HTTP/1.1 200 OK",
+     "tone": "dim"
+    },
+    {
+     "text": "X-Cache: Hit from cloudfront",
+     "tone": "ok",
+     "at": {
+      "word": "Hit"
+     }
+    },
+    {
+     "text": "Age: 6",
+     "tone": "ok",
+     "at": {
+      "word": "Age"
+     }
+    }
+   ],
+   "transition": "fade",
+   "objective": "Real headers prove miss then hit",
+   "reason": "KodeKloud-style proof with a real response captured on 2026-11-23 (URL path shortened with an ellipsis only).",
+   "tier": "hypothesis",
+   "recipes": [],
+   "pad_end": 0.25
+  },
+  {
+   "id": "s10",
+   "title": "Why it is fast",
+   "treatment": "motion",
+   "effect": "stacking_cards",
+   "heading": "Why it is fast",
+   "peek": 250,
+   "items": [
+    {
+     "icon": "gauge",
+     "title": "Lower latency",
+     "text": "Served from a nearby POP",
+     "at": {
+      "word": "latency"
+     }
+    },
+    {
+     "icon": "server-cog",
+     "title": "Less origin load",
+     "text": "Hits never reach the origin",
+     "at": {
+      "word": "origin"
+     }
+    },
+    {
+     "icon": "shield-check",
+     "title": "Absorbs traffic spikes",
+     "text": "The edge answers repeat requests",
+     "at": {
+      "word": "spikes"
+     }
+    },
+    {
+     "icon": "zap",
+     "title": "Already near you",
+     "text": "That is why it starts fast",
+     "at": {
+      "word": "near"
+     }
+    }
+   ],
+   "transition": "fade",
+   "objective": "Benefits and the payoff",
+   "reason": "Staggered build, one focal card per beat; the last card answers the hook.",
+   "tier": "hypothesis",
+   "recipes": [],
+   "pad_end": 0.25
+  }
+ ]
+}

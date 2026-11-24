@@ -1,0 +1,1636 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Press play",
+   "treatment": "footage",
+   "src": "cdn-opening-9x16.mp4",
+   "align": {
+    "word": "play",
+    "beat": "play_pressed"
+   },
+   "transition": "cut",
+   "objective": "The viewer presses play",
+   "reason": "The channel owner's clip, as-is.",
+   "tier": "hypothesis",
+   "recipes": []
+  },
+  {
+   "id": "s2",
+   "title": "The origin",
+   "treatment": "motion",
+   "effect": "globe",
+   "transition": "cut",
+   "labels": "compact",
+   "from_point": {
+    "bg": [
+     5,
+     12,
+     26
+    ],
+    "point": [
+     56,
+     214,
+     255
+    ],
+    "fade": 0.6
+   },
+   "cy_px": 960,
+   "drift": 0.0,
+   "headline": "How?",
+   "headline_at": {
+    "word": "How"
+   },
+   "headline_until": {
+    "word": "Every"
+   },
+   "fly": [
+    {
+     "place": "London",
+     "zoom": 14.0
+    },
+    {
+     "place": "London",
+     "zoom": 1.4,
+     "at": 0.05,
+     "fly": 2.0
+    },
+    {
+     "lat": 40,
+     "lon": -60,
+     "zoom": 1.15,
+     "at": {
+      "word": "Every"
+     },
+     "fly": 1.4
+    },
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "zoom": 2.0,
+     "at": {
+      "word": "Virginia"
+     },
+     "fly": 1.0
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "at": 0.0,
+     "until": {
+      "word": "Every"
+     }
+    },
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "kind": "focus",
+     "label": "Origin server",
+     "code": "us-east-1 · N. Virginia",
+     "at": {
+      "word": "origin"
+     },
+     "side": "right"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "How"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "copy"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "origin"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Virginia"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Pull out to the night Earth; fly to the origin in N. Virginia",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Continues from the clip's last frame; the origin is labelled and glows as it is named.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s3",
+   "title": "One distant place",
+   "treatment": "motion",
+   "effect": "globe",
+   "transition": "crossfade",
+   "labels": "compact",
+   "drift": 0.0,
+   "fly": [
+    {
+     "lat": 45,
+     "lon": -38,
+     "zoom": 1.15
+    },
+    {
+     "lat": 50,
+     "lon": 40,
+     "zoom": 1.0,
+     "at": 2.4,
+     "fly": 1.4
+    },
+    {
+     "lat": 42,
+     "lon": -40,
+     "zoom": 1.05,
+     "at": {
+      "word": "millions"
+     },
+     "fly": 1.0
+    }
+   ],
+   "cities": [
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "kind": "region",
+     "label": "Origin",
+     "code": "us-east-1",
+     "at": 0.0,
+     "side": "left",
+     "until": {
+      "word": "millions"
+     }
+    },
+    {
+     "place": "London",
+     "kind": "focus",
+     "at_frac": 0.08,
+     "side": "right",
+     "until": {
+      "word": "millions"
+     }
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "focus",
+     "at_frac": 0.2,
+     "side": "right",
+     "until": {
+      "word": "millions"
+     }
+    },
+    {
+     "place": "Seoul",
+     "kind": "focus",
+     "at_frac": 0.33,
+     "side": "right",
+     "until": {
+      "word": "millions"
+     }
+    },
+    {
+     "lat": 38.9,
+     "lon": -77.4,
+     "kind": "alert",
+     "label": "Heavy load",
+     "at": {
+      "word": "heavy"
+     },
+     "side": "right"
+    }
+   ],
+   "arcs": [
+    {
+     "from": "London",
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at_frac": 0.08,
+     "tone": "fail",
+     "width": 4
+    },
+    {
+     "from": "Frankfurt",
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at_frac": 0.2,
+     "tone": "fail",
+     "width": 4
+    },
+    {
+     "from": "Seoul",
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at_frac": 0.33,
+     "tone": "fail",
+     "width": 4,
+     "dur": 1.4
+    },
+    {
+     "from": {
+      "lat": 43.665,
+      "lon": -79.389
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 19.444,
+      "lon": -99.133
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 41.848,
+      "lon": -87.635
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 32.772,
+      "lon": -96.795
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 34.049,
+      "lon": -118.232
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 25.79,
+      "lon": -80.226
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 47.6,
+      "lon": -122.315
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": -22.907,
+      "lon": -43.212
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": -33.44,
+      "lon": -70.651
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": -12.046,
+      "lon": -77.052
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 48.858,
+      "lon": 2.353
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 53.347,
+      "lon": -6.257
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 52.352,
+      "lon": 4.915
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 38.725,
+      "lon": -9.147
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    },
+    {
+     "from": {
+      "lat": 40.402,
+      "lon": -3.685
+     },
+     "to": {
+      "lat": 38.9,
+      "lon": -77.4
+     },
+     "at": {
+      "word": "millions"
+     },
+     "tone": "fail",
+     "width": 2.5,
+     "dur": 0.9,
+     "packets": 1,
+     "period": 1.2
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "request"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Atlantic"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "delay"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "millions"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "heavy"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Arcs to London, Frankfurt and Seoul one by one; then many requests converge and the origin pulses red",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "The distance and the load on one origin, made visible.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s4",
+   "title": "Copies near viewers",
+   "treatment": "motion",
+   "effect": "split_compare",
+   "transition": "push",
+   "rows": [
+    {
+     "title": "From the factory",
+     "note": "far away",
+     "far": true,
+     "tone": "fail",
+     "via": "truck",
+     "from": {
+      "icon": "factory",
+      "label": "Factory"
+     },
+     "to": {
+      "icon": "house",
+      "label": "You"
+     },
+     "at": {
+      "word": "factory"
+     }
+    },
+    {
+     "title": "From the shop",
+     "note": "down the road",
+     "far": false,
+     "tone": "success",
+     "via": "milk",
+     "from": {
+      "icon": "store",
+      "label": "Shop"
+     },
+     "to": {
+      "icon": "house",
+      "label": "You"
+     },
+     "at": {
+      "word": "shop"
+     }
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "copies"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "milk"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "shop"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "factory"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Factory far away vs shop down the road",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "The analogy as a clean split card: the travel arrow's length shows the distance.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s5",
+   "title": "The world tour",
+   "treatment": "motion",
+   "effect": "globe",
+   "transition": "crossfade",
+   "labels": "compact",
+   "drift": 0.0,
+   "all_regions": [
+    {
+     "lat": 38.9,
+     "lon": -77.4
+    },
+    {
+     "lat": 40.0,
+     "lon": -83.0
+    },
+    {
+     "lat": 37.4,
+     "lon": -121.9
+    },
+    {
+     "lat": 45.6,
+     "lon": -121.2
+    },
+    {
+     "lat": -33.9,
+     "lon": 18.4
+    },
+    {
+     "lat": 22.3,
+     "lon": 114.2
+    },
+    {
+     "lat": 17.4,
+     "lon": 78.5
+    },
+    {
+     "lat": -6.2,
+     "lon": 106.8
+    },
+    {
+     "lat": 3.1,
+     "lon": 101.7
+    },
+    {
+     "lat": -37.8,
+     "lon": 145.0
+    },
+    {
+     "lat": 19.1,
+     "lon": 72.9
+    },
+    {
+     "lat": -36.8,
+     "lon": 174.8
+    },
+    {
+     "lat": 34.7,
+     "lon": 135.5
+    },
+    {
+     "lat": 37.6,
+     "lon": 127.0
+    },
+    {
+     "lat": 1.35,
+     "lon": 103.8
+    },
+    {
+     "lat": -33.9,
+     "lon": 151.2
+    },
+    {
+     "lat": 25.0,
+     "lon": 121.6
+    },
+    {
+     "lat": 13.75,
+     "lon": 100.5
+    },
+    {
+     "lat": 35.7,
+     "lon": 139.7
+    },
+    {
+     "lat": 45.5,
+     "lon": -73.6
+    },
+    {
+     "lat": 51.0,
+     "lon": -114.1
+    },
+    {
+     "lat": 50.1,
+     "lon": 8.7
+    },
+    {
+     "lat": 53.3,
+     "lon": -6.3
+    },
+    {
+     "lat": 51.5,
+     "lon": -0.1
+    },
+    {
+     "lat": 45.5,
+     "lon": 9.2
+    },
+    {
+     "lat": 48.9,
+     "lon": 2.35
+    },
+    {
+     "lat": 41.6,
+     "lon": -0.9
+    },
+    {
+     "lat": 59.3,
+     "lon": 18.1
+    },
+    {
+     "lat": 47.4,
+     "lon": 8.5
+    },
+    {
+     "lat": 32.1,
+     "lon": 34.8
+    },
+    {
+     "lat": 20.6,
+     "lon": -100.4
+    },
+    {
+     "lat": 26.1,
+     "lon": 50.6
+    },
+    {
+     "lat": 24.5,
+     "lon": 54.4
+    },
+    {
+     "lat": -23.6,
+     "lon": -46.6
+    }
+   ],
+   "all_edges": [
+    {
+     "lat": 51.085,
+     "lon": -114.082
+    },
+    {
+     "lat": 45.502,
+     "lon": -73.585
+    },
+    {
+     "lat": 43.665,
+     "lon": -79.389
+    },
+    {
+     "lat": 49.275,
+     "lon": -123.124
+    },
+    {
+     "lat": 19.444,
+     "lon": -99.133
+    },
+    {
+     "lat": 33.739,
+     "lon": -84.368
+    },
+    {
+     "lat": 42.332,
+     "lon": -71.072
+    },
+    {
+     "lat": 41.848,
+     "lon": -87.635
+    },
+    {
+     "lat": 32.772,
+     "lon": -96.795
+    },
+    {
+     "lat": 39.741,
+     "lon": -104.986
+    },
+    {
+     "lat": 29.741,
+     "lon": -95.348
+    },
+    {
+     "lat": 39.109,
+     "lon": -94.606
+    },
+    {
+     "lat": 34.049,
+     "lon": -118.232
+    },
+    {
+     "lat": 25.79,
+     "lon": -80.226
+    },
+    {
+     "lat": 44.982,
+     "lon": -93.254
+    },
+    {
+     "lat": 36.172,
+     "lon": -86.782
+    },
+    {
+     "lat": 40.722,
+     "lon": -73.996
+    },
+    {
+     "lat": 39.946,
+     "lon": -75.18
+    },
+    {
+     "lat": 33.448,
+     "lon": -112.067
+    },
+    {
+     "lat": 40.432,
+     "lon": -80.002
+    },
+    {
+     "lat": 45.522,
+     "lon": -122.682
+    },
+    {
+     "lat": 40.777,
+     "lon": -111.932
+    },
+    {
+     "lat": 37.784,
+     "lon": -122.4
+    },
+    {
+     "lat": 47.6,
+     "lon": -122.315
+    },
+    {
+     "lat": 27.949,
+     "lon": -82.461
+    },
+    {
+     "lat": 38.901,
+     "lon": -77.011
+    },
+    {
+     "lat": -34.611,
+     "lon": -58.433
+    },
+    {
+     "lat": -3.748,
+     "lon": -38.582
+    },
+    {
+     "lat": -22.907,
+     "lon": -43.212
+    },
+    {
+     "lat": -23.557,
+     "lon": -46.627
+    },
+    {
+     "lat": -33.44,
+     "lon": -70.651
+    },
+    {
+     "lat": -12.046,
+     "lon": -77.052
+    },
+    {
+     "lat": 48.202,
+     "lon": 16.365
+    },
+    {
+     "lat": 50.835,
+     "lon": 4.331
+    },
+    {
+     "lat": 42.685,
+     "lon": 23.315
+    },
+    {
+     "lat": 45.8,
+     "lon": 16.0
+    },
+    {
+     "lat": 50.087,
+     "lon": 14.423
+    },
+    {
+     "lat": 55.681,
+     "lon": 12.562
+    },
+    {
+     "lat": 60.164,
+     "lon": 24.932
+    },
+    {
+     "lat": 43.292,
+     "lon": 5.373
+    },
+    {
+     "lat": 48.858,
+     "lon": 2.353
+    },
+    {
+     "lat": 52.524,
+     "lon": 13.4
+    },
+    {
+     "lat": 50.1,
+     "lon": 8.675
+    },
+    {
+     "lat": 53.552,
+     "lon": 9.998
+    },
+    {
+     "lat": 48.132,
+     "lon": 11.573
+    },
+    {
+     "lat": 37.985,
+     "lon": 23.731
+    },
+    {
+     "lat": 47.502,
+     "lon": 19.081
+    },
+    {
+     "lat": 53.347,
+     "lon": -6.257
+    },
+    {
+     "lat": 45.472,
+     "lon": 9.203
+    },
+    {
+     "lat": 41.898,
+     "lon": 12.481
+    },
+    {
+     "lat": 52.352,
+     "lon": 4.915
+    },
+    {
+     "lat": 59.919,
+     "lon": 10.748
+    },
+    {
+     "lat": 52.231,
+     "lon": 21.005
+    },
+    {
+     "lat": 38.725,
+     "lon": -9.147
+    },
+    {
+     "lat": 44.435,
+     "lon": 26.098
+    },
+    {
+     "lat": 41.385,
+     "lon": 2.181
+    },
+    {
+     "lat": 40.402,
+     "lon": -3.685
+    },
+    {
+     "lat": 59.324,
+     "lon": 18.066
+    },
+    {
+     "lat": 47.382,
+     "lon": 8.548
+    },
+    {
+     "lat": 51.502,
+     "lon": -0.119
+    },
+    {
+     "lat": 53.475,
+     "lon": -2.249
+    },
+    {
+     "lat": 26.236,
+     "lon": 50.583
+    },
+    {
+     "lat": 26.236,
+     "lon": 50.583
+    },
+    {
+     "lat": 32.082,
+     "lon": 34.768
+    },
+    {
+     "lat": 21.519,
+     "lon": 39.217
+    },
+    {
+     "lat": 24.634,
+     "lon": 46.72
+    },
+    {
+     "lat": 23.585,
+     "lon": 58.378
+    },
+    {
+     "lat": 25.287,
+     "lon": 51.533
+    },
+    {
+     "lat": 41.018,
+     "lon": 28.974
+    },
+    {
+     "lat": 25.215,
+     "lon": 55.287
+    },
+    {
+     "lat": 30.052,
+     "lon": 31.248
+    },
+    {
+     "lat": -1.281,
+     "lon": 36.815
+    },
+    {
+     "lat": 6.445,
+     "lon": 3.39
+    },
+    {
+     "lat": -33.918,
+     "lon": 18.433
+    },
+    {
+     "lat": -26.168,
+     "lon": 28.028
+    },
+    {
+     "lat": -27.453,
+     "lon": 153.033
+    },
+    {
+     "lat": -37.818,
+     "lon": 144.973
+    },
+    {
+     "lat": -31.953,
+     "lon": 115.838
+    },
+    {
+     "lat": -33.871,
+     "lon": 151.213
+    },
+    {
+     "lat": 22.307,
+     "lon": 114.183
+    },
+    {
+     "lat": 12.972,
+     "lon": 77.558
+    },
+    {
+     "lat": 13.092,
+     "lon": 80.278
+    },
+    {
+     "lat": 17.402,
+     "lon": 78.478
+    },
+    {
+     "lat": 22.57,
+     "lon": 88.369
+    },
+    {
+     "lat": 19.068,
+     "lon": 72.876
+    },
+    {
+     "lat": 28.6,
+     "lon": 77.2
+    },
+    {
+     "lat": 18.516,
+     "lon": 73.852
+    },
+    {
+     "lat": -6.172,
+     "lon": 106.827
+    },
+    {
+     "lat": 34.691,
+     "lon": 135.504
+    },
+    {
+     "lat": 35.687,
+     "lon": 139.749
+    },
+    {
+     "lat": 3.14,
+     "lon": 101.689
+    },
+    {
+     "lat": -36.848,
+     "lon": 174.763
+    },
+    {
+     "lat": 14.606,
+     "lon": 120.98
+    },
+    {
+     "lat": 1.295,
+     "lon": 103.854
+    },
+    {
+     "lat": 37.568,
+     "lon": 126.998
+    },
+    {
+     "lat": 25.036,
+     "lon": 121.568
+    },
+    {
+     "lat": 13.752,
+     "lon": 100.515
+    },
+    {
+     "lat": 21.035,
+     "lon": 105.848
+    },
+    {
+     "lat": 10.762,
+     "lon": 106.703
+    }
+   ],
+   "edges_from": 0.1,
+   "tags": [
+    {
+     "text": "Edge servers",
+     "at": {
+      "word": "edge"
+     }
+    },
+    {
+     "text": "CDN · content delivery network",
+     "at": {
+      "word": "CDN"
+     }
+    }
+   ],
+   "counter": {
+    "value": 750,
+    "suffix": "+",
+    "label": "CloudFront locations",
+    "source": "aws.amazon.com/cloudfront/features",
+    "at": {
+     "word": "750"
+    }
+   },
+   "fly": [
+    {
+     "lat": 30,
+     "lon": -20,
+     "zoom": 1.0
+    },
+    {
+     "lat": 30,
+     "lon": 20,
+     "zoom": 1.0,
+     "at": {
+      "word": "edge"
+     },
+     "fly": 2.0
+    },
+    {
+     "place": "London",
+     "zoom": 1.7,
+     "at": {
+      "word": "London"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Frankfurt",
+     "zoom": 1.7,
+     "at": {
+      "word": "Frankfurt"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Mumbai",
+     "zoom": 1.7,
+     "at": {
+      "word": "Mumbai"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Singapore",
+     "zoom": 1.7,
+     "at": {
+      "word": "Singapore"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Tokyo",
+     "zoom": 1.7,
+     "at": {
+      "word": "Tokyo"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Sydney",
+     "zoom": 1.7,
+     "at": {
+      "word": "Sydney"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "Sao Paulo",
+     "zoom": 1.7,
+     "at": {
+      "word": "Sao"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    },
+    {
+     "place": "New York",
+     "zoom": 1.7,
+     "at": {
+      "word": "York"
+     },
+     "fly": 0.6,
+     "lead": 0.4
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "kind": "focus",
+     "label": "London",
+     "at": {
+      "word": "London"
+     },
+     "side": "right",
+     "until": {
+      "word": "Frankfurt"
+     }
+    },
+    {
+     "place": "Frankfurt",
+     "kind": "focus",
+     "label": "Frankfurt",
+     "at": {
+      "word": "Frankfurt"
+     },
+     "side": "right",
+     "until": {
+      "word": "Mumbai"
+     }
+    },
+    {
+     "place": "Mumbai",
+     "kind": "focus",
+     "label": "Mumbai",
+     "at": {
+      "word": "Mumbai"
+     },
+     "side": "right",
+     "until": {
+      "word": "Singapore"
+     }
+    },
+    {
+     "place": "Singapore",
+     "kind": "focus",
+     "label": "Singapore",
+     "at": {
+      "word": "Singapore"
+     },
+     "side": "right",
+     "until": {
+      "word": "Tokyo"
+     }
+    },
+    {
+     "place": "Tokyo",
+     "kind": "focus",
+     "label": "Tokyo",
+     "at": {
+      "word": "Tokyo"
+     },
+     "side": "right",
+     "until": {
+      "word": "Sydney"
+     }
+    },
+    {
+     "place": "Sydney",
+     "kind": "focus",
+     "label": "Sydney",
+     "at": {
+      "word": "Sydney"
+     },
+     "side": "right",
+     "until": {
+      "word": "Sao"
+     }
+    },
+    {
+     "place": "Sao Paulo",
+     "kind": "focus",
+     "label": "São Paulo",
+     "at": {
+      "word": "Sao"
+     },
+     "side": "right",
+     "until": {
+      "word": "York"
+     }
+    },
+    {
+     "place": "New York",
+     "kind": "focus",
+     "label": "New York",
+     "at": {
+      "word": "York"
+     },
+     "side": "right"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "edge"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "CDN"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "750"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "London"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Mumbai"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Tokyo"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Sao"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "York"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Edge points light up worldwide; the camera visits each named city",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Every AWS Region (small ring) and CloudFront edge location (small point) from the official pages; each named city pulses and is labelled as it is spoken.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s6",
+   "title": "Open Connect",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "model": "datacenter",
+   "transition": "crossfade",
+   "headline": "Netflix Open Connect",
+   "label": "Your internet provider's data centre",
+   "start": 0.45,
+   "scale": 1.2,
+   "zoom_in": {
+    "from": 0.5,
+    "dur": 1.0
+   },
+   "then": {
+    "model": "server_rack",
+    "at": {
+     "word": "servers"
+    },
+    "headline": "Open Connect",
+    "label": "Open Connect Appliance",
+    "sub": "inside your internet provider",
+    "zoom_in": {
+     "from": 0.5,
+     "dur": 0.9
+    }
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "Netflix"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Connect"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "servers"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "preloaded"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "ISP building, then the Open Connect rack inside it",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "The camera goes into the building to the rack.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s7",
+   "title": "Hit or miss",
+   "treatment": "motion",
+   "effect": "cache_split",
+   "transition": "push",
+   "hit_at": {
+    "word": "hit"
+   },
+   "miss_at": {
+    "word": "miss"
+   },
+   "fetch_at": {
+    "word": "fetches"
+   },
+   "keep_at": {
+    "word": "keeps"
+   },
+   "proof_title": "real response · 2026-11-23 21:12 UTC · curl -I",
+   "proof": [
+    {
+     "text": "X-Cache: Miss from cloudfront",
+     "tone": "err",
+     "at": {
+      "word": "Missing"
+     }
+    },
+    {
+     "text": "X-Cache: Hit from cloudfront  Age: 6",
+     "tone": "ok",
+     "at": {
+      "word": "next"
+     }
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "checks"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "hit"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Missing"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "fetches"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "keeps"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Split screen: hit and miss, with real headers",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Both paths side by side; the real response proves it.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  },
+  {
+   "id": "s8",
+   "title": "Down the road",
+   "treatment": "motion",
+   "effect": "globe",
+   "transition": "crossfade",
+   "labels": "compact",
+   "drift": 0.0,
+   "headline": "The show was already down the road.",
+   "headline_at": {
+    "word": "show"
+   },
+   "fly": [
+    {
+     "lat": 45,
+     "lon": -20,
+     "zoom": 1.1
+    },
+    {
+     "place": "London",
+     "zoom": 2.0,
+     "at": 0.3,
+     "fly": 2.2
+    }
+   ],
+   "cities": [
+    {
+     "place": "London",
+     "kind": "focus",
+     "label": "London",
+     "at": 1.6,
+     "side": "right"
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "instantly"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "ocean"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "show"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Back to London at night; the payoff line",
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "Ends where it began, answering the hook.",
+   "pad_start": 0.25,
+   "pad_end": 0.15
+  }
+ ]
+}

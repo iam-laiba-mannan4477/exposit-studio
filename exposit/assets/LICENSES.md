@@ -29,6 +29,6 @@ does not mention video, so their use here is unclear); Tabler and Phosphor (not 
 
 ## Icon files
 
-lucide: activity arrow-down arrow-left arrow-right-left arrow-right arrow-up ban bell box braces building-2 check circle-check circle-x clock cloud-download cloud-upload cloud code container cpu database-zap database earth eye file-code file-text file filter fingerprint folder gauge git-branch git-merge globe hard-drive inbox info key laptop layers link list-ordered list lock mail map-pin memory-stick merge message-square monitor network package plug radio-tower refresh-cw repeat rocket rotate-ccw route router scale search send server-cog server settings shield-check shield smartphone split terminal timer triangle-alert user users waypoints wifi workflow x zap
+lucide: activity arrow-down arrow-left arrow-right arrow-right-left arrow-up ban bell box braces building-2 check circle-check circle-x clock cloud cloud-download cloud-upload code container cpu database database-zap earth eye factory file file-code file-text filter fingerprint folder gauge git-branch git-merge globe hard-drive house inbox info key laptop layers link list list-ordered lock mail map-pin memory-stick merge message-square milk monitor network package plug radio-tower refresh-cw repeat rocket rotate-ccw route router scale search send server server-cog settings shield shield-check smartphone split store terminal timer triangle-alert truck user users waypoints wifi workflow x zap
 
 k8s: cm control-plane deploy ds hpa ing job node ns pod pvc rs secret sts svc

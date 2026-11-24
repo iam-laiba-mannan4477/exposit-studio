@@ -1,0 +1,170 @@
+{
+ "audience_profile": "Senior engineers who use CDNs but may not have looked at CloudFront's scale, Netflix's in-ISP appliances, or a real X-Cache/Age response.",
+ "learning_objective": "Explain why a stream starts fast: copies near viewers (CloudFront POPs, Netflix Open Connect inside ISPs), what a miss and a hit do, and how to see it in real headers.",
+ "creative_concept": "Start on the real night Earth over London, show the cost of one distant origin, light up the edge network, step inside an ISP, then prove miss and hit with a real response.",
+ "treatments": [
+  {
+   "name": "A. The picture follows the words: clip, globe journey, analogy, world tour, ISP rack, hit/miss, London",
+   "shape": "footage, wide space, regional map, city close-up, building, rack, split screen, sequence, terminal, cards",
+   "engagement": "strong",
+   "teaching_fit": "strong",
+   "accuracy_risk": "low",
+   "feasibility": "yes",
+   "verdict": "Chosen: concrete geography, sourced scale, and a proof the viewer can reproduce."
+  },
+  {
+   "name": "B. Diagram-only walkthrough",
+   "shape": "iconflow and sequence for every step",
+   "engagement": "weak",
+   "teaching_fit": "medium",
+   "accuracy_risk": "low",
+   "feasibility": "yes",
+   "verdict": "Rejected: precise but static for 60 s on a phone."
+  },
+  {
+   "name": "C. Numbers-led explainer",
+   "shape": "charts of latency and hit ratio",
+   "engagement": "medium",
+   "teaching_fit": "medium",
+   "accuracy_risk": "high",
+   "feasibility": "yes",
+   "verdict": "Rejected: needs figures no official page gives."
+  }
+ ],
+ "chosen": "A. The picture follows the words: clip, globe journey, analogy, world tour, ISP rack, hit/miss, London",
+ "hook": "The channel owner's clip: a viewer presses play; the screen's last glowing point opens into the night Earth.",
+ "narrative_structure": "Question; one distant origin; the CDN idea with a sourced count; the edge network lights up; Netflix Open Connect; inside the ISP; miss versus hit; steps on a miss; real response; benefits and the answer.",
+ "visual_direction": "noir-network, real NASA night imagery for the globe scenes, glowing city points, arcs with light-trail packets, no decorative shapes.",
+ "narration_approach": "Short sentences, real names (CloudFront, Open Connect, X-Cache, Age), us-east-1 spoken as U S East 1.",
+ "scene_breakdown": [
+  {
+   "title": "Press play",
+   "treatment": "footage",
+   "seconds": 4.8,
+   "purpose": "Opening clip"
+  },
+  {
+   "title": "The origin",
+   "treatment": "motion",
+   "effect": "globe",
+   "seconds": 9,
+   "purpose": "Pull out; How?; fly to the origin in N. Virginia"
+  },
+  {
+   "title": "One distant place",
+   "treatment": "motion",
+   "effect": "globe",
+   "seconds": 8,
+   "purpose": "Arcs to London, Frankfurt, Seoul; heavy load"
+  },
+  {
+   "title": "Copies near viewers",
+   "treatment": "motion",
+   "effect": "split_compare",
+   "seconds": 6.5,
+   "purpose": "Factory far away vs shop down the road"
+  },
+  {
+   "title": "The world tour",
+   "treatment": "motion",
+   "effect": "globe",
+   "seconds": 17,
+   "purpose": "Edge locations worldwide; visit each named city"
+  },
+  {
+   "title": "Open Connect",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "seconds": 8.5,
+   "purpose": "ISP building, then the rack"
+  },
+  {
+   "title": "Hit or miss",
+   "treatment": "motion",
+   "effect": "cache_split",
+   "seconds": 11.5,
+   "purpose": "Hit and miss side by side, real headers"
+  },
+  {
+   "title": "Down the road",
+   "treatment": "motion",
+   "effect": "globe",
+   "seconds": 7,
+   "purpose": "Back to London; the payoff"
+  }
+ ],
+ "tools": [
+  "Exposit renderer",
+  "Kokoro voice",
+  "NASA Blue Marble / Black Marble",
+  "Natural Earth"
+ ],
+ "decisions": [
+  {
+   "key": "hook",
+   "choice": "Fly into London on the real night Earth with the question",
+   "reason": "A real, recognisable place in the first second on a phone.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "template",
+   "choice": "noir-network",
+   "reason": "User's explicit choice (override of the variety rule): matches the dark reference images.",
+   "tier": "preference"
+  },
+  {
+   "key": "numbers",
+   "choice": "Only 750+ POPs, 100+ cities, 50+ countries from the CloudFront features page",
+   "reason": "No invented numbers.",
+   "tier": "preference"
+  },
+  {
+   "key": "proof",
+   "choice": "A real curl -I response captured 2026-11-23, labelled real response with the date",
+   "reason": "Never show invented lines; senior engineers can reproduce it.",
+   "tier": "preference"
+  },
+  {
+   "key": "format",
+   "choice": "9:16, captions off, one idea per scene, short end holds",
+   "reason": "Vertical Reel; keeps the content inside 60 +- 5 s.",
+   "tier": "preference"
+  },
+  {
+   "key": "techniques",
+   "choice": "Camera fly-to, light-trail packets, counter with source, split-screen, staggered build",
+   "reason": "Adopted from the Scout's reading of cinelume, remocn and clapcode.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "journey",
+   "choice": "One continuous camera: space, Europe, Asia, building, rack; a different shot type in every scene",
+   "reason": "A journey holds attention and shows real AWS geography (Regions and edge locations from official pages).",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "length",
+   "choice": "About 73 s of content for this video",
+   "reason": "The user's exact script at voice speed 1.1; approved by the user.",
+   "tier": "preference"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "s6 Inside your ISP",
+   "why": "Abstract network terms",
+   "countermeasure": "Focus frame walks one hop per spoken word"
+  }
+ ],
+ "experiment": "Does the real-response terminal scene hold retention better than a recap?",
+ "recipes_used": [],
+ "template": "noir-network",
+ "template_reason": "User override of the variety rule: the user explicitly chose noir-network to match the dark reference images.",
+ "effects": [
+  "globe",
+  "split_compare",
+  "model_3d",
+  "cache_split"
+ ],
+ "effects_reason": "globe for the real Earth and the world tour; split_compare for the shop/factory analogy; model_3d for the ISP building and Open Connect rack; cache_split for hit vs miss with the real response."
+}

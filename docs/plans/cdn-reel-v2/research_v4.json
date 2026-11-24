@@ -1,0 +1,283 @@
+{
+ "arrangement": "A Netflix-style video with its origin in AWS us-east-1 (N. Virginia), viewers in London and worldwide; CloudFront edge locations and Netflix Open Connect appliances inside ISP networks serve nearby copies.",
+ "claims": [
+  {
+   "id": "c1",
+   "text": "AWS Region us-east-1 is US East (N. Virginia).",
+   "sources": [
+    {
+     "title": "AWS Regions",
+     "url": "https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c2",
+   "text": "DNS routes a CloudFront request to the POP (edge location) that can best serve it, typically the nearest one in terms of latency.",
+   "sources": [
+    {
+     "title": "How CloudFront delivers content",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c3",
+   "text": "If the object is in the cache, CloudFront returns it to the user.",
+   "sources": [
+    {
+     "title": "How CloudFront delivers content",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c4",
+   "text": "If the object is not in the cache, CloudFront forwards the request to the origin; the object is then cached at the edge for later requests.",
+   "sources": [
+    {
+     "title": "How CloudFront delivers content",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html",
+     "kind": "primary"
+    },
+    {
+     "title": "Standard log file fields (Hit, Miss)",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/standard-logs-reference.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c5",
+   "text": "CloudFront has 750+ POPs in 100+ cities across 50+ countries.",
+   "sources": [
+    {
+     "title": "Amazon CloudFront features",
+     "url": "https://aws.amazon.com/cloudfront/features/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c6",
+   "text": "Netflix delivers its streaming content with its own Open Connect Appliances, which can be embedded in ISP networks.",
+   "sources": [
+    {
+     "title": "Netflix Open Connect",
+     "url": "https://openconnect.netflix.com/en/",
+     "kind": "primary"
+    },
+    {
+     "title": "Open Connect Appliances",
+     "url": "https://openconnect.netflix.com/en/appliances/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c7",
+   "text": "Netflix also interconnects at global data center facilities and public Internet Exchange fabrics, with storage appliances holding the catalog in many IX locations.",
+   "sources": [
+    {
+     "title": "Netflix Open Connect",
+     "url": "https://openconnect.netflix.com/en/",
+     "kind": "primary"
+    },
+    {
+     "title": "Open Connect Appliances",
+     "url": "https://openconnect.netflix.com/en/appliances/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c9",
+   "text": "The X-Cache response header reads 'Miss from cloudfront' when the origin answered and 'Hit from cloudfront' when the edge cache answered.",
+   "sources": [
+    {
+     "title": "AWS re:Post Knowledge Center: CloudFront custom object caching",
+     "url": "https://repost.aws/knowledge-center/cloudfront-custom-object-caching",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c10",
+   "text": "The Age header is the time in seconds an object has been in a proxy cache.",
+   "sources": [
+    {
+     "title": "MDN: Age",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Age",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c11",
+   "text": "Observed on 2026-11-23 21:12 UTC: two curl -I requests to a d1.awsstatic.com image returned X-Cache: Miss from cloudfront, then five seconds later X-Cache: Hit from cloudfront with Age: 6.",
+   "sources": [
+    {
+     "title": "Observed response from a CloudFront-served AWS asset (d1.awsstatic.com), curl -I, 2026-11-23 21:12 UTC",
+     "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/aws/en_US/product-categories/networking/approved/images/cc62b0dc-6a26-4c24-9e5d-3db36e68dd2c.7e4b1ae505d0f0a014c70f8ae340289e7674ac59.png",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c12",
+   "text": "AWS Region codes: us-east-1 is US East (N. Virginia), eu-west-2 Europe (London), eu-central-1 Europe (Frankfurt), ap-northeast-2 Asia Pacific (Seoul), ap-northeast-1 Asia Pacific (Tokyo).",
+   "sources": [
+    {
+     "title": "AWS Regions (read 2026-11-24)",
+     "url": "https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c8",
+   "text": "Netflix pre-fills embedded Open Connect Appliances with the appropriate content for their geographical location, with nightly content fills and updates.",
+   "sources": [
+    {
+     "title": "Netflix Open Connect (read 2026-11-24)",
+     "url": "https://openconnect.netflix.com/en/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c13",
+   "text": "CloudFront lists Points of Presence in London, Frankfurt, Mumbai, Singapore, Tokyo, Sydney, São Paulo and New York (among 100+ cities).",
+   "sources": [
+    {
+     "title": "Amazon CloudFront features (read 2026-11-24)",
+     "url": "https://aws.amazon.com/cloudfront/features/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c14",
+   "text": "An origin server stores the original, definitive version of your objects.",
+   "sources": [
+    {
+     "title": "What is Amazon CloudFront? (read 2026-11-24)",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c15",
+   "text": "With CloudFront you get a reduced load on your origin because requests that CloudFront can serve from the cache don't go to your origin.",
+   "sources": [
+    {
+     "title": "Using Amazon CloudFront Origin Shield (read 2026-11-24)",
+     "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  }
+ ],
+ "model": {
+  "components": [
+   {
+    "id": "viewer",
+    "kind": "browser",
+    "label": "Viewer"
+   },
+   {
+    "id": "edge",
+    "kind": "node",
+    "label": "Edge (POP)"
+   },
+   {
+    "id": "origin",
+    "kind": "service",
+    "label": "Origin (us-east-1)"
+   },
+   {
+    "id": "isp",
+    "kind": "zone",
+    "label": "ISP network"
+   },
+   {
+    "id": "oca",
+    "kind": "node",
+    "label": "Open Connect Appliance"
+   }
+  ],
+  "links": [
+   [
+    "viewer",
+    "edge"
+   ],
+   [
+    "edge",
+    "origin"
+   ],
+   [
+    "viewer",
+    "isp"
+   ],
+   [
+    "isp",
+    "oca"
+   ]
+  ],
+  "steps": [
+   {
+    "n": 1,
+    "text": "DNS sends the viewer to the nearest POP.",
+    "components": [
+     "viewer",
+     "edge"
+    ]
+   },
+   {
+    "n": 2,
+    "text": "Miss: the edge fetches the object from the origin and keeps a copy.",
+    "components": [
+     "edge",
+     "origin"
+    ]
+   },
+   {
+    "n": 3,
+    "text": "Hit: the next viewer is served from the edge.",
+    "components": [
+     "edge",
+     "viewer"
+    ]
+   },
+   {
+    "n": 4,
+    "text": "Netflix: the Open Connect Appliance inside the ISP network serves the viewer.",
+    "components": [
+     "viewer",
+     "isp",
+     "oca"
+    ]
+   }
+  ]
+ },
+ "open_questions": []
+}

@@ -59,6 +59,14 @@ EFFECTS = {
     "flat_map": {"narration": N, "spec": {"treatment": "motion", "effect": "flat_map", "heading": "Europe",
                  "region": [-12, 30, 36, 62], "cities": [{"place": "London", "at": 0.3}, {"place": "Frankfurt", "at": 0.6}],
                  "arcs": [{"from": "London", "to": "Frankfurt", "at": 0.8}]}},
+    "split_compare": {"narration": N, "spec": {"treatment": "motion", "effect": "split_compare", "rows": [
+        {"title": "From the factory", "note": "far away", "far": True, "tone": "fail", "from": {"icon": "factory", "label": "Factory"},
+         "to": {"icon": "house", "label": "You"}, "at": 0.3},
+        {"title": "From the shop", "note": "down the road", "tone": "success", "via": "milk", "from": {"icon": "store", "label": "Shop"},
+         "to": {"icon": "house", "label": "You"}, "at": 0.6}]}},
+    "cache_split": {"narration": N, "spec": {"treatment": "motion", "effect": "cache_split", "hit_at": 0.3, "miss_at": 0.8,
+                    "fetch_at": 1.2, "keep_at": 1.8, "proof": [{"text": "X-Cache: Miss from cloudfront", "tone": "err", "at": 1.0},
+                                                               {"text": "X-Cache: Hit from cloudfront", "tone": "ok", "at": 2.0}]}},
 }
 # extra 3D models on the still sheet
 MODELS = ["server_rack", "cube", "globe", "database"]

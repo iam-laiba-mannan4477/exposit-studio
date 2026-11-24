@@ -51,7 +51,7 @@ arrow-right-left, arrow-up, ban, bell, box, braces, building-2, check, circle-ch
 cloud-download, cloud-upload, code, container, cpu, database, database-zap, earth, eye, file, file-code, file-text,
 filter, fingerprint, folder, gauge, git-branch, git-merge, globe, hard-drive, inbox, info, key, laptop, layers, link,
 list, list-ordered, lock, mail, map-pin, memory-stick, merge, message-square, monitor, network, package, plug,
-radio-tower, refresh-cw, repeat, rocket, rotate-ccw, route, router, scale, search, send, server, server-cog, settings,
+radio-tower, refresh-cw, repeat, factory, store, truck, house, milk, rocket, rotate-ccw, route, router, scale, search, send, server, server-cog, settings,
 shield, shield-check, smartphone, split, terminal, timer, triangle-alert, user, users, waypoints, wifi, workflow, x, zap.
 Kubernetes: k8s:cm, k8s:control-plane, k8s:deploy, k8s:ds, k8s:hpa, k8s:ing, k8s:job, k8s:node, k8s:ns, k8s:pod,
 k8s:pvc, k8s:rs, k8s:secret, k8s:sts, k8s:svc.
@@ -176,6 +176,16 @@ Content effects, with "treatment": "motion":
 12. flat_map: a regional map from the same imagery with Natural Earth borders and coastlines: "region": [lon0, lon1,
    lat0, lat1], "texture": "night" or "day", "cities" and "arcs" as for the globe.
    {"effect": "flat_map", "region": [-12, 30, 36, 62], "cities": [{"place": "Frankfurt"}]}
+
+13. split_compare: two cards, each a source, a destination and a travel arrow whose length shows the distance
+   (dashed and long when "far"); a vehicle icon travels it. {"effect": "split_compare", "rows": [{"title": "From the factory",
+   "note": "far away", "far": true, "tone": "fail", "from": {"icon": "factory", "label": "Factory"}, "to": {"icon": "house",
+   "label": "You"}, "via": "truck", "at": {"word": "factory"}}, {...}]}
+14. cache_split: top "Cache hit" (edge -> viewer, green), bottom "Cache miss" (edge -> origin -> edge -> viewer, then
+   "Copy kept"), cues "hit_at", "miss_at", "fetch_at", "keep_at"; optional "proof" lines of a real response with "proof_title".
+Globe options for journeys: "labels": "compact" (32 px names and 30 px codes on small pills that never overlap each other
+or arcs), city "kind": "focus" (bright pulse), "region", "alert" (red pulse, heavy load), "until" (cue when it fades);
+"all_regions" / "all_edges" background layers; "tags" (word pills); "counter"; fly keyframes may "lead" their word.
 
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.
 

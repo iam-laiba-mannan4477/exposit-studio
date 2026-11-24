@@ -1,0 +1,184 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Press play",
+   "sentences": [
+    {
+     "text": "You press play on Netflix in London,",
+     "claims": [
+      "c6"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "The origin",
+   "sentences": [
+    {
+     "text": "and the show starts instantly. How?",
+     "claims": [
+      "c6"
+     ]
+    },
+    {
+     "text": "Every video has a main copy, on an origin server.",
+     "claims": [
+      "c14"
+     ]
+    },
+    {
+     "text": "Say it sits in a data centre in Virginia.",
+     "claims": [
+      "c1"
+     ]
+    }
+   ],
+   "terms": [
+    "origin server"
+   ]
+  },
+  {
+   "id": "s3",
+   "title": "One distant place",
+   "sentences": [
+    {
+     "text": "Every viewer's request would cross the Atlantic.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "That distance adds delay, and millions of requests to one place put a heavy load on it.",
+     "claims": [
+      "c2",
+      "c15"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s4",
+   "title": "Copies near viewers",
+   "sentences": [
+    {
+     "text": "So copies are kept near viewers.",
+     "claims": [
+      "c3"
+     ]
+    },
+    {
+     "text": "Like milk: you buy it at the shop down the road, not from the factory.",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s5",
+   "title": "The world tour",
+   "sentences": [
+    {
+     "text": "Those nearby shops are edge servers.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "Together they form a CDN, a content delivery network.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "Amazon CloudFront alone has over 750 locations: London, Frankfurt, Mumbai, Singapore, Tokyo, Sydney, Sao Paulo and New York.",
+     "claims": [
+      "c5",
+      "c13"
+     ]
+    }
+   ],
+   "terms": [
+    "CDN"
+   ]
+  },
+  {
+   "id": "s6",
+   "title": "Open Connect",
+   "sentences": [
+    {
+     "text": "Netflix built its own, Open Connect, with servers inside your internet provider's network, preloaded with shows for your region.",
+     "claims": [
+      "c6",
+      "c8"
+     ]
+    }
+   ],
+   "terms": [
+    "Open Connect"
+   ]
+  },
+  {
+   "id": "s7",
+   "title": "Hit or miss",
+   "sentences": [
+    {
+     "text": "When you press play, the nearby edge checks for a copy.",
+     "claims": [
+      "c2",
+      "c3"
+     ]
+    },
+    {
+     "text": "Got it? That's a cache hit, sent straight to you.",
+     "claims": [
+      "c3",
+      "c9"
+     ]
+    },
+    {
+     "text": "Missing? A cache miss: it fetches it from the origin once, and keeps it for the next viewer.",
+     "claims": [
+      "c4",
+      "c9",
+      "c11"
+     ]
+    }
+   ],
+   "terms": [
+    "cache hit"
+   ]
+  },
+  {
+   "id": "s8",
+   "title": "Down the road",
+   "sentences": [
+    {
+     "text": "That's why it started instantly.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "When you pressed play, nothing crossed an ocean.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "The show was already down the road.",
+     "claims": [
+      "c3",
+      "c8"
+     ]
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

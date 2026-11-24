@@ -97,6 +97,8 @@ Motion effects (`effects_available`), best for:
 - focus_frame: walking a path one hop at a time
 - scroll_demo: real commands and their output (KodeKloud-style hands-on)
 - globe: the real Earth at night or day, camera fly-to between cities, arcs with light-trail packets
+- split_compare: an analogy or contrast in two rows (far source vs near source), a travel arrow per row
+- cache_split: cache hit vs cache miss side by side, with a small real-response panel
 - flat_map: a regional view (Europe, Asia) of the same imagery with country borders and city labels
 
 Rules: playful styles are allowed only when they help the explanation; labels stay precise either way (real protocol

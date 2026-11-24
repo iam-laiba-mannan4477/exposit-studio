@@ -20,7 +20,7 @@ from .pro import ProTreatment
 
 WRAPPERS = ("parallax", "pinned_heading", "focus_frame")
 CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo",
-           "globe", "flat_map")
+           "globe", "flat_map", "split_compare", "cache_split")
 EFFECTS = WRAPPERS + CONTENT
 MODELS = ("server_rack", "cube", "globe", "database", "datacenter")
 
@@ -178,14 +178,22 @@ def mesh(name: str) -> tuple:
         for i in range(RACK_UNITS):                            # rack units standing out of the front
             y0 = -1.32 + i * 0.44
             tris += _box(-0.64, y0, -0.70, 0.64, y0 + 0.34, -0.6, tag=2)
-    elif name == "datacenter":                                # a long, low building: window bands, rooftop units
-        tris = _box(-1.7, -0.55, -0.85, 1.7, 0.75, 0.85)
-        for r in range(3):                                     # glowing window bands on the front face
-            y0 = -0.38 + r * 0.36
-            tris += _box(-1.52, y0, -0.9, 1.52, y0 + 0.13, -0.85, tag=1)
-        for x in (-1.2, -0.4, 0.5, 1.2):                       # rooftop cooling units
-            tris += _box(x - 0.22, -0.85, -0.35, x + 0.22, -0.55, 0.15, tag=2)
-        tris += _box(-0.25, 0.25, -0.95, 0.25, 0.75, -0.85, tag=2)   # door
+    elif name == "datacenter":                                # main hall, loading bay annex, rooftop plant, lit windows
+        tris = _box(-1.7, -0.6, -0.85, 0.9, 0.75, 0.85)           # main hall
+        tris += _box(0.9, -0.05, -0.85, 1.75, 0.75, 0.6)           # loading bay annex (lower)
+        for j in range(3):                                         # roll-up doors on the bay
+            x0 = 1.0 + j * 0.25
+            tris += _box(x0, 0.2, -0.9, x0 + 0.19, 0.75, -0.85, tag=2)
+        tris += _box(0.95, -0.1, -1.05, 1.7, -0.05, -0.85, tag=2)  # canopy over the bay
+        for r in range(3):                                         # rows of lit windows
+            for q in range(7):
+                x0 = -1.55 + q * 0.33
+                y0 = -0.42 + r * 0.33
+                tris += _box(x0, y0, -0.9, x0 + 0.2, y0 + 0.15, -0.85, tag=1)
+        for x in (-1.35, -0.75, -0.15, 0.45):                      # rooftop cooling units
+            tris += _box(x - 0.2, -0.92, -0.45, x + 0.2, -0.6, 0.05, tag=2)
+        tris += _box(-1.6, -1.25, 0.35, -1.52, -0.6, 0.43, tag=2)  # mast
+        tris += _box(-0.35, 0.3, -0.95, -0.05, 0.75, -0.85, tag=2) # entrance
     elif name == "database":
         seg = 24
         for k in range(3):                                     # three stacked discs
@@ -600,6 +608,17 @@ class MotionScene(ProTreatment):
         ({"at_end": 0.8, "to": 2.6}: the camera pushes into the model at the end, fading, into the next shot); for the
         globe "points" and "globe_arcs"; "start" sets the starting turn (radians)."""
         sp, tpl = self.sc.spec, self.tpl
+        nxt = sp.get("then")
+        if nxt:                                               # one scene, two shots: push into the first, open the second
+            tc = self.cue_t(nxt.get("at"), self.sc.dur / 2)
+            if t >= tc:
+                saved = self.sc.spec
+                self.sc.spec = dict({k: v for k, v in saved.items() if k not in ("then", "push_out", "zoom_in", "headline", "label", "sub", "model", "start", "scale")}, **nxt)
+                try:
+                    return self._model_3d(c, t - tc)
+                finally:
+                    self.sc.spec = saved
+            sp = dict(sp, push_out={"at_end": 0.8, "to": 2.8, "_end": tc})
         name = sp.get("model", "server_rack")
         k = ease_out(t / 0.8)
         top = self.top
@@ -613,8 +632,9 @@ class MotionScene(ProTreatment):
             mult *= lerp(float(zi.get("from", 0.55)), 1.0, ease_out(t / float(zi.get("dur", 1.0))))
         po = sp.get("push_out")
         if po:
-            t0 = self.sc.dur - float(po.get("at_end", 0.8))
-            f = ease_in_out(clamp((t - t0) / max(0.1, self.sc.dur - t0)))
+            end = float(po.get("_end", self.sc.dur))
+            t0 = end - float(po.get("at_end", 0.8))
+            f = ease_in_out(clamp((t - t0) / max(0.1, end - t0)))
             mult *= lerp(1.0, float(po.get("to", 2.6)), f)
             fade = 1.0 - 0.85 * f
         size = (300.0 if self.portrait else 250.0) * (0.85 + 0.15 * k) * float(sp.get("scale", 1.0)) * mult
@@ -662,7 +682,7 @@ class MotionScene(ProTreatment):
             return self.sc.dur - float(k["at_end"])
         if i == 0:
             return 0.0
-        return self.cue_t(k.get("at"), prev + 1.5)
+        return max(prev, self.cue_t(k.get("at"), prev + 1.5) - float(k.get("lead", 0.0)))   # "lead": arrive as the word is spoken
 
     def _cam(self, t, flat=False):
         """Camera (lat, lon, zoom) at time t from "fly" keyframes [{place | lat/lon, zoom | span, at | at_end, fly}].
@@ -739,6 +759,15 @@ class MotionScene(ProTreatment):
                 seen = [pt for pt, v in zip(pts, vis) if v]
                 if len(seen) > 2:
                     earth.light_trail(c, seen, q, colr if not a.get("packet_color") else a["packet_color"])
+        compact = sp.get("labels") == "compact"
+        L = earth.Labels(self.W, self.H, (self.top, self.bottom)) if compact else None
+        if compact:
+            for a in sp.get("arcs", []):                       # labels keep clear of the arcs
+                if t >= self._at(a, 0, 0.6):
+                    p0 = earth.resolve(a["from"] if isinstance(a["from"], dict) else {"place": a["from"]})
+                    p1 = earth.resolve(a["to"] if isinstance(a["to"], dict) else {"place": a["to"]})
+                    pts = [proj(la, lo, 0.0) for la, lo, f in earth.great_circle(p0, p1, 24)]
+                    L.avoid_points([(x, y) for x, y, v in pts if v])
         for i, ct in enumerate(sp.get("cities", [])):
             at = self._at(ct, i, 0.3 + 0.12 * i)
             k = ease_out((t - at) / 0.4)
@@ -750,6 +779,24 @@ class MotionScene(ProTreatment):
                 continue
             colr = D.role_color(tpl, ct["tone"]) if ct.get("tone") else None
             kind = ct.get("kind", "city")
+            if compact:
+                until = self._at({"at": ct["until"]}, i, 1e9) if ct.get("until") is not None else 1e9
+                if t > until + 0.4:
+                    continue
+                kk = k * (1.0 - clamp((t - until) / 0.4))
+                if kind == "alert":
+                    earth.alert_pulse(c, x, y, kk, t)
+                elif kind == "focus":
+                    earth.focus_pulse(c, x, y, kk, t + i * 0.3)
+                elif kind == "region":
+                    earth.small_ring(c, x, y, kk, "#FFB84D")
+                    c.drawCircle(x, y, 5, D.paint(col("#FFB84D", kk)))
+                else:
+                    earth.small_point(c, x, y, kk, colr or tpl.conn["active"])
+                if ct.get("label") or kind in ("focus", "region") and ct.get("place"):
+                    L.add(c, x, y, ct.get("label", ct.get("place")), ct.get("code", ""), kk,
+                          "#FF8A8A" if kind == "alert" else "#F2F6FC", pref=ct.get("side", "right"))
+                continue
             if kind == "region":
                 earth.region_marker(c, tpl, x, y, ct.get("label", ct.get("place")), ct.get("code", ""), k, t + i * 0.37,
                                     colr, ct.get("side", "right"), self.W)
@@ -776,7 +823,11 @@ class MotionScene(ProTreatment):
         fp = sp.get("from_point")
         g.render(c, (float(sun["lat"]), float(sun["lon"])) if sun else None, float(sp.get("night_gain", 1.7)),
                  1.0 if fp else ease_out((t + 0.3) / 0.5))
+        self._globe_layers(c, t, g)
         self._earth_overlays(c, t, g.project)
+        self._tags(c, t)
+        if sp.get("counter"):
+            self._map_counter(c, t, sp["counter"], (40.0, self.top, self.W - 80, self.bottom - self.top))
         if fp:
             k = clamp(t / float(fp.get("fade", 0.6)))
             if k < 1:
@@ -795,6 +846,43 @@ class MotionScene(ProTreatment):
                     c.restore()
             else:
                 self._headline(c, sp["headline"], t, backdrop=True)
+
+    def _globe_layers(self, c, t, g):
+        """Background layers: every AWS Region as a small ring ("all_regions") and every CloudFront edge location as a
+        small point ("all_edges"); edges light up in a quick wave from "edges_from" (seconds or a cue)."""
+        from . import earth
+        sp = self.sc.spec
+        a0 = self.cue_t(sp.get("layers_from"), 0.0) if sp.get("layers_from") is not None else 0.0
+        if t < a0:
+            return
+        e0 = self.cue_t(sp.get("edges_from"), a0) if sp.get("edges_from") is not None else a0
+        for i, p in enumerate(sp.get("all_edges", [])):
+            k = ease_out((t - e0 - 0.9 * ((i * 0.618) % 1.0)) / 0.35)
+            if k > 0:
+                x, y, v = g.project(float(p["lat"]), float(p["lon"]))
+                if v:
+                    earth.small_point(c, x, y, k)
+        ka = ease_out((t - a0) / 0.5)
+        for p in sp.get("all_regions", []):
+            x, y, v = g.project(float(p["lat"]), float(p["lon"]))
+            if v:
+                earth.small_ring(c, x, y, ka)
+
+    def _tags(self, c, t):
+        """Word tags: small pills at the top of the band that appear on their spoken word ("tags": [{"text", "at"}])."""
+        y = self.top + 10
+        for tg in self.sc.spec.get("tags", []):
+            at = self.cue_t(tg.get("at"), 0.5)
+            k = ease_out((t - at) / 0.35)
+            if k <= 0:
+                continue
+            size = 40.0
+            w = D.text_width(tg["text"], size, "SemiBold") + 48
+            x = self.CX - w / 2 + (1 - k) * 30
+            c.drawRoundRect(skia.Rect.MakeXYWH(x, y, w, size * 1.6), size * 0.8, size * 0.8, D.paint(col("#050B16", 0.85 * k)))
+            c.drawRoundRect(skia.Rect.MakeXYWH(x, y, w, size * 1.6), size * 0.8, size * 0.8, D.paint(col(self.tpl.conn["active"], 0.8 * k), 2.5))
+            D.draw_text(c, tg["text"], x + 24, y + size * 1.12, size, col("#F2F6FC", k), "SemiBold")
+            y += size * 1.6 + 14
 
     def _flat_map(self, c, t):
         """A regional map of the same NASA imagery with Natural Earth borders and coastlines, under a camera:
@@ -853,6 +941,119 @@ class MotionScene(ProTreatment):
             D.draw_text(c, r, x + lw, y + 92 + j * ls * 1.15, ls, col(T["text"]), "SemiBold")
         if ctr.get("source"):
             D.draw_text(c, D.ellipsize("Source: " + ctr["source"], w - 80, 30), x + 40, y + h - 28, 30, col(T["text2"]))
+
+    # ---- 13 split card: the same need, a far source and a near one ("top" and "bottom" rows)
+    def _split_compare(self, c, t):
+        """{"rows": [{"title", "from": {"icon", "label"}, "to": {"icon", "label"}, "via": "truck", "far": true,
+        "note", "tone", "at"}]}: each row a card with a source, a destination and a travel arrow whose length shows
+        the distance; a vehicle travels it (slowly when far). Rows are on screen at once; the trip starts on its word."""
+        sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
+        rows = sp.get("rows", [])[:2]
+        band = self.bottom - self.top
+        h = (band - 40) / max(1, len(rows)) - 30
+        for i, r in enumerate(rows):
+            y = self.top + 20 + i * (h + 30)
+            x, w = 50.0, self.W - 100
+            k = ease_out((t - 0.05 - 0.15 * i) / 0.4)
+            D.card(c, tpl, x, y + (1 - k) * 30, w, h, k)
+            colr = D.role_color(tpl, r.get("tone", "info"))
+            D.draw_text(c, r.get("title", ""), x + 40, y + 70, 52, col(colr if tpl.dark else T["text"], k), "Bold")
+            if r.get("note"):
+                D.draw_text(c, r["note"], x + w - 40, y + 70, 36, col(T["text2"], k), "Regular", "right")
+            cy = y + h * 0.58
+            far = bool(r.get("far"))
+            x0 = x + 120
+            x1 = x + w - 120 if far else x0 + 330
+            R = 70.0
+            D.badge(c, tpl, assets.resolve(r["from"]["icon"]) or "box", x0, cy, R, k, tone=r.get("tone"))
+            D.badge(c, tpl, assets.resolve(r["to"]["icon"]) or "user", x1, cy, R, k)
+            D.label_under(c, tpl, r["from"].get("label", ""), x0, cy + R + 16, 300, 38, k)
+            D.label_under(c, tpl, r["to"].get("label", ""), x1, cy + R + 16, 300, 38, k)
+            path = skia.Path()
+            path.moveTo(x0 + R + 20, cy)
+            path.lineTo(x1 - R - 20, cy)
+            at = self.cue_t(r.get("at"), 0.6 + i)
+            dk = ease_out((t - at) / 0.6)
+            D.stroke(c, tpl, path, 0.95, max(0.25, dk) * k, dashed=far, color=colr, width=7.0, arrow=True, seed=i)
+            per = 3.0 if far else 1.0
+            q = ((t - at) / per) % 1.0 if t >= at else 0.0
+            vx = lerp(x0 + R + 40, x1 - R - 40, ease_in_out(q))
+            if t >= at:
+                assets.draw_icon(c, r.get("via", "truck"), vx, cy - 52, 64, colr)
+
+    # ---- 14 cache hit / miss split screen with a real-response panel
+    def _cache_split(self, c, t):
+        """Top: "Cache hit" (edge -> viewer, short, green). Bottom: "Cache miss" (edge -> origin -> edge -> viewer,
+        then "copy kept"). A small panel shows real response headers ("proof": [{"text", "tone", "at"}],
+        "proof_title"). Cues: "hit_at", "miss_at", "fetch_at", "keep_at"."""
+        sp, tpl, T = self.sc.spec, self.tpl, self.tpl.T
+        ok, bad, info = D.role_color(tpl, "success"), D.role_color(tpl, "fail"), D.role_color(tpl, "info")
+        band = self.bottom - self.top
+        proof_h = 230.0 if sp.get("proof") else 0.0
+        h = (band - proof_h - 60) / 2 - 15
+        R = 62.0
+
+        def node(icon, label, x, y, k, tone=None):
+            D.badge(c, tpl, assets.resolve(icon) or "box", x, y, R, k, tone=tone)
+            D.label_under(c, tpl, label, x, y + R + 14, 260, 36, k)
+
+        def leg(x0, y0, x1, y1, k, colr, dashed=False, seed=0):
+            p = skia.Path(); p.moveTo(x0, y0); p.lineTo(x1, y1)
+            D.stroke(c, tpl, p, 0.95, k, dashed=dashed, color=colr, width=7.0, arrow=True, seed=seed)
+            return p
+
+        # hit
+        y = self.top + 10
+        x, w = 50.0, self.W - 100
+        c0 = ease_out((t - 0.05) / 0.4)
+        D.card(c, tpl, x, y, w, h, c0)
+        D.draw_text(c, "Cache hit", x + 40, y + 66, 50, col(ok, c0), "Bold")
+        cy = y + h * 0.58
+        ex, vx = x + 200, x + w - 200
+        node("server", "Edge", ex, cy, c0, "success")
+        node("user", "Viewer", vx, cy, c0)
+        ha = self.cue_t(sp.get("hit_at"), 0.5)
+        hk = ease_out((t - ha) / 0.5)
+        p = leg(ex + R + 16, cy, vx - R - 16, cy, max(0.2, hk) * c0, ok, seed=1)
+        if t > ha + 0.5:
+            D.packet(c, tpl, p, ((t - ha - 0.5) / 1.0) % 1.0, 1.0, ok)
+        # miss
+        y2 = y + h + 30
+        D.card(c, tpl, x, y2, w, h, c0)
+        D.draw_text(c, "Cache miss", x + 40, y2 + 66, 50, col(bad, c0), "Bold")
+        cy2 = y2 + h * 0.62
+        ex2, vx2, ox, oy = x + 200, x + w - 200, x + w / 2, y2 + 150
+        node("server", "Edge", ex2, cy2, c0, "fail")
+        node("user", "Viewer", vx2, cy2, c0)
+        ma = self.cue_t(sp.get("miss_at"), 1.5)
+        fa = self.cue_t(sp.get("fetch_at"), ma + 0.8)
+        ka = self.cue_t(sp.get("keep_at"), fa + 1.0)
+        node("server-cog", "Origin", ox, oy, ease_out((t - ma) / 0.4) * c0)
+        k1 = ease_out((t - ma) / 0.5)
+        k2 = ease_out((t - fa) / 0.5)
+        k3 = ease_out((t - fa - 0.6) / 0.5)
+        if k1 > 0:
+            leg(ex2 + R, cy2 - R * 0.6, ox - R - 10, oy + 10, k1, bad, True, 2)
+        if k2 > 0:
+            leg(ox - R - 10, oy + 40, ex2 + R + 10, cy2 - R * 0.2, k2, info, False, 3)
+        if k3 > 0:
+            p3 = leg(ex2 + R + 16, cy2 + 10, vx2 - R - 16, cy2 + 10, k3, ok, False, 4)
+            if t > fa + 1.1:
+                D.packet(c, tpl, p3, ((t - fa - 1.1) / 1.0) % 1.0, 1.0, ok)
+        kk = ease_out((t - ka) / 0.4)
+        if kk > 0:
+            D.chip(c, tpl, ex2, cy2 - R - 40, "Copy kept", "refresh-cw", "info", kk, 1.0, 34)
+        # proof
+        if sp.get("proof"):
+            py = self.bottom - proof_h
+            D.card(c, tpl, x, py, w, proof_h - 10, c0, fill=T["bg0"] if tpl.dark else "#0F1B2D")
+            D.draw_text(c, sp.get("proof_title", "real response"), x + 30, py + 42, 30, col("#9DB0C8", c0), "Regular", mono=True)
+            for j, ln in enumerate(sp["proof"]):
+                la = self.cue_t(ln.get("at"), 0.3 + j)
+                lk = ease_out((t - la) / 0.3)
+                if lk > 0:
+                    colr = {"ok": "#7EE787", "err": "#FF7B72"}.get(ln.get("tone", ""), "#C9D6E8")
+                    D.draw_text(c, ln["text"], x + 30, py + 96 + j * 52, 34, col(colr, lk), "Regular", mono=True)
 
     # ---- 8 stacking cards
     def _stacking_cards(self, c, t):

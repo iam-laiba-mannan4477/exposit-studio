@@ -422,3 +422,81 @@ def legend(c, tpl, items, x, y) -> None:
             D.halo(c, x + 34, cy, 14, tpl.conn["active"], 0.9)
             c.drawCircle(x + 34, cy, 5, D.paint(col("#FFFFFF")))
         D.draw_text(c, it["label"], x + 64, cy + size * 0.35, size, col("#DCE7F5"))
+
+
+# ------------------------------------------------------------------ compact labels (32 px semibold, 30 px mono codes)
+class Labels:
+    """Places small dark pills so they never overlap each other or the arcs: each label tries right, left, above
+    and below its point and takes the first free spot (else the least crowded)."""
+
+    def __init__(self, W, H, band=(240, 1510)):
+        self.placed, self.avoid, self.W, self.H, self.band = [], [], W, H, band
+
+    def avoid_points(self, pts, r=10.0):
+        self.avoid += [(x - r, y - r, x + r, y + r) for x, y in pts]
+
+    @staticmethod
+    def _hit(a, b):
+        return not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1])
+
+    def add(self, c, x, y, name, code="", k=1.0, color="#F2F6FC", code_color="#FFB84D", pref="right", gap=26.0):
+        if k <= 0 or not name:
+            return
+        ns, cs = 32.0, 30.0
+        w = max(D.text_width(name, ns, "SemiBold"), D.text_width(code, cs, "Regular", mono=True) if code else 0) + 28
+        h = (ns * 1.35 + (cs * 1.2 if code else 0)) + 10
+        cands = {"right": (x + gap, y - h / 2), "left": (x - gap - w, y - h / 2), "above": (x - w / 2, y - gap - h),
+                 "below": (x - w / 2, y + gap)}
+        order = [pref] + [o for o in ("right", "left", "above", "below") if o != pref]
+        best, score = None, 1e9
+        for o in order:
+            lx, ly = cands[o]
+            lx = clamp(lx, 40, self.W - 40 - w)
+            ly = clamp(ly, self.band[0], self.band[1] - h)
+            r = (lx, ly, lx + w, ly + h)
+            n = sum(self._hit(r, q) for q in self.placed) * 10 + sum(self._hit(r, q) for q in self.avoid)
+            if n < score:
+                best, score = r, n
+            if n == 0:
+                break
+        lx, ly, rx, ry = best
+        self.placed.append(best)
+        slide = (1 - k) * 24
+        c.drawRoundRect(skia.Rect.MakeXYWH(lx + slide, ly, rx - lx, ry - ly), 14, 14, D.paint(col("#050B16", 0.78 * k)))
+        D.draw_text(c, name, lx + 14 + slide, ly + 5 + ns * 0.95, ns, col(color, k), "SemiBold")
+        if code:
+            D.draw_text(c, code, lx + 14 + slide, ly + 5 + ns * 1.35 + cs * 0.85, cs, col(code_color, k), "Regular", mono=True)
+
+
+def small_ring(c, x, y, a=1.0, color="#FFB84D") -> None:
+    """An AWS Region in the background layer."""
+    c.drawCircle(x, y, 9, D.paint(col(color, 0.85 * a), 2.5))
+
+
+def small_point(c, x, y, a=1.0, color="#38D6F5") -> None:
+    """A CloudFront edge location in the background layer."""
+    D.halo(c, x, y, 11, color, 0.7 * a)
+    c.drawCircle(x, y, 3.2, D.paint(col("#FFFFFF", 0.95 * a)))
+
+
+def focus_pulse(c, x, y, k, t, color="#38D6F5") -> None:
+    """A bright pulse on a place the camera has just arrived at."""
+    if k <= 0:
+        return
+    for j in range(2):
+        q = ((t * 0.9) + j * 0.5) % 1.0
+        c.drawCircle(x, y, 14 + 46 * q, D.paint(col(color, 0.7 * (1 - q) * k), 4))
+    D.halo(c, x, y, 34, color, k)
+    c.drawCircle(x, y, 8, D.paint(col("#FFFFFF", k)))
+
+
+def alert_pulse(c, x, y, k, t) -> None:
+    """A red pulse for a place under heavy load."""
+    if k <= 0:
+        return
+    red = "#FF5A5A"
+    for j in range(3):
+        q = ((t * 1.4) + j / 3) % 1.0
+        c.drawCircle(x, y, 18 + 70 * q, D.paint(col(red, 0.8 * (1 - q) * k), 5))
+    D.halo(c, x, y, 56, red, k)
+    c.drawCircle(x, y, 11, D.paint(col("#FFFFFF", k)))

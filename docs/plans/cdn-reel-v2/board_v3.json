@@ -179,7 +179,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "Continues from the clip's final frame (navy, cyan point = London), pulls out to the real night Earth; us-east-1 glows and long arcs show the problem.",
-   "pad_end": 0.25
+   "pad_end": 0.15
   },
   {
    "id": "s3",
@@ -407,7 +407,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "Dive from space into Europe: Regions as large rings with codes, edge locations as small points; counter from the first frame (no empty start).",
-   "pad_end": 0.25
+   "pad_end": 0.15
   },
   {
    "id": "s4",
@@ -588,7 +588,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "Continuous camera from Europe to North-East Asia; ends on a close-up of one city.",
-   "pad_end": 0.25
+   "pad_end": 0.15
   },
   {
    "id": "s5",
@@ -628,7 +628,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "The camera keeps moving forward: city close-up, the building, then into it.",
-   "pad_end": 0.25
+   "pad_end": 0.15
   },
   {
    "id": "s6",
@@ -668,7 +668,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "Inside the building: the Open Connect Appliance rack.",
-   "pad_end": 0.25
+   "pad_end": 0.15
   },
   {
    "id": "s7",

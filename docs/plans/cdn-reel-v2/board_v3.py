@@ -31,6 +31,10 @@ script = {"scenes": [
 ]}
 old = json.loads((H / "script.json").read_text(encoding="utf-8"))
 script["scenes"] += [s for s in old["scenes"] if s["id"] in ("s7", "s8", "s9", "s10")]
+for sc in script["scenes"]:                       # the ending echoes the opening ("London")
+    for x in sc["sentences"]:
+        if x["text"] == "It starts fast: the video was already near you.":
+            x["text"] = "It starts fast in London: the video was already near you."
 
 reg = lambda place, code, side="right", at=None, **kw: dict({"place": place, "kind": "region", "label": place, "code": code, "side": side}, **({"at": at} if at else {"at_frac": 0.02}), **kw)
 edges = lambda names, a, b: [{"place": n, "kind": "edge", "at_frac": round(a + (b - a) * i / max(1, len(names) - 1), 3)} for i, n in enumerate(names)]
@@ -98,7 +102,7 @@ oldb = json.loads((H / "board.json").read_text(encoding="utf-8"))
 scenes += [s for s in oldb["scenes"] if s["id"] in ("s7", "s8", "s9", "s10")]
 for s in scenes:
     if s["treatment"] != "footage":
-        s.setdefault("pad_end", 0.25)
+        s.setdefault("pad_end", 0.15)
 (H / "script_v3.json").write_text(json.dumps(script, ensure_ascii=False, indent=1), encoding="utf-8")
 (H / "board_v3.json").write_text(json.dumps({"scenes": scenes}, ensure_ascii=False, indent=1), encoding="utf-8")
 print(len(scenes), "scenes;", sum(len(x["text"].split()) for sc in script["scenes"] for x in sc["sentences"]), "words")

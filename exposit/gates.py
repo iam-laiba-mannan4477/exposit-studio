@@ -107,7 +107,7 @@ def spec_icons(spec: dict) -> list[str]:
     """Every icon name a scene spec asks for (elements, items, steps, panel, client, origin, strip, footer)."""
     out = []
     pools = [spec.get("elements", []), spec.get("items", []), spec.get("footer", []),
-             (spec.get("strip") or {}).get("items", []), (spec.get("legend") or {}).get("items", [])]
+             (spec.get("strip") or {}).get("items", []), (lambda lg: lg if isinstance(lg, list) else lg.get("items", []))(spec.get("legend") or {})]
     for lane in spec.get("lanes", []):
         pools.append(lane.get("steps", []))
         pools.append([lane] + ([lane["result"]] if isinstance(lane.get("result"), dict) else []))

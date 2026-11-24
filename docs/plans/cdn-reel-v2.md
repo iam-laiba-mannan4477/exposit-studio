@@ -103,3 +103,6 @@ When muxing preview audio, do not use `apad` with `-shortest` and a copied video
 
 ## Status 2026-11-24
 Produced as p0bac96c577: all final checks pass (63.6 s content + 8.2 s end slide), cover regenerated, credit in sources.md.
+
+## Status v3 (2026-11-24)
+Produced as pef4318f39e: footage opening (play at 3.0 s, pixel-identical join into the globe), camera journey (space, Europe, Asia, building, rack), all final checks pass including No empty frames (64.2 s content + 8.2 s end slide). Files: board_v3.py, script_v3.json, strategy_v3.json, research_v3.json, v3-scene-stills.png.

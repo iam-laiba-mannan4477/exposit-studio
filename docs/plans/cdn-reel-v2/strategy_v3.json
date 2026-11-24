@@ -1,0 +1,178 @@
+{
+ "audience_profile": "Senior engineers who use CDNs but may not have looked at CloudFront's scale, Netflix's in-ISP appliances, or a real X-Cache/Age response.",
+ "learning_objective": "Explain why a stream starts fast: copies near viewers (CloudFront POPs, Netflix Open Connect inside ISPs), what a miss and a hit do, and how to see it in real headers.",
+ "creative_concept": "Start on the real night Earth over London, show the cost of one distant origin, light up the edge network, step inside an ISP, then prove miss and hit with a real response.",
+ "treatments": [
+  {
+   "name": "A. Press play, then a powers-of-ten journey to the rack, then real headers",
+   "shape": "footage, wide space, regional map, city close-up, building, rack, split screen, sequence, terminal, cards",
+   "engagement": "strong",
+   "teaching_fit": "strong",
+   "accuracy_risk": "low",
+   "feasibility": "yes",
+   "verdict": "Chosen: concrete geography, sourced scale, and a proof the viewer can reproduce."
+  },
+  {
+   "name": "B. Diagram-only walkthrough",
+   "shape": "iconflow and sequence for every step",
+   "engagement": "weak",
+   "teaching_fit": "medium",
+   "accuracy_risk": "low",
+   "feasibility": "yes",
+   "verdict": "Rejected: precise but static for 60 s on a phone."
+  },
+  {
+   "name": "C. Numbers-led explainer",
+   "shape": "charts of latency and hit ratio",
+   "engagement": "medium",
+   "teaching_fit": "medium",
+   "accuracy_risk": "high",
+   "feasibility": "yes",
+   "verdict": "Rejected: needs figures no official page gives."
+  }
+ ],
+ "chosen": "A. Press play, then a powers-of-ten journey to the rack, then real headers",
+ "hook": "The channel owner's clip: a viewer presses play; the screen's last glowing point opens into the night Earth.",
+ "narrative_structure": "Question; one distant origin; the CDN idea with a sourced count; the edge network lights up; Netflix Open Connect; inside the ISP; miss versus hit; steps on a miss; real response; benefits and the answer.",
+ "visual_direction": "noir-network, real NASA night imagery for the globe scenes, glowing city points, arcs with light-trail packets, no decorative shapes.",
+ "narration_approach": "Short sentences, real names (CloudFront, Open Connect, X-Cache, Age), us-east-1 spoken as U S East 1.",
+ "scene_breakdown": [
+  {
+   "title": "Press play",
+   "treatment": "footage",
+   "seconds": 4.8,
+   "purpose": "The viewer presses play (channel owner's clip)"
+  },
+  {
+   "title": "One distant origin",
+   "treatment": "motion",
+   "effect": "globe",
+   "seconds": 10,
+   "purpose": "Wide space: pull out from the clip's last frame; us-east-1 and long arcs"
+  },
+  {
+   "title": "Copies near viewers",
+   "treatment": "motion",
+   "effect": "flat_map",
+   "seconds": 8,
+   "purpose": "Regional map of Europe: Regions, edge locations light up, 750+ counter"
+  },
+  {
+   "title": "Across the world",
+   "treatment": "motion",
+   "effect": "flat_map",
+   "seconds": 5,
+   "purpose": "Pan to Asia; city close-up of Seoul and Tokyo"
+  },
+  {
+   "title": "Netflix Open Connect",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "seconds": 4,
+   "purpose": "Building: an ISP data centre"
+  },
+  {
+   "title": "Inside your ISP",
+   "treatment": "motion",
+   "effect": "model_3d",
+   "seconds": 6,
+   "purpose": "Rack: the Open Connect Appliance"
+  },
+  {
+   "title": "Miss vs hit",
+   "treatment": "compare",
+   "seconds": 6,
+   "purpose": "Split screen"
+  },
+  {
+   "title": "On a miss",
+   "treatment": "sequence",
+   "seconds": 5,
+   "purpose": "Sequence diagram"
+  },
+  {
+   "title": "Real proof",
+   "treatment": "motion",
+   "effect": "scroll_demo",
+   "seconds": 8,
+   "purpose": "Real terminal response"
+  },
+  {
+   "title": "Why it is fast",
+   "treatment": "motion",
+   "effect": "stacking_cards",
+   "seconds": 7,
+   "purpose": "Benefit cards and the answer"
+  }
+ ],
+ "tools": [
+  "Exposit renderer",
+  "Kokoro voice",
+  "NASA Blue Marble / Black Marble",
+  "Natural Earth"
+ ],
+ "decisions": [
+  {
+   "key": "hook",
+   "choice": "Fly into London on the real night Earth with the question",
+   "reason": "A real, recognisable place in the first second on a phone.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "template",
+   "choice": "noir-network",
+   "reason": "User's explicit choice (override of the variety rule): matches the dark reference images.",
+   "tier": "preference"
+  },
+  {
+   "key": "numbers",
+   "choice": "Only 750+ POPs, 100+ cities, 50+ countries from the CloudFront features page",
+   "reason": "No invented numbers.",
+   "tier": "preference"
+  },
+  {
+   "key": "proof",
+   "choice": "A real curl -I response captured 2026-11-23, labelled real response with the date",
+   "reason": "Never show invented lines; senior engineers can reproduce it.",
+   "tier": "preference"
+  },
+  {
+   "key": "format",
+   "choice": "9:16, captions off, one idea per scene, short end holds",
+   "reason": "Vertical Reel; keeps the content inside 60 +- 5 s.",
+   "tier": "preference"
+  },
+  {
+   "key": "techniques",
+   "choice": "Camera fly-to, light-trail packets, counter with source, split-screen, staggered build",
+   "reason": "Adopted from the Scout's reading of cinelume, remocn and clapcode.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "journey",
+   "choice": "One continuous camera: space, Europe, Asia, building, rack; a different shot type in every scene",
+   "reason": "A journey holds attention and shows real AWS geography (Regions and edge locations from official pages).",
+   "tier": "hypothesis"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "s6 Inside your ISP",
+   "why": "Abstract network terms",
+   "countermeasure": "Focus frame walks one hop per spoken word"
+  }
+ ],
+ "experiment": "Does the real-response terminal scene hold retention better than a recap?",
+ "recipes_used": [],
+ "template": "noir-network",
+ "template_reason": "User override of the variety rule: the user explicitly chose noir-network to match the dark reference images.",
+ "effects": [
+  "globe",
+  "flat_map",
+  "model_3d",
+  "scroll_demo",
+  "stacking_cards",
+  "parallax"
+ ],
+ "effects_reason": "globe and flat_map for a continuous camera journey on real NASA imagery (space, Europe, Asia); model_3d for the building and the Open Connect rack; scroll_demo for the real response; stacking_cards for the benefits; parallax grid for depth behind the split screen."
+}

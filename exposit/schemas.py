@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 Tier = Literal["verified", "preference", "observation", "hypothesis", "experiment"]
 TREATMENTS = ["iconflow", "map", "sequence", "cards", "compare", "stat",
-              "kinetic", "flow2d", "isometric", "cutaway", "chart", "motion"]
+              "kinetic", "flow2d", "isometric", "cutaway", "chart", "motion", "footage"]
 
 
 class Source(BaseModel):
@@ -68,6 +68,7 @@ class SceneOutline(BaseModel):
     title: str
     treatment: str
     seconds: float
+    effect: str = ""                    # for "motion" scenes: the content effect (a different effect is a different shot)
     purpose: str = ""
 
 

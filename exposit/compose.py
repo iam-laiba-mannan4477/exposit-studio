@@ -54,6 +54,34 @@ def subtitles(scenes: list[tuple[float, dict]]) -> tuple[str, str]:
     return srt, vtt
 
 
+EMPTY_FRACTION = 0.015      # under 1.5% of the content band differs from its background: only a heading or nothing
+
+
+def empty_frames(path: str, skip: list[tuple[float, float]], portrait: bool = True, step: float = 0.25,
+                 longest: float = 0.5) -> list[tuple[float, float]]:
+    """Stretches longer than `longest` s where the content band (y 260-1500 of 1920 in 9:16) is near-empty background.
+    Samples every `step` s at 270 px wide; a pixel counts as content when it differs from its row's median by more than
+    22 levels (faint grids and gradients do not count). `skip` holds (start, end) intervals: transitions, the end slide."""
+    import numpy as np
+    W, H = (270, 480) if portrait else (480, 270)
+    y0, y1 = (int(H * 260 / 1920), int(H * 1500 / 1920)) if portrait else (int(H * 0.15), int(H * 0.85))
+    raw = subprocess.run([config.ffmpeg_exe(), "-loglevel", "error", "-i", path, "-vf", f"fps={1 / step},scale={W}:{H},format=gray",
+                          "-f", "rawvideo", "-"], capture_output=True, check=True).stdout
+    fr = np.frombuffer(raw, np.uint8).reshape(-1, H, W)[:, y0:y1, :].astype(np.int16)
+    frac = (np.abs(fr - np.median(fr, axis=2, keepdims=True)) > 22).mean(axis=(1, 2))
+    runs, start = [], None
+    for i, f in enumerate(list(frac) + [1.0]):
+        t = i * step
+        empty = f < EMPTY_FRACTION and not any(a <= t <= b for a, b in skip)
+        if empty and start is None:
+            start = t
+        elif not empty and start is not None:
+            if t - start > longest:
+                runs.append((round(start, 2), round(t - step, 2)))
+            start = None
+    return runs
+
+
 def checks(path: str, expect: dict) -> list[dict]:
     """Automated checks on a finished video. expect: width, height, fps, duration, tolerance."""
     res = []
@@ -81,5 +109,9 @@ def checks(path: str, expect: dict) -> list[dict]:
         res.append({"name": "Audio does not clip", "passed": float(mv.group(1)) <= -0.3, "detail": f"Peak {mv.group(1)} dB, mean {mean.group(1) if mean else '?'} dB"})
     else:
         res.append({"name": "Audio track present", "passed": False, "detail": "No audio measured"})
+    if expect.get("empty_skip") is not None:
+        runs = empty_frames(path, expect["empty_skip"], expect["height"] > expect["width"])
+        res.append({"name": "No empty frames", "passed": not runs,
+                    "detail": ("Near-empty content at " + ", ".join(f"{a:.2f}-{b:.2f} s" for a, b in runs)) if runs else "None found (sampled every 0.25 s)"})
     res.append({"name": "Plays outside the studio", "passed": p["vcodec"] == "h264" and p["acodec"] == "aac", "detail": f"{p['vcodec']} video, {p['acodec']} audio, MP4"})
     return res

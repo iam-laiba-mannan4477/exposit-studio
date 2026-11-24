@@ -107,7 +107,7 @@ def spec_icons(spec: dict) -> list[str]:
     """Every icon name a scene spec asks for (elements, items, steps, panel, client, origin, strip, footer)."""
     out = []
     pools = [spec.get("elements", []), spec.get("items", []), spec.get("footer", []),
-             (spec.get("strip") or {}).get("items", []), (spec.get("legend") or {}).get("items", [])]
+             (spec.get("strip") or {}).get("items", []), (lambda lg: lg if isinstance(lg, list) else lg.get("items", []))(spec.get("legend") or {})]
     for lane in spec.get("lanes", []):
         pools.append(lane.get("steps", []))
         pools.append([lane] + ([lane["result"]] if isinstance(lane.get("result"), dict) else []))
@@ -141,6 +141,33 @@ def style_criteria(strategy: dict, previous: list[dict]) -> list[dict]:
     ]
 
 
+def late_first_visual(spec: dict) -> str | None:
+    """Why a scene's main visual would appear later than 0.3 s after it starts (None when it shows at once).
+    An estimate from the spec: what is drawn from the first frame, and what waits for a spoken word."""
+    tr, fx = spec.get("treatment"), spec.get("effect")
+    timed = lambda xs: bool(xs) and all(isinstance(x, dict) and x.get("at") not in (None, 0, 0.0) for x in xs)
+    if tr in ("footage", "stat", "sequence", "compare", "map", "chart"):
+        return None
+    if tr == "motion":
+        if fx == "card_zoom_3d" and spec.get("at") not in (None, 0):
+            return "the card waits for its spoken word"
+        return None                                       # the first item of every content effect shows within 0.25 s
+    if tr == "kinetic":
+        first = (spec.get("lines") or [{}])[0].get("at")
+        return "the first line waits for a spoken word" if isinstance(first, dict) or (isinstance(first, (int, float)) and first > 0.3) else None
+    if tr == "cards":
+        return "every card waits for a spoken word" if timed(spec.get("items")) and not spec.get("title") else None
+    els = spec.get("elements") or []
+    if els and all(e.get("hidden") for e in els):
+        return "every element is hidden until a cue"
+    return None
+
+
+def engine_footage_ok(spec: dict) -> bool:
+    from .render import engine
+    return engine.footage_path(spec).is_file()
+
+
 def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None = None) -> dict:
     comps = {c["id"] for c in facts.get("model", {}).get("components", [])}
     sids = [s["id"] for s in script.get("scenes", [])]
@@ -151,6 +178,7 @@ def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None
     if st and st.requires == "model_3d" and not any(s.get("treatment") == "motion" and s.get("effect") == "model_3d"
                                                     for s in board.get("scenes", [])):
         unknown_names.append(f"style {template} is only for videos with a 3D model scene")
+    late = [f"{sp['id']}: {why}" for sp in board.get("scenes", []) if (why := late_first_visual(sp))]
     for spec in board.get("scenes", []):
         sc_script = next((s for s in script["scenes"] if s["id"] == spec["id"]), None)
         if sc_script is None:
@@ -190,7 +218,10 @@ def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None
         changes = len(spec.get("cues", [])) + len(spec.get("lines") or []) + sum(      # timed reveals are changes too
             1 for x in (spec.get("items") or []) + (spec.get("messages") or []) + [l for l in (spec.get("links") or []) if isinstance(l, dict)]
             if isinstance(x, dict) and x.get("at") is not None)
-        if est > 0 and changes / est < 1 / 6:
+        if spec.get("treatment") == "footage":               # recorded footage moves by itself
+            if not engine_footage_ok(spec):
+                unknown_names.append(f"{spec['id']}: footage {spec.get('src')} is not in exposit/assets/footage")
+        elif est > 0 and changes / est < 1 / 6:
             sparse.append(f"{spec['id']}: {changes} visual changes in about {est:.0f} s")
     crit = [
         _crit("One specification per script scene", [s["id"] for s in board.get("scenes", [])] == sids),
@@ -200,5 +231,7 @@ def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None
         _crit("Icons, templates and transitions are all known", not unknown_names, "; ".join(unknown_names[:6])),
         _crit("Every treatment is supported on this machine", all(s.get("treatment") in TREATMENTS for s in board.get("scenes", []))),
         _crit("No paid service required", True, "Local renderer"),
+        dict(_crit("Main visual on screen within 0.3 s (warning only)", True,
+                   ("Later in " + "; ".join(late)) if late else "Every scene shows its main visual at once"), warning=bool(late)),
     ]
     return {"gate": "storyboard", "passed": all(c["passed"] for c in crit), "criteria": crit}

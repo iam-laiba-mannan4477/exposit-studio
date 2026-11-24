@@ -14,7 +14,7 @@
     },
     {
      "place": "London",
-     "zoom": 2.6,
+     "zoom": 1.9,
      "at": {
       "word": "London"
      },
@@ -35,7 +35,8 @@
    "transition": "fade",
    "reason": "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NASA night imagery. Camera fly-to (cinelume: maps that fly to places).",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s2",
@@ -49,9 +50,9 @@
      "zoom": 1.15
     },
     {
-     "lat": 52,
-     "lon": -170,
-     "zoom": 1.0,
+     "lat": 60,
+     "lon": 30,
+     "zoom": 0.95,
      "at": {
       "word": "Seoul"
      },
@@ -74,7 +75,8 @@
      "place": "London",
      "at": {
       "word": "London"
-     }
+     },
+     "side": "left"
     },
     {
      "place": "Frankfurt",
@@ -145,7 +147,8 @@
    "objective": "One distant origin for every viewer",
    "reason": "Long great-circle arcs from one origin make the distance physical; light-trail packets show the round trips.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s3",
@@ -178,7 +181,8 @@
    "objective": "The idea and the sourced scale",
    "reason": "Kinetic number counter with a visible source line (cinelume bignumber).",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s4",
@@ -281,7 +285,8 @@
    "objective": "Edge points light up across the globe",
    "reason": "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NASA night imagery. Example cities only; no invented counts per region.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s5",
@@ -304,7 +309,8 @@
    "objective": "Introduce Open Connect",
    "reason": "A 3D rack makes the appliance concrete.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s6",
@@ -413,7 +419,8 @@
    "objective": "Where Open Connect servers sit",
    "reason": "Reference 2 layout with the arrows corrected: content flows from the appliance to the viewer.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s7",
@@ -497,7 +504,8 @@
    "objective": "Split-screen miss versus hit",
    "reason": "Reference 3 structure restyled; split-screen comparison with packets.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s8",
@@ -570,7 +578,8 @@
    "objective": "Order of steps on a miss",
    "reason": "Reference 4 structure, arrows in the right direction.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s9",
@@ -632,7 +641,8 @@
    "objective": "Real headers prove miss then hit",
    "reason": "KodeKloud-style proof with a real response captured on 2026-11-23 (URL path shortened with an ellipsis only).",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   },
   {
    "id": "s10",
@@ -679,7 +689,8 @@
    "objective": "Benefits and the payoff",
    "reason": "Staggered build, one focal card per beat; the last card answers the hook.",
    "tier": "hypothesis",
-   "recipes": []
+   "recipes": [],
+   "pad_end": 0.25
   }
  ]
 }

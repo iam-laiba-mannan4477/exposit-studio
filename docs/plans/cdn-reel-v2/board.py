@@ -9,14 +9,15 @@ R = "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NA
 scenes = [
  {"id": "s1", "title": "Hook", "treatment": "motion", "effect": "globe",
   "headline": "Netflix in London: instant. Why?",
-  "fly": [{"lat": 28, "lon": -45, "zoom": 1.0}, {"place": "London", "zoom": 2.6, "at": {"word": "London"}, "fly": 1.8}],
+  "fly": [{"lat": 28, "lon": -45, "zoom": 1.0}, {"place": "London", "zoom": 1.9, "at": {"word": "London"}, "fly": 1.8}],
   "cities": [{"place": "London", "at": {"word": "London"}}], "drift": 0.0, "cy": 0.55,
+  "cues": [{"at": {"word": "play"}, "action": "pulse"}, {"at": {"word": "London"}, "action": "pulse"}, {"at": {"word": "Why"}, "action": "pulse"}],
   "objective": "Hook: real night Earth, fly into London", "transition": "fade",
   "reason": R + " Camera fly-to (cinelume: maps that fly to places).", "tier": "hypothesis", "recipes": []},
 
  {"id": "s2", "title": "Without a CDN", "treatment": "motion", "effect": "globe",
-  "fly": [{"lat": 45, "lon": -38, "zoom": 1.15}, {"lat": 52, "lon": -170, "zoom": 1.0, "at": {"word": "Seoul"}, "fly": 1.6}],
-  "cities": [dict(ORIGIN, at={"word": "origin"}), {"place": "London", "at": {"word": "London"}}, {"place": "Frankfurt", "at": {"word": "Frankfurt"}, "side": "right"},
+  "fly": [{"lat": 45, "lon": -38, "zoom": 1.15}, {"lat": 60, "lon": 30, "zoom": 0.95, "at": {"word": "Seoul"}, "fly": 1.6}],
+  "cities": [dict(ORIGIN, at={"word": "origin"}), {"place": "London", "at": {"word": "London"}, "side": "left"}, {"place": "Frankfurt", "at": {"word": "Frankfurt"}, "side": "right"},
              {"place": "Seoul", "at": {"word": "Seoul"}, "side": "left"}],
   "arcs": [{"from": VA, "to": "London", "at": {"word": "London"}, "tone": "fail"},
            {"from": VA, "to": "Frankfurt", "at": {"word": "Frankfurt"}, "tone": "fail"},
@@ -29,7 +30,7 @@ scenes = [
  {"id": "s3", "title": "The CDN idea", "treatment": "stat", "heading": "The CDN idea",
   "value": "750", "suffix": "+", "icon": "server", "label": "CloudFront points of presence, in 100+ cities",
   "source": "aws.amazon.com/cloudfront/features (read 2026-11-24)", "at": {"word": "750"},
-  "cues": [{"at": {"word": "copies"}, "action": "pulse"}],
+  "cues": [{"at": {"word": "copies"}, "action": "pulse"}, {"at": {"word": "viewers"}, "action": "pulse"}, {"at": {"word": "750"}, "action": "pulse"}],
   "effects": [{"type": "parallax", "layers": 2}], "transition": "push",
   "objective": "The idea and the sourced scale", "reason": "Kinetic number counter with a visible source line (cinelume bignumber).",
   "tier": "hypothesis", "recipes": []},
@@ -110,5 +111,7 @@ scenes = [
   "transition": "fade", "objective": "Benefits and the payoff", "reason": "Staggered build, one focal card per beat; the last card answers the hook.",
   "tier": "hypothesis", "recipes": []},
 ]
+for _s in scenes:
+    _s.setdefault("pad_end", 0.25)                     # short holds keep the Reel inside 60 +- 5 s
 Path(__file__).with_name("board.json").write_text(json.dumps({"scenes": scenes}, ensure_ascii=False, indent=1), encoding="utf-8")
 print(len(scenes))

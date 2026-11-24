@@ -223,7 +223,7 @@ def draw_model(c, tpl, name: str, cx: float, cy: float, size: float, ay: float, 
     if name == "globe":                                        # dark ocean, bright land
         base = {0: D.mix(T["bg0"], body, 0.55) if tpl.dark else "#AFC4DA", 1: tpl.conn["active"] if tpl.dark else "#2F8F5B"}
     else:
-        base = {0: body if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#0B1220", 0.45) if tpl.dark else "#8BA0BA"}
+        base = {0: (D.mix(body, "#0B1220", 0.55) if name == "server_rack" else body) if tpl.dark else "#C9D6E6", 1: tpl.conn["active"], 2: D.mix(body, "#0B1220", 0.45) if tpl.dark else "#8BA0BA"}
     lx, ly, lz = -0.35, -0.62, -0.70                         # towards the light: up, left, towards the viewer
     out = []
     for p0, p1, p2, tag in mesh(name):
@@ -598,7 +598,7 @@ class MotionScene(ProTreatment):
         if tpl.glow:
             D.halo(c, self.CX, cy, size * 2.2, tpl.conn["active"], 0.25 * k)
         if name == "server_rack":                             # swings, so the front panel stays in view
-            ay = 0.55 * math.sin(t * float(sp.get("spin", 0.55))) + 0.35
+            ay = 0.3 * math.sin(t * float(sp.get("spin", 0.55))) + 0.28   # front panel mostly to camera
         else:
             ay = t * float(sp.get("spin", 0.55)) + float(sp.get("start", 0.6))
         draw_model(c, tpl, name if name in MODELS else "cube", self.CX, cy, size, ay, alpha=k)
@@ -714,8 +714,8 @@ class MotionScene(ProTreatment):
         sp = self.sc.spec
         top = self._headline(c, sp["headline"], t, draw=False) if sp.get("headline") else self.top
         lat, lon, zoom = self._cam(t)
-        R = (0.47 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
-        cy = top + (self.bottom - top) * float(sp.get("cy", 0.5))
+        R = (0.5 if self.portrait else 0.36) * (self.W if self.portrait else self.H * 1.3) * zoom
+        cy = top + (self.bottom - top) * float(sp.get("cy", 0.54))
         g = earth.Globe(self.W, self.H, self.CX, cy, R, lat, lon)
         sun = sp.get("sun")
         g.render(c, (float(sun["lat"]), float(sun["lon"])) if sun else None, float(sp.get("night_gain", 1.7)),

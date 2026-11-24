@@ -1,0 +1,41 @@
+{"audience_profile": "Senior engineers who use CDNs but may not have looked at CloudFront's scale, Netflix's in-ISP appliances, or a real X-Cache/Age response.",
+ "learning_objective": "Explain why a stream starts fast: copies near viewers (CloudFront POPs, Netflix Open Connect inside ISPs), what a miss and a hit do, and how to see it in real headers.",
+ "creative_concept": "Start on the real night Earth over London, show the cost of one distant origin, light up the edge network, step inside an ISP, then prove miss and hit with a real response.",
+ "treatments": [
+  {"name": "A. Real Earth to real headers", "shape": "globe hook, globe problem, counter, globe network, 3D appliance, ISP path, split-screen miss/hit, sequence, real terminal, stacking benefits", "engagement": "strong", "teaching_fit": "strong", "accuracy_risk": "low", "feasibility": "yes", "verdict": "Chosen: concrete geography, sourced scale, and a proof the viewer can reproduce."},
+  {"name": "B. Diagram-only walkthrough", "shape": "iconflow and sequence for every step", "engagement": "weak", "teaching_fit": "medium", "accuracy_risk": "low", "feasibility": "yes", "verdict": "Rejected: precise but static for 60 s on a phone."},
+  {"name": "C. Numbers-led explainer", "shape": "charts of latency and hit ratio", "engagement": "medium", "teaching_fit": "medium", "accuracy_risk": "high", "feasibility": "yes", "verdict": "Rejected: needs figures no official page gives."}
+ ],
+ "chosen": "A. Real Earth to real headers",
+ "hook": "Night Earth, the camera flies into London: Netflix in London: instant. Why?",
+ "narrative_structure": "Question; one distant origin; the CDN idea with a sourced count; the edge network lights up; Netflix Open Connect; inside the ISP; miss versus hit; steps on a miss; real response; benefits and the answer.",
+ "visual_direction": "noir-network, real NASA night imagery for the globe scenes, glowing city points, arcs with light-trail packets, no decorative shapes.",
+ "narration_approach": "Short sentences, real names (CloudFront, Open Connect, X-Cache, Age), us-east-1 spoken as U S East 1.",
+ "scene_breakdown": [
+  {"title": "Hook", "treatment": "motion", "seconds": 5, "purpose": "Fly into London; the question"},
+  {"title": "Without a CDN", "treatment": "motion", "seconds": 8, "purpose": "One origin in us-east-1 for London, Frankfurt, Seoul"},
+  {"title": "The CDN idea", "treatment": "stat", "seconds": 8, "purpose": "Copies near viewers; 750+ POPs counter"},
+  {"title": "Across the globe", "treatment": "motion", "seconds": 6, "purpose": "Cities light up"},
+  {"title": "Netflix Open Connect", "treatment": "motion", "seconds": 4, "purpose": "Netflix's own CDN appliance"},
+  {"title": "Inside your ISP", "treatment": "iconflow", "seconds": 6, "purpose": "Appliance in the ISP, exchange points"},
+  {"title": "Miss vs hit", "treatment": "compare", "seconds": 6, "purpose": "Split-screen miss and hit"},
+  {"title": "On a miss", "treatment": "sequence", "seconds": 5, "purpose": "Fetch, keep a copy, respond"},
+  {"title": "Real proof", "treatment": "motion", "seconds": 8, "purpose": "Real curl response: Miss then Hit, Age 6"},
+  {"title": "Why it is fast", "treatment": "motion", "seconds": 7, "purpose": "Three benefits and the answer"}
+ ],
+ "tools": ["Exposit renderer", "Kokoro voice", "NASA Blue Marble / Black Marble", "Natural Earth"],
+ "decisions": [
+  {"key": "hook", "choice": "Fly into London on the real night Earth with the question", "reason": "A real, recognisable place in the first second on a phone.", "tier": "hypothesis"},
+  {"key": "template", "choice": "noir-network", "reason": "User's explicit choice (override of the variety rule): matches the dark reference images.", "tier": "preference"},
+  {"key": "numbers", "choice": "Only 750+ POPs, 100+ cities, 50+ countries from the CloudFront features page", "reason": "No invented numbers.", "tier": "preference"},
+  {"key": "proof", "choice": "A real curl -I response captured 2026-11-23, labelled real response with the date", "reason": "Never show invented lines; senior engineers can reproduce it.", "tier": "preference"},
+  {"key": "format", "choice": "9:16, captions off, one idea per scene, short end holds", "reason": "Vertical Reel; keeps the content inside 60 +- 5 s.", "tier": "preference"},
+  {"key": "techniques", "choice": "Camera fly-to, light-trail packets, counter with source, split-screen, staggered build", "reason": "Adopted from the Scout's reading of cinelume, remocn and clapcode.", "tier": "hypothesis"}
+ ],
+ "dropoff": [{"where": "s6 Inside your ISP", "why": "Abstract network terms", "countermeasure": "Focus frame walks one hop per spoken word"}],
+ "experiment": "Does the real-response terminal scene hold retention better than a recap?",
+ "recipes_used": [],
+ "template": "noir-network",
+ "template_reason": "User override of the variety rule: the user explicitly chose noir-network to match the dark reference images.",
+ "effects": ["globe", "model_3d", "focus_frame", "scroll_demo", "stacking_cards", "parallax"],
+ "effects_reason": "globe for the real Earth and fly-to; model_3d for the Open Connect appliance; focus_frame to walk the ISP path; scroll_demo for the real response; stacking_cards for the staggered benefits; parallax grid for depth behind the counter and split screen."}

@@ -52,7 +52,7 @@
      ]
     },
     {
-     "text": "CloudFront alone runs more than 750 points of presence.",
+     "text": "CloudFront runs more than 750 points of presence.",
      "claims": [
       "c5"
      ]
@@ -95,7 +95,7 @@
    "title": "Inside your ISP",
    "sentences": [
     {
-     "text": "Its servers sit inside internet providers and at exchange points, pre-filled for each region.",
+     "text": "Its servers sit inside internet providers and at exchange points, pre-filled by region.",
      "claims": [
       "c6",
       "c7",
@@ -116,7 +116,7 @@
      ]
     },
     {
-     "text": "The next viewer gets a hit, served from the edge.",
+     "text": "The next viewer gets a hit, from the edge.",
      "claims": [
       "c3"
      ]
@@ -181,7 +181,7 @@
      ]
     },
     {
-     "text": "It starts fast because the video was already near you.",
+     "text": "It starts fast: the video was already near you.",
      "claims": [
       "c6",
       "c8"

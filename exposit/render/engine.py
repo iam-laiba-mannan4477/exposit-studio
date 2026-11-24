@@ -10,6 +10,7 @@ compare, stat. Look and feel come from the template (design.py); icons and the m
 """
 from __future__ import annotations
 import functools, math, re, subprocess
+from pathlib import Path
 from typing import Callable
 import numpy as np
 import skia
@@ -976,12 +977,66 @@ class Chart(Treatment):
             design.draw_text(c, str(d["value"]), cx, base - h - 20, 44, col(T["text"], k), "Bold", "center")
 
 
+FOOTAGE_DIR = Path(__file__).resolve().parent.parent / "assets" / "footage"
+
+
+def footage_path(spec: dict) -> Path:
+    return FOOTAGE_DIR / Path(str(spec.get("src", ""))).name      # only files vendored in assets/footage
+
+
+class Footage:
+    """{"treatment": "footage", "src": "<file in exposit/assets/footage>", "align": {"word", "beat"}}: a recorded clip
+    played as-is (no re-styling, no overlays). Its own sound is mixed under the narration and music. The director sets
+    pad_start so the aligned word lands on the beat, and pad_end so the scene lasts exactly as long as the clip."""
+
+    def __init__(self, sc):
+        self.sc, self.portrait, self.pos, self.fade_out, self.fade_in = sc, sc.portrait, {}, False, False
+        self.path = footage_path(sc.spec)
+
+    def center(self, _id):
+        return 0.0, 0.0
+
+    def draw(self, canvas, t: float, w: int, h: int) -> None:
+        canvas.drawImage(footage_frame(str(self.path), round(t, 3), w, h), 0, 0)
+
+
+@functools.lru_cache(maxsize=8)
+def footage_frame(path: str, t: float, w: int, h: int) -> skia.Image:
+    """One decoded frame of a footage clip, scaled to w x h (the last frame when t is past the end)."""
+    dur = footage_duration(path)
+    t = min(max(0.0, t), max(0.0, dur - 1 / 60))
+    out = subprocess.run([config.ffmpeg_exe(), "-loglevel", "error", "-ss", f"{t:.3f}", "-i", path, "-frames:v", "1",
+                          "-vf", f"scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgba", "-"], capture_output=True, check=True).stdout
+    if len(out) < w * h * 4:                               # past the last decodable frame: step back a little
+        return footage_frame(path, max(0.0, t - 0.05), w, h) if t > 0.05 else skia.Image.fromarray(np.zeros((h, w, 4), np.uint8))
+    arr = np.frombuffer(out[: w * h * 4], np.uint8).reshape(h, w, 4).copy()
+    return skia.Image.fromarray(arr, skia.kRGBA_8888_ColorType)
+
+
+@functools.lru_cache(maxsize=16)
+def footage_duration(path: str) -> float:
+    from .. import compose
+    return float(compose.probe(path).get("duration", 0.0))
+
+
+def render_footage(spec: dict, dur: float, out_path: str, w: int, h: int, fps: int) -> dict:
+    """The clip scaled to the frame, at the production frame rate, held on its last frame if the scene runs longer."""
+    src = footage_path(spec)
+    extra = max(0.0, dur - footage_duration(str(src)))
+    vf = f"scale={w}:{h},fps={fps}" + (f",tpad=stop_mode=clone:stop_duration={extra:.3f}" if extra > 0 else "")
+    subprocess.run([config.ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(src), "-vf", vf, "-an", "-t", f"{dur:.3f}",
+                    "-c:v", "libx264", "-preset", config.X264_PRESET, "-crf", config.X264_CRF, "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart", out_path], check=True)
+    return {"duration": dur, "frames": int(round(dur * fps))}
+
+
 TREATMENTS = {"flow2d": Flow2D, "kinetic": Kinetic, "isometric": Isometric, "cutaway": Cutaway, "chart": Chart}
 LEGACY_TREATMENTS = tuple(TREATMENTS)
 from .pro import PRO_TREATMENTS          # noqa: E402  (pro imports engine lazily)
 from . import motion                      # noqa: E402
 TREATMENTS.update(PRO_TREATMENTS)
 TREATMENTS["motion"] = motion.MotionScene
+TREATMENTS["footage"] = Footage
 
 
 # ------------------------------------------------------------------ frame + clip
@@ -1033,6 +1088,8 @@ def style_time(tr, t: float) -> float:
 
 
 def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
+    if isinstance(tr, Footage):                             # recorded footage is shown as-is: no style, no overlays
+        return tr.draw(canvas, t, w, h)
     design.set_active(tr.sc.tpl)
     t = style_time(tr, t)
     st = styles.style_of(tr.sc.tpl)
@@ -1051,6 +1108,8 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
 
 
 def _draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, captions: bool = True) -> None:
+    if isinstance(tr, Footage):
+        return tr.draw(canvas, t, w, h)
     sc, T = tr.sc, tr.sc.T
     if tr.portrait:
         return draw_frame_portrait(canvas, tr, t, w, h, captions)
@@ -1244,12 +1303,14 @@ def render_still(spec: dict, timing: dict, t: float | None = None, w: int = 960,
 # "fade" (the default) fades in from the background. The others need the previous scene's last frame and run inside
 # the incoming scene's opening padding, so narration timing is unchanged; the previous scene then does not fade out.
 # "match" carries the scene so that an element present in both (same id) starts where it was and eases into place.
-TRANSITIONS = ("fade", "crossfade", "slide", "push", "match")
+TRANSITIONS = ("fade", "crossfade", "slide", "push", "match", "cut")
+BLENDS = ("crossfade", "slide", "push", "match")          # transitions that need the previous scene's last frame
+# "cut": no fade at all; for a scene that continues exactly from the previous one's final frame.
 TRANSITION_SECONDS = 0.45
 
 
 def needs_prev(spec: dict) -> bool:
-    return spec.get("transition", "fade") in TRANSITIONS[1:]
+    return spec.get("transition", "fade") in BLENDS
 
 
 def last_frame(tr: Treatment, w: int, h: int, captions: bool) -> skia.Image:
@@ -1274,7 +1335,7 @@ def transition_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: in
                      scratch: skia.Surface | None = None) -> None:
     """Draws frame t of `tr`, composited with the previous scene's last frame while the transition runs."""
     k = ease_io(clamp(t / TRANSITION_SECONDS))
-    if prev_img is None or kind not in TRANSITIONS[1:] or k >= 1:
+    if prev_img is None or kind not in BLENDS or k >= 1:
         tr.shift = (0.0, 0.0)
         draw_frame(canvas, tr, t, w, h, captions)
         return
@@ -1308,9 +1369,13 @@ def render_clip(spec: dict, timing: dict, out_path: str, w: int = config.WIDTH, 
     """Render one scene to a silent H.264 clip. Returns duration and frame count.
     `prev` ({"spec", "timing"}) is the previous scene, used when this scene's transition needs its last frame;
     `fade_out=False` when the next scene transitions from this one."""
+    if spec.get("treatment") == "footage":
+        return render_footage(spec, Scene(spec, timing, theme).dur, out_path, w, h, fps)
     tr = build(spec, timing, theme, portrait=h > w, caption_style=caption_style, captions=captions)
     tr.fade_out = fade_out
     kind = spec.get("transition", "fade")
+    if kind == "cut":
+        tr.fade_in = False
     prev_img, shift = None, (0.0, 0.0)
     if prev and needs_prev(spec):
         ptr = build(prev["spec"], prev["timing"], theme, portrait=h > w, caption_style=caption_style, captions=captions)

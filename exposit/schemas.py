@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 Tier = Literal["verified", "preference", "observation", "hypothesis", "experiment"]
 TREATMENTS = ["iconflow", "map", "sequence", "cards", "compare", "stat",
-              "kinetic", "flow2d", "isometric", "cutaway", "chart", "motion"]
+              "kinetic", "flow2d", "isometric", "cutaway", "chart", "motion", "footage"]
 
 
 class Source(BaseModel):

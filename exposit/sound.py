@@ -67,7 +67,7 @@ SFX = {"packet": lambda: blip(740), "highlight": lambda: blip(988, 0.18), "callo
 
 
 def mix(narration: list[tuple[float, str]], events: list[tuple[float, str]], duration: float, out_wav: str,
-        music: bool = True, sfx: bool = True) -> dict:
+        music: bool = True, sfx: bool = True, recorded: list[tuple[float, str]] | None = None) -> dict:
     """narration: (start_seconds, wav_path) per scene. events: (time, sfx name). Writes a 48 kHz stereo wav."""
     n = int(duration * SR) + SR // 4
     voice = np.zeros(n, dtype=np.float32)
@@ -98,7 +98,16 @@ def mix(narration: list[tuple[float, str]], events: list[tuple[float, str]], dur
         duck = 1.0 - 0.6 * np.clip(env / 0.08, 0, 1)      # lower the bed while the voice speaks
         fade = np.clip(np.arange(n) / (1.5 * SR), 0, 1) * np.clip((n - np.arange(n)) / (2.0 * SR), 0, 1)
         bed = bed * duck * fade * 0.20
-    out = voice + fx * 0.16 + bed
+    rec = np.zeros(n, dtype=np.float32)                   # recorded sound (footage effects), at its own level
+    for start, path in recorded or []:
+        a, sr = sf.read(path, dtype="float32")
+        if a.ndim > 1:
+            a = a.mean(axis=1)
+        if sr != SR:
+            a = resample_poly(a, SR, sr).astype(np.float32)
+        i = int(start * SR)
+        rec[i:i + len(a)] += a[: max(0, n - i)]
+    out = voice + fx * 0.16 + bed + rec * 0.8
     out = np.tanh(out * 1.05) / np.tanh(1.05) * 0.94
     stereo = np.stack([out, out], axis=1)
     sf.write(out_wav, stereo, SR)

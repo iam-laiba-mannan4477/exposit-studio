@@ -66,4 +66,5 @@ def test_easing_library():
 
 
 def test_unknown_transition_is_listed():
-    assert set(engine.TRANSITIONS) == {"fade", "crossfade", "slide", "push", "match"}
+    assert set(engine.TRANSITIONS) == {"fade", "crossfade", "slide", "push", "match", "cut"}
+    assert "cut" not in engine.BLENDS and not engine.needs_prev({"transition": "cut"})

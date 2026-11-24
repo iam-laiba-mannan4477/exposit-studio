@@ -359,6 +359,8 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             tts.narrate_scene(s["sentences"], wav, rs["voice"], rs["speed"], gap=s.get("gap", 0.22))
             hfile.write_text(s["audio_hash"])
         s["timing"] = json.loads(wav.with_suffix(".timing.json").read_text(encoding="utf-8"))
+        if s["spec"].get("treatment") == "footage":
+            s["spec"] = align_footage(s["spec"], s["timing"])
     tts.unload()  # free the voice model before rendering
     for i, s in enumerate(cur):
         clip = d / "clips" / f"{s['clip_hash']}.mp4"
@@ -368,7 +370,8 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             t_start = time.time()
             tmp = clip.with_suffix(".part.mp4")
             prev = {"spec": cur[i - 1]["spec"], "timing": cur[i - 1]["timing"]} if i > 0 else None
-            fade_out = not (i + 1 < n and engine.needs_prev(cur[i + 1]["spec"])) and not s.get("end_slide")  # the end slide holds
+            nxt = cur[i + 1]["spec"] if i + 1 < n else {}
+            fade_out = not (nxt and (engine.needs_prev(nxt) or nxt.get("transition") == "cut")) and not s.get("end_slide")  # the end slide holds
             info = engine.render_clip(s["spec"], s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
                                       progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None,
                                       caption_style=rs["caption_style"], prev=prev, fade_out=fade_out)
@@ -382,11 +385,58 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
         if s.get("end_slide"):                                # a soft sound as each line appears
             events = [{"t": round(sc.cue_time(l["at"]) or 0.0, 3), "action": "line"} for l in s["spec"]["lines"]]
         man_scenes.append({"id": s["id"], "title": s["title"], "audio_hash": s["audio_hash"], "clip_hash": s["clip_hash"], "start": round(t0, 3),
-                           "duration": round(round(sc.dur * rs["fps"]) / rs["fps"], 3), "pad_start": sc.pad0, "treatment": s["spec"].get("treatment"),
+                           "duration": round(round(sc.dur * rs["fps"]) / rs["fps"], 3), "pad_start": sc.pad0, "treatment": s["spec"].get("treatment"), "transition": s["spec"].get("transition", "fade"),
                            "events": events, **({"end_slide": True, "locked": True} if s.get("end_slide") else {})})
         t0 += man_scenes[-1]["duration"]
     store.write_json(pid, "export/manifest.json", {"scenes": man_scenes, "duration": round(t0, 3), "settings": rs, "final_hash": ""})
     return True
+
+
+def empty_skip(man: dict) -> list[tuple[float, float]]:
+    """Intervals the empty-frame check ignores: each scene's entry transition (0.5 s), recorded footage, the end slide."""
+    out = []
+    for s in man["scenes"]:
+        a, b = s["start"], s["start"] + s["duration"]
+        if s.get("end_slide") or s.get("treatment") == "footage":
+            out.append((a, b))
+        else:
+            out.append((a - 0.3, a + 0.5))
+    return out
+
+
+def align_footage(spec: dict, timing: dict) -> dict:
+    """Pads a footage scene so the aligned word lands on the clip's beat and the scene lasts exactly as long as the
+    clip. spec["align"] = {"word": "play", "beat": "play_pressed"} (beat from <clip>-timing.json) or {"word", "at"}."""
+    path = engine.footage_path(spec)
+    dur = engine.footage_duration(str(path))
+    al = spec.get("align") or {}
+    beat = al.get("at")
+    tfile = path.with_name(path.stem.replace("-9x16", "") + "-timing.json")
+    if beat is None and al.get("beat") and tfile.exists():
+        beat = json.loads(tfile.read_text(encoding="utf-8")).get("beats_s", {}).get(al["beat"])
+    pad0 = float(spec.get("pad_start", 0.4))
+    if beat is not None and al.get("word"):
+        w = next((x for x in timing.get("words", []) if engine.norm_word(x["w"]) == engine.norm_word(al["word"])), None)
+        if w is not None:
+            pad0 = max(0.0, float(beat) - float(w["s"]))
+    pad1 = max(0.0, dur - pad0 - float(timing.get("duration", 0.0)))
+    return dict(spec, pad_start=round(pad0, 3), pad_end=round(pad1, 3))
+
+
+def footage_audio(pid: str, s: dict) -> str | None:
+    """The footage clip's own sound as a wav (cached next to the narration)."""
+    board = store.read_json(pid, "storyboard/board.json", {"scenes": []})
+    spec = next((x for x in board["scenes"] if x["id"] == s["id"]), None)
+    if not spec:
+        return None
+    out = store.pdir(pid) / "audio" / f"{s['id']}.footage.wav"
+    if not out.exists():
+        import subprocess
+        r = subprocess.run([config.ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(engine.footage_path(spec)), "-vn",
+                            "-ac", "1", "-ar", "48000", str(out)], capture_output=True)
+        if r.returncode != 0:
+            return None
+    return str(out)
 
 
 SFX_FOR = {"packet": "packet", "highlight": "highlight", "callout": "callout", "count": "count", "enter": "enter", "type": "type",
@@ -403,11 +453,14 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     compose.concat([str(d / "clips" / f"{s['clip_hash']}.mp4") for s in man["scenes"]], str(ex / "silent.mp4"))
     ctx.say("Audio Producer: mixing narration, music and effects", 0.93)
     narr = [(s["start"] + s["pad_start"], str(d / "audio" / f"{s['id']}.wav")) for s in man["scenes"]]
+    recorded = [(s["start"], footage_audio(pid, s)) for s in man["scenes"] if s.get("treatment") == "footage"]
+    recorded = [r for r in recorded if r[1]]
     events = []
     for s in man["scenes"]:
-        events.append((s["start"], "transition"))
+        if s.get("treatment") != "footage" and s.get("transition") != "cut":   # seamless joins get no whoosh
+            events.append((s["start"], "transition"))
         events += [(s["start"] + e["t"], SFX_FOR[e["action"]]) for e in s["events"] if e["action"] in SFX_FOR]
-    mixinfo = sound.mix(narr, events, man["duration"], str(ex / "mix.wav"), rs["music"], rs["sfx"])
+    mixinfo = sound.mix(narr, events, man["duration"], str(ex / "mix.wav"), rs["music"], rs["sfx"], recorded)
     ctx.say("Encoding the final MP4", 0.95)
     compose.mux(str(ex / "silent.mp4"), str(ex / "mix.wav"), str(ex / "video.mp4"))
     timings = [(s["start"] + s["pad_start"], json.loads((d / "audio" / f"{s['id']}.timing.json").read_text(encoding="utf-8"))) for s in man["scenes"]]
@@ -432,7 +485,8 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     brief = _brief(pid)
     tail = sum(s["duration"] for s in man["scenes"] if s.get("end_slide"))
     checks = compose.checks(str(ex / "video.mp4"), {"width": rs["w"], "height": rs["h"], "fps": rs["fps"], "duration": _target_seconds(brief),
-                                                    "tolerance": max(3.0, 0.08 * _target_seconds(brief)), "exclude_tail": tail})
+                                                    "tolerance": max(3.0, 0.08 * _target_seconds(brief)), "exclude_tail": tail,
+                                                    "empty_skip": empty_skip(man)})
     treatments = sorted({s["treatment"] for s in man["scenes"] if not s.get("end_slide")})
     checks.append({"name": "No paid service was used", "passed": not any(j["paid"] for j in store.list_jobs(500, pid)), "detail": "Job log shows local tools only"})
     gate = {"gate": "final", "passed": all(c["passed"] for c in checks), "criteria": checks, "treatments": treatments, "mix": mixinfo}

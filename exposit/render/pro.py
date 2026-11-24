@@ -1107,10 +1107,15 @@ class Stat(ProTreatment):
 
     def draw(self, c, t):
         sc, tpl, T = self.sc, self.tpl, self.tpl.T
-        at = self.cue_t(sc.spec.get("at"), 0.3)
-        k = ease_out((t - at) / (1.4 * sc.motion))
+        cue = self.cue_t(sc.spec.get("at"), 0.3)
+        at = 0.05                                         # on screen at once; the count runs up to its spoken word
+        k = ease_out((t - at) / max(0.8, cue + 0.5 - at))
         val = sc.spec.get("value", "")
         prefix, suffix = sc.spec.get("prefix", ""), sc.spec.get("suffix", "")
+        try:
+            val = float(str(val).replace(",", "")) if not isinstance(val, (int, float)) else val
+        except ValueError:
+            pass
         if isinstance(val, (int, float)):
             dec = int(sc.spec.get("decimals", 0 if float(val).is_integer() else 1))
             shown = f"{prefix}{val * k:,.{dec}f}{suffix}"

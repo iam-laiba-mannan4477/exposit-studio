@@ -424,9 +424,12 @@ class MotionScene(ProTreatment):
         return 1.0, self.CX, self.CY
 
     def _times(self, items, step=0.9, first=0.5):
+        """When each item appears. The first is always on screen within 0.25 s: a scene never starts empty."""
         out, prev = [], first - step
         for it in items:
             tt = self.cue_t(it.get("at"), prev + step)
+            if not out:
+                tt = min(tt, 0.25)
             out.append(tt)
             prev = tt
         return out

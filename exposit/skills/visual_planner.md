@@ -33,8 +33,9 @@ chips pop at the connector midpoint; stat numbers count up; packets travel the r
 Pace it with cue words. `motion_scale` (default 1.0) slows or speeds all of it.
 
 ## Transitions (how a scene enters)
-"transition": "fade" (default) | "crossfade" | "slide" | "push" | "match". "match" works when an element with the same id
-is in both scenes: it starts where it was in the previous scene and eases into its new place. Use match cuts to carry
+"transition": "fade" (default) | "crossfade" | "slide" | "push" | "match" | "cut". "match" works when an element with the same id
+is in both scenes: it starts where it was in the previous scene and eases into its new place. "cut" has no fade at all:
+use it only when a scene continues exactly from the previous scene's final frame (after footage). Use match cuts to carry
 one component through several scenes; use push for "next step", crossfade for a change of view, fade for a new section.
 Camera: gentle drift is automatic; flow2d may also use "camera": {"start": [ids], "exit": "push_in", "exit_focus": id}.
 Nothing is ever cut at the frame edge.
@@ -113,6 +114,14 @@ below; "container_label" names the outer box.
 {"treatment": "cutaway", "container_label": "Edge server", "elements": [{"id": "p", "kind": "edge", "label": "HTTP front end"},
  {"id": "c", "kind": "cache", "label": "Cache index"}, {"id": "s", "kind": "storage", "label": "Disk"}],
  "code": ["GET /app.js", "Cache-Control: max-age=86400"], "cues": [{"at": {"word": "looks"}, "action": "lookup"}]}
+
+footage: a recorded clip from exposit/assets/footage played as-is (no re-styling, no overlays), with its own sound
+effects under the narration and music. "align" puts a spoken word on a beat from the clip's timing file; the scene
+lasts exactly as long as the clip. The next scene should use "transition": "cut" and start from the clip's last frame.
+{"treatment": "footage", "src": "cdn-opening-9x16.mp4", "align": {"word": "play", "beat": "play_pressed"}}
+
+Every scene shows its main visual within 0.3 s of starting; counters and cards may animate but never start from nothing
+(the storyboard gate warns, and the final check "No empty frames" fails a video with near-empty stretches).
 
 kinetic: big typography, line by line; optional "ui": {"url"} with type and enter cues.
 {"treatment": "kinetic", "lines": [{"text": "Your request", "at": 0.1}, {"text": "never reaches the origin.", "accent": true, "at": {"word": "origin"}}]}

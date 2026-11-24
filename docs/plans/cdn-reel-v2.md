@@ -100,3 +100,6 @@ references, report the MP4 and cover paths, then commit, run the fast tests and 
 ## Process note
 When muxing preview audio, do not use `apad` with `-shortest` and a copied video stream (ffmpeg hangs). Use
 `-t <scene duration>` instead, as `preview.py` now does.
+
+## Status 2026-11-24
+Produced as p0bac96c577: all final checks pass (63.6 s content + 8.2 s end slide), cover regenerated, credit in sources.md.

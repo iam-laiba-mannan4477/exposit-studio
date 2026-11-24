@@ -31,6 +31,26 @@
    ],
    "drift": 0.0,
    "cy": 0.55,
+   "cues": [
+    {
+     "at": {
+      "word": "play"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "London"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Why"
+     },
+     "action": "pulse"
+    }
+   ],
    "objective": "Hook: real night Earth, fly into London",
    "transition": "fade",
    "reason": "Reference 1 look (dark Earth, glowing city points, big type), rebuilt on NASA night imagery. Camera fly-to (cinelume: maps that fly to places).",
@@ -167,6 +187,18 @@
     {
      "at": {
       "word": "copies"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "viewers"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "750"
      },
      "action": "pulse"
     }

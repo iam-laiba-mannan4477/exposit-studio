@@ -11,6 +11,7 @@ scenes = [
   "headline": "Netflix in London: instant. Why?",
   "fly": [{"lat": 28, "lon": -45, "zoom": 1.0}, {"place": "London", "zoom": 1.9, "at": {"word": "London"}, "fly": 1.8}],
   "cities": [{"place": "London", "at": {"word": "London"}}], "drift": 0.0, "cy": 0.55,
+  "cues": [{"at": {"word": "play"}, "action": "pulse"}, {"at": {"word": "London"}, "action": "pulse"}, {"at": {"word": "Why"}, "action": "pulse"}],
   "objective": "Hook: real night Earth, fly into London", "transition": "fade",
   "reason": R + " Camera fly-to (cinelume: maps that fly to places).", "tier": "hypothesis", "recipes": []},
 
@@ -29,7 +30,7 @@ scenes = [
  {"id": "s3", "title": "The CDN idea", "treatment": "stat", "heading": "The CDN idea",
   "value": "750", "suffix": "+", "icon": "server", "label": "CloudFront points of presence, in 100+ cities",
   "source": "aws.amazon.com/cloudfront/features (read 2026-11-24)", "at": {"word": "750"},
-  "cues": [{"at": {"word": "copies"}, "action": "pulse"}],
+  "cues": [{"at": {"word": "copies"}, "action": "pulse"}, {"at": {"word": "viewers"}, "action": "pulse"}, {"at": {"word": "750"}, "action": "pulse"}],
   "effects": [{"type": "parallax", "layers": 2}], "transition": "push",
   "objective": "The idea and the sourced scale", "reason": "Kinetic number counter with a visible source line (cinelume bignumber).",
   "tier": "hypothesis", "recipes": []},

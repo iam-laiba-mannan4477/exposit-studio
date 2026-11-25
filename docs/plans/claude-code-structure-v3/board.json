@@ -594,12 +594,12 @@
    "effect": "dev_scene",
    "transition": "cut",
    "pad_start": 0.1,
-   "pad_end": 3.7,
+   "pad_end": 1.6,
    "tier": "hypothesis",
    "recipes": [],
    "reason": "One diagram type per step of the story.",
    "kind": "st_payoff",
-   "rev": 2,
+   "rev": 3,
    "tin": "mask",
    "focus_in": [
     540,
@@ -801,9 +801,9 @@
      {
       "type": "glasses",
       "at": {
-       "word": "in.",
-       "offset": 1.7,
-       "occurrence": 1
+       "word": "project.",
+       "offset": 0.3,
+       "occurrence": 2
       }
      }
     ]
@@ -847,11 +847,19 @@
     },
     {
      "at": {
-      "word": "in.",
-      "offset": 3.1,
-      "occurrence": 1
+      "word": "project.",
+      "offset": 0.5,
+      "occurrence": 2
      },
      "action": "soft"
+    },
+    {
+     "at": {
+      "word": "project.",
+      "offset": 1.15,
+      "occurrence": 2
+     },
+     "action": "whoosh_soft"
     }
    ],
    "objective": "GUIDES vs ENFORCES, then a wipe into the full dark diagram; CLAUDE.md and settings.json glow; hold 3 s"

@@ -25,7 +25,8 @@ LINES = [
                               S("A skill loads in full only when it's needed; an agent works in its own context.", "c21", "c17")]),
  ("s7", "rules", [S("Path-scoped rules wait until Claude reads a matching file.", "c22")]),
  ("s8", "hooks", [S("And hooks fire on events, like before every tool call, where they can block it.", "c10", "c18")]),
- ("s9", "payoff", [S("So: CLAUDE.md guides.", "c12"), S("Settings and hooks enforce.", "c12"), S("Know which file you're writing in.", "c12")]),
+ ("s9", "payoff", [S("So: CLAUDE.md guides.", "c12"), S("Settings and hooks enforce.", "c12"), S("Know which file you're writing in.", "c12"),
+                   S("Here's the full Claude Code project structure.", "c13"), S("Save it for your next project.", "c13")]),
 ]
 script = {"scenes": [{"id": i, "title": t, "sentences": s, "terms": []} for i, t, s in LINES]}
 
@@ -85,11 +86,12 @@ SC = {
             cues=[{"at": 0.0, "action": "whoosh_soft"}, {"at": 0.9, "action": "keys"}, {"at": w("block"), "action": "thud"},
                   {"at": w("it."), "action": "highlight"}],
             objective="PreToolUse -> tool runs -> PostToolUse; the script runs; BLOCK slams; a safe call passes"),
- "s9": dict(kind="st_payoff", rev=2, tin="mask", focus_in=[540, 800], pad_end=3.7, diagram=DIAGRAM,
+ "s9": dict(kind="st_payoff", rev=3, tin="mask", focus_in=[540, 800], pad_end=1.6, diagram=DIAGRAM,
             diagram_at=w("in.", 0.3), wipe_out=w("in.", 0.3),
-            mascot=M((930, 430), {"type": "hop", "at": w("in.", 0.4), "to": PERCH}, {"type": "glasses", "at": w("in.", 1.7)}),
+            mascot=M((930, 430), {"type": "hop", "at": w("in.", 0.4), "to": PERCH}, {"type": "glasses", "at": w("project.", 0.3, 2)}),
             cues=[{"at": 0.0, "action": "whoosh_soft"}, {"at": w("guides."), "action": "highlight"}, {"at": w("enforce."), "action": "thud"},
-                  {"at": w("in.", 0.3), "action": "whoosh_soft"}, {"at": w("in.", 1.05), "action": "soft"}, {"at": w("in.", 3.1), "action": "soft"}],
+                  {"at": w("in.", 0.3), "action": "whoosh_soft"}, {"at": w("in.", 1.05), "action": "soft"},
+                  {"at": w("project.", 0.5, 2), "action": "soft"}, {"at": w("project.", 1.15, 2), "action": "whoosh_soft"}],   # no silent hold
             objective="GUIDES vs ENFORCES, then a wipe into the full dark diagram; CLAUDE.md and settings.json glow; hold 3 s"),
 }
 scenes = []

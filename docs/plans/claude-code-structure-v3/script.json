@@ -1,0 +1,166 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Type claude",
+   "sentences": [
+    {
+     "text": "What actually happens when you type claude in your terminal?",
+     "claims": [
+      "c20"
+     ]
+    },
+    {
+     "text": "Before you write a single prompt, it reads a stack of files.",
+     "claims": [
+      "c20"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "CLAUDE.md",
+   "sentences": [
+    {
+     "text": "First, CLAUDE.md.",
+     "claims": [
+      "c1"
+     ]
+    },
+    {
+     "text": "Your project brief: commands, stack, conventions.",
+     "claims": [
+      "c1"
+     ]
+    },
+    {
+     "text": "It's loaded into every session.",
+     "claims": [
+      "c1"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s3",
+   "title": "CLAUDE.local.md",
+   "sentences": [
+    {
+     "text": "Next to it, CLAUDE.local.md: your personal notes, kept out of git via .gitignore.",
+     "claims": [
+      "c2"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s4",
+   "title": "settings.json",
+   "sentences": [
+    {
+     "text": "Then .claude settings.json.",
+     "claims": [
+      "c4"
+     ]
+    },
+    {
+     "text": "This one isn't advice, it's enforced: what Claude may run, and what it never can.",
+     "claims": [
+      "c4",
+      "c14"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s5",
+   "title": ".mcp.json",
+   "sentences": [
+    {
+     "text": ".mcp.json connects your team's tools, like GitHub or a database.",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s6",
+   "title": "skills and agents",
+   "sentences": [
+    {
+     "text": "Skills and agents get registered.",
+     "claims": [
+      "c21"
+     ]
+    },
+    {
+     "text": "A skill loads in full only when it's needed; an agent works in its own context.",
+     "claims": [
+      "c21",
+      "c17"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s7",
+   "title": "rules",
+   "sentences": [
+    {
+     "text": "Path-scoped rules wait until Claude reads a matching file.",
+     "claims": [
+      "c22"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s8",
+   "title": "hooks",
+   "sentences": [
+    {
+     "text": "And hooks fire on events, like before every tool call, where they can block it.",
+     "claims": [
+      "c10",
+      "c18"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s9",
+   "title": "payoff",
+   "sentences": [
+    {
+     "text": "So: CLAUDE.md guides.",
+     "claims": [
+      "c12"
+     ]
+    },
+    {
+     "text": "Settings and hooks enforce.",
+     "claims": [
+      "c12"
+     ]
+    },
+    {
+     "text": "Know which file you're writing in.",
+     "claims": [
+      "c12"
+     ]
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

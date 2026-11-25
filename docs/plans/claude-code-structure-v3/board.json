@@ -1,0 +1,860 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Type claude",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "fade",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_hook",
+   "pops": [
+    {
+     "text": "What happens next?",
+     "at": 1.25,
+     "y": 1250,
+     "size": 76,
+     "hold": 2.9
+    }
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     1500
+    ],
+    "acts": [
+     {
+      "type": "drop_in",
+      "at": 1.6,
+      "to": [
+       930,
+       1500
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": 2.3
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.3,
+     "action": "keys"
+    },
+    {
+     "at": 1.0,
+     "action": "highlight"
+    },
+    {
+     "at": 1.25,
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "stack",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "files.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    }
+   ],
+   "objective": "$ claude types in the centre; Enter ripples; 'What happens next?'; file cards fall into a Context stack",
+   "cover": true,
+   "cover_crop": [
+    340,
+    1300
+   ],
+   "cover_mascot": {
+    "x": 930,
+    "y": 1690,
+    "scale": 4,
+    "glasses_dy": -6
+   }
+  },
+  {
+   "id": "s2",
+   "title": "CLAUDE.md",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_claude_md",
+   "tout": "push",
+   "pops": [
+    {
+     "text": "every session",
+     "at": {
+      "word": "every",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 310,
+     "size": 64
+    }
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     1500
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": 0.8,
+      "to": [
+       960.0,
+       352.0
+      ]
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": 0.8,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "brief:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "every",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Match cut: the top card grows into CLAUDE.md, three headings type in; sessions 1-3 load the same card"
+  },
+  {
+   "id": "s3",
+   "title": "CLAUDE.local.md",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_local",
+   "tin": "push",
+   "wipe_out": true,
+   "pops": [
+    {
+     "text": "private",
+     "at": {
+      "word": "personal",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 310,
+     "size": 64
+    }
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960.0,
+     352.0
+    ],
+    "acts": [
+     {
+      "type": "peek",
+      "at": {
+       "word": "personal",
+       "offset": 0.0,
+       "occurrence": 1
+      },
+      "dur": 2.2
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "personal",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "git",
+      "offset": -0.2,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": ".gitignore.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "CLAUDE.local.md slides out from behind; git bounces off a 'gitignored' shield"
+  },
+  {
+   "id": "s4",
+   "title": "settings.json",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_gate",
+   "wipe_in": true,
+   "tout": "whip",
+   "shake_at": {
+    "word": "run,",
+    "offset": 0.4,
+    "occurrence": 1
+   },
+   "pops": [
+    {
+     "text": "ENFORCED",
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 520,
+     "size": 88
+    }
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960.0,
+     352.0
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "enforced:",
+       "offset": 0.5,
+       "occurrence": 1
+      },
+      "to": [
+       700,
+       678
+      ]
+     },
+     {
+      "type": "tap",
+      "at": {
+       "word": "enforced:",
+       "offset": 1.1,
+       "occurrence": 1
+      },
+      "dir": -1
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "run,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "run,",
+      "offset": 0.4,
+      "occurrence": 1
+     },
+     "action": "thud"
+    }
+   ],
+   "objective": "A gate: npm test and git push pass green; rm -rf build is denied with a shake; ENFORCED stamps"
+  },
+  {
+   "id": "s5",
+   "title": ".mcp.json",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "mcp",
+   "hub_only": true,
+   "tin": "whip",
+   "tout": "zoom",
+   "focus_out": [
+    540,
+    860
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     420
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "connects",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "GitHub",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "database.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    }
+   ],
+   "objective": "Hub and spoke: Claude Code to GitHub, Postgres and Jira; data pulses; 'shared with team'"
+  },
+  {
+   "id": "s6",
+   "title": "skills and agents",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_skills_agents",
+   "tin": "zoom",
+   "focus_in": [
+    540,
+    860
+   ],
+   "tout": "mask",
+   "pops": [
+    {
+     "text": "only when needed",
+     "at": {
+      "word": "only",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 300,
+     "size": 64
+    }
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     980,
+     360
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "registered.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "only",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "agent",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "context.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Two shelves: skill tiles show name + description, /review opens to its full SKILL.md; agents in their own context"
+  },
+  {
+   "id": "s7",
+   "title": "rules",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_rules",
+   "tin": "mask",
+   "focus_in": [
+    300,
+    700
+   ],
+   "tout": "push",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     1500
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": 0.5,
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "matching",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "file.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    }
+   ],
+   "objective": "A rule with paths: src/api/** sleeps on Button.tsx and wakes on users.ts, sliding into Context"
+  },
+  {
+   "id": "s8",
+   "title": "hooks",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.6,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "hooks",
+   "tin": "push",
+   "tout": "mask",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     760
+    ],
+    "acts": [
+     {
+      "type": "shake",
+      "at": {
+       "word": "block",
+       "offset": 0.0,
+       "occurrence": 1
+      }
+     }
+    ]
+   },
+   "push": [
+    {
+     "at": {
+      "word": "block",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "x": 300,
+     "y": 700,
+     "z": 1.06,
+     "hold": 0.9
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": 0.9,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "block",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "it.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "PreToolUse -> tool runs -> PostToolUse; the script runs; BLOCK slams; a safe call passes"
+  },
+  {
+   "id": "s9",
+   "title": "payoff",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 3.7,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "One diagram type per step of the story.",
+   "kind": "st_payoff",
+   "rev": 2,
+   "tin": "mask",
+   "focus_in": [
+    540,
+    800
+   ],
+   "diagram": {
+    "tree": [
+     {
+      "id": "root",
+      "name": "my-project/",
+      "depth": 0,
+      "dir": true,
+      "icon": "folder-open",
+      "term": [
+       "."
+      ]
+     },
+     {
+      "id": "claude_md",
+      "name": "CLAUDE.md",
+      "depth": 1,
+      "icon": "file-text",
+      "card": "Project brief, read every session. Supports @imports."
+     },
+     {
+      "id": "local_md",
+      "name": "CLAUDE.local.md",
+      "depth": 1,
+      "icon": "file-text",
+      "card": "Your personal notes, read after CLAUDE.md. Add it to .gitignore."
+     },
+     {
+      "id": "mcp",
+      "name": ".mcp.json",
+      "depth": 1,
+      "icon": "file-json",
+      "card": "Team-shared MCP servers, committed with the repo."
+     },
+     {
+      "id": "dot_claude",
+      "name": ".claude/",
+      "depth": 1,
+      "dir": true,
+      "icon": "folder-open"
+     },
+     {
+      "id": "settings",
+      "name": "settings.json",
+      "depth": 2,
+      "icon": "file-cog",
+      "card": "Permissions, hooks, env, model. Enforced, not advisory."
+     },
+     {
+      "id": "settings_local",
+      "name": "settings.local.json",
+      "depth": 2,
+      "icon": "file-cog",
+      "card": "Personal overrides. Git-ignored once Claude Code writes it."
+     },
+     {
+      "id": "rules",
+      "name": "rules/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Instructions by topic. Can be scoped to file paths."
+     },
+     {
+      "id": "code_style",
+      "name": "code-style.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "testing",
+      "name": "testing.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "skills",
+      "name": "skills/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "One folder per skill. Run with /name, or used when relevant."
+     },
+     {
+      "id": "review",
+      "name": "review/SKILL.md",
+      "depth": 3,
+      "icon": "file-text",
+      "term": [
+       "review",
+       "SKILL.md"
+      ]
+     },
+     {
+      "id": "fix_issue",
+      "name": "fix-issue/SKILL.md",
+      "depth": 3,
+      "icon": "file-text",
+      "term": [
+       "fix-issue",
+       "SKILL.md"
+      ]
+     },
+     {
+      "id": "commands",
+      "name": "commands/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "tag": "legacy",
+      "card": "Older single-file form of skills. Same /name."
+     },
+     {
+      "id": "deploy",
+      "name": "deploy.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "agents",
+      "name": "agents/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Subagents with their own prompt, tools and model."
+     },
+     {
+      "id": "code_reviewer",
+      "name": "code-reviewer.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "security_auditor",
+      "name": "security-auditor.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "hooks",
+      "name": "hooks/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Scripts around tool calls. Pre-tool hooks can block."
+     },
+     {
+      "id": "validate",
+      "name": "validate-bash.sh",
+      "depth": 3,
+      "icon": "file-terminal",
+      "note": "wired in settings.json"
+     }
+    ],
+    "footnote": "Has AGENTS.md? Claude Code reads it if there is no CLAUDE.md.",
+    "band": [
+     330,
+     1530
+    ],
+    "foot_inset": 0,
+    "keep": [
+     "claude_md",
+     "settings"
+    ]
+   },
+   "diagram_at": {
+    "word": "in.",
+    "offset": 0.3,
+    "occurrence": 1
+   },
+   "wipe_out": {
+    "word": "in.",
+    "offset": 0.3,
+    "occurrence": 1
+   },
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     430
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "in.",
+       "offset": 0.4,
+       "occurrence": 1
+      },
+      "to": [
+       930.0,
+       336.17
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": {
+       "word": "in.",
+       "offset": 1.7,
+       "occurrence": 1
+      }
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "guides.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "enforce.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "in.",
+      "offset": 0.3,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "in.",
+      "offset": 1.05,
+      "occurrence": 1
+     },
+     "action": "soft"
+    },
+    {
+     "at": {
+      "word": "in.",
+      "offset": 3.1,
+      "occurrence": 1
+     },
+     "action": "soft"
+    }
+   ],
+   "objective": "GUIDES vs ENFORCES, then a wipe into the full dark diagram; CLAUDE.md and settings.json glow; hold 3 s"
+  }
+ ]
+}

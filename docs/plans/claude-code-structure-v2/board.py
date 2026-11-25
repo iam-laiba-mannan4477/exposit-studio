@@ -95,9 +95,10 @@ SC = {
                   {"at": w("run."), "action": "highlight"}],
             objective="PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"),
  "s10": dict(kind="takeaway", file="my-project/", tin="mask", focus_in=[540, 900], wipe_out=w("Start", -0.35), diagram=DIAGRAM,
-             mascot=M((930, 420), {"type": "hop", "at": w("Start", -0.25), "to": PERCH}, {"type": "glasses", "at": w("Start", 1.4)}),
+             mascot=M((930, 420), {"type": "hop", "at": w("Start", -0.25), "to": PERCH}, {"type": "glasses", "at": w("files.", 1.6)}),
              cues=[{"at": 0.0, "action": "transition"}, {"at": w("guidance."), "action": "highlight"}, {"at": w("enforced."), "action": "highlight"},
-                   {"at": w("Start", -0.35), "action": "transition"}, {"at": w("files."), "action": "highlight"}],
+                   {"at": w("Start", -0.35), "action": "transition"}, {"at": w("files."), "action": "highlight"},
+                   {"at": w("files.", 2.15), "action": "highlight"}],   # the shine: breaks the silent 3 s hold
              pad_end=3.7, objective="Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s"),
 }
 scenes = []
@@ -110,7 +111,7 @@ for s in script["scenes"]:
     if s["id"] == "s9":
         sp["pad_end"] = 0.6
     if s["id"] == "s10":
-        sp.update(cover=True, cover_crop=[280, 1560], cover_mascot={"x": 940, "y": 1600, "scale": 4, "glasses_dy": -6})
+        sp.update(cover=True, cover_crop=[280, 1560], cover_mascot={"x": 930, "y": 1690, "scale": 4, "glasses_dy": -6})
     scenes.append(sp)
 
 research = json.loads((V1 / "research.json").read_text(encoding="utf-8"))

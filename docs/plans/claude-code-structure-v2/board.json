@@ -896,8 +896,8 @@
      {
       "type": "glasses",
       "at": {
-       "word": "Start",
-       "offset": 1.4,
+       "word": "files.",
+       "offset": 1.6,
        "occurrence": 1
       }
      }
@@ -939,6 +939,14 @@
       "occurrence": 1
      },
      "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "files.",
+      "offset": 2.15,
+      "occurrence": 1
+     },
+     "action": "highlight"
     }
    ],
    "objective": "Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s",
@@ -948,8 +956,8 @@
     1560
    ],
    "cover_mascot": {
-    "x": 940,
-    "y": 1600,
+    "x": 930,
+    "y": 1690,
     "scale": 4,
     "glasses_dy": -6
    }

@@ -440,7 +440,7 @@ def footage_audio(pid: str, s: dict) -> str | None:
 
 
 SFX_FOR = {"packet": "packet", "highlight": "highlight", "callout": "callout", "count": "count", "enter": "enter", "type": "type",
-           "line": "soft"}
+           "line": "soft", "soft": "soft", "keys": "keys", "thud": "thud", "whoosh_soft": "whoosh_soft", "transition": "transition"}
 
 
 def run_export(pid: str, ctx: Ctx) -> bool:

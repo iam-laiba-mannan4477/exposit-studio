@@ -67,6 +67,12 @@ EFFECTS = {
     "cache_split": {"narration": N, "spec": {"treatment": "motion", "effect": "cache_split", "hit_at": 0.3, "miss_at": 0.8,
                     "fetch_at": 1.2, "keep_at": 1.8, "proof": [{"text": "X-Cache: Miss from cloudfront", "tone": "err", "at": 1.0},
                                                                {"text": "X-Cache: Hit from cloudfront", "tone": "ok", "at": 2.0}]}},
+    "project_tree": {"narration": N, "spec": {"treatment": "motion", "effect": "project_tree", "pad_start": 0.3,
+                     "tree": [{"id": "root", "name": "my-project/", "depth": 0, "icon": "folder-open"},
+                              {"id": "readme", "name": "CLAUDE.md", "depth": 1, "icon": "file-text", "card": "Project brief loaded at session start."},
+                              {"id": "cfg", "name": ".claude/", "depth": 1, "icon": "folder-open"},
+                              {"id": "set", "name": "settings.json", "depth": 2, "icon": "file-cog", "card": "Permissions, hooks, env vars. Enforced."}],
+                     "build": [{"rows": ["root", "readme"], "at": 0.2}, {"rows": ["cfg", "set"], "at": 1.0}]}},
 }
 # extra 3D models on the still sheet
 MODELS = ["server_rack", "cube", "globe", "database"]

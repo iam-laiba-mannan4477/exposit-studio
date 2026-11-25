@@ -387,6 +387,18 @@ def post_process(arr: np.ndarray, ops: tuple, frame: int) -> np.ndarray:
     return arr
 
 
+def bg_warm_dark(c, W, H):
+    """Deep charcoal with a faint warm glow behind the upper middle (grain and vignette come from the post chain)."""
+    _bg_solid(c, "#1A1918", W, H)
+    c.drawCircle(W * 0.5, H * 0.42, max(W, H) * 0.42, D.blur(D.paint(col("#3A2A20", 0.32)), 220))
+
+
+def bg_cream(c, W, H):
+    """Warm cream with a faint peach glow (paper grain comes from the post chain)."""
+    _bg_solid(c, "#F4F1EA", W, H)
+    c.drawCircle(W * 0.5, H * 0.45, max(W, H) * 0.45, D.blur(D.paint(col("#F6DCCB", 0.35)), 220))
+
+
 # ================================================================== the style packs
 class Style:
     def __init__(self, name: str, tier: int, status: str, best_for: str, tpl: Template | None, post: tuple = (),
@@ -507,6 +519,23 @@ _add(Style("cardboard-diorama", 1, "ready", "architecture overviews, how parts s
                 icon=dict(style="solid", color="#FFFFFF", badge="#1F5F8B", ring="#6E4A2A", stroke=2.75, shape="square"),
                 conn=dict(color="#3F2C1C", width=7.0, active="#1F5F8B", glow=False, dash=(16, 13))),
            post=(("grain", 0.03),), effects=("parallax",)))
+_add(Style("claude-warm-dark", 1, "ready", "developer tooling: project structure, config files, CLI workflows",
+           _tpl("claude-warm-dark", _T("#1A1918", "#1A1918", "#1E1C1A", "#4A3A32", "#F4F1EA", "#928D87", "#D97757",
+                                       red="#E5534B", green="#6FBF73", amber="#D9A557", blue="#D97757", teal="#D97757"),
+                dark=True, bg_fn=bg_warm_dark, family_bold="Heavy", bold_scale=0.92,
+                card=_card("#1E1C1A", "#D97757", 2.0, 14), icon=dict(style="outline", color="#F4F1EA", badge=None, ring="#D97757", stroke=2.5),
+                conn=dict(color="#D97757", width=3.0, active="#D97757", glow=False, dash=(14, 10)),
+                sem=dict(success="#6FBF73", fail="#E5534B", info="#D97757", neutral="#8A8580")),
+           post=(("vignette", 0.30), ("grain", 0.022))))
+_add(Style("claude-orange", 1, "ready", "developer tooling explainers with a warm orange look",
+           _tpl("claude-orange", _T("#F4F1EA", "#F4F1EA", "#F6DCCB", "#D97757", "#1F1E1D", "#635C55", "#D97757",
+                                    red="#C0392B", green="#2E7D32", amber="#9E4528", blue="#9E4528", teal="#9E4528"),
+                dark=False, bg_fn=bg_cream, family_bold="Heavy", bold_scale=0.92,
+                card=_card("#F6DCCB", "#D97757", 2.0, 14),
+                icon=dict(style="outline", color="#1F1E1D", badge=None, ring="#D97757", stroke=2.5),
+                conn=dict(color="#D97757", width=3.0, active="#9E4528", glow=False, dash=(14, 10)),
+                sem=dict(success="#2E7D32", fail="#C0392B", info="#9E4528", neutral="#635C55")),
+           post=(("paper", 0.05), ("grain", 0.016))))
 # ---- Tier 2
 _add(Style("stop-motion-clay", 2, "ready", "light, friendly intros; simple flows",
            _tpl("stop-motion-clay", _T("#F1D6B8", "#F6E2CB", "#FFC9B0", "#7A3E2E", "#3A1E16", "#55301F", "#C2410C", blue="#2F6F9E", teal="#2B8A7E", green="#2F6420"),

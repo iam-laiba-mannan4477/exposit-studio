@@ -511,7 +511,7 @@ def write_cover(pid: str, rs: dict, man: dict) -> Path:
     d = store.pdir(pid)
     p = store.get_production(pid)
     board = store.read_json(pid, "storyboard/board.json", {"scenes": []})
-    vis = next((s for kind in ("iconflow", "cards", "compare", "sequence", "motion") for s in board["scenes"] if s.get("treatment") == kind), None)
+    vis = next((s for s in board["scenes"] if s.get("cover")), None) or         next((s for kind in ("iconflow", "cards", "compare", "sequence", "motion") for s in board["scenes"] if s.get("treatment") == kind), None)
     visual = None
     if vis and (d / "audio" / f"{vis['id']}.timing.json").exists():
         visual = (vis, json.loads((d / "audio" / f"{vis['id']}.timing.json").read_text(encoding="utf-8")))

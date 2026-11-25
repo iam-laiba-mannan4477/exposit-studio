@@ -1,0 +1,2516 @@
+{
+ "scenes": [
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "fade",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s1",
+   "title": "Hook",
+   "done": [],
+   "build": [
+    {
+     "rows": [
+      "root"
+     ],
+     "at": {
+      "t": 3.1
+     }
+    }
+   ],
+   "phase": "hook",
+   "mascot": {
+    "pos": [
+     930.0,
+     1878.0
+    ],
+    "acts": [
+     {
+      "type": "drop_in",
+      "at": 0.5,
+      "to": [
+       930.0,
+       1878.0
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": 1.25
+     }
+    ],
+    "scale": 3
+   },
+   "hook": {
+    "command": "tree -a",
+    "prompt": "~/my-project $",
+    "summary": "8 directories, 13 files",
+    "morph_at": {
+     "t": 2.55
+    }
+   },
+   "objective": "A terminal runs tree -a; the output morphs into the styled tree",
+   "reason": "Starts from what engineers already type.",
+   "_git_done": [],
+   "cues": [
+    {
+     "at": {
+      "word": "Claude"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "files"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "does."
+     },
+     "action": "pulse"
+    }
+   ]
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s2",
+   "title": "CLAUDE.md",
+   "done": [
+    "root"
+   ],
+   "build": [
+    {
+     "rows": [
+      "claude_md"
+     ],
+     "at": {
+      "word": "CLAUDE.md",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "brief,",
+       "occurrence": 1,
+       "offset": 0.1
+      },
+      "to": [
+       930.0,
+       349.0
+      ]
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     930.0,
+     1878.0
+    ]
+   },
+   "_git_done": [],
+   "cues": [
+    {
+     "at": {
+      "word": "CLAUDE.md"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "brief,"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "session."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the CLAUDE.md row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s3",
+   "title": "CLAUDE.local.md",
+   "done": [
+    "root",
+    "claude_md"
+   ],
+   "build": [
+    {
+     "rows": [
+      "local_md"
+     ],
+     "at": {
+      "word": "CLAUDE.local.md",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "peek",
+      "at": {
+       "word": "personal",
+       "occurrence": 1,
+       "offset": 0.0
+      },
+      "dur": 2.6
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     930.0,
+     349.0
+    ]
+   },
+   "_git_done": [],
+   "git_strike": [
+    {
+     "row": "local_md",
+     "at": {
+      "word": ".gitignore.",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "CLAUDE.local.md"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "personal"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": ".gitignore."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the CLAUDE.local.md row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s4",
+   "title": ".mcp.json",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md"
+   ],
+   "build": [
+    {
+     "rows": [
+      "mcp"
+     ],
+     "at": {
+      "word": ".mcp.json",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "hop",
+      "at": 0.3,
+      "to": [
+       930.0,
+       1878.0
+      ]
+     },
+     {
+      "type": "walk",
+      "at": 1.2,
+      "to": [
+       330.0,
+       1878.0
+      ],
+      "speed": 170
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     930.0,
+     349.0
+    ]
+   },
+   "_git_done": [
+    "local_md"
+   ],
+   "wipe_out": true,
+   "cues": [
+    {
+     "at": {
+      "word": ".mcp.json"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "GitHub"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "team."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the .mcp.json row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s5",
+   "title": "settings",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp"
+   ],
+   "build": [
+    {
+     "rows": [
+      "dot_claude",
+      "settings"
+     ],
+     "at": {
+      "word": "Inside",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    },
+    {
+     "rows": [
+      "settings_local"
+     ],
+     "at": {
+      "word": "settings.local.json",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "settings.json",
+       "occurrence": 1,
+       "offset": 0.3
+      },
+      "to": [
+       445.0,
+       921.0
+      ]
+     },
+     {
+      "type": "tap",
+      "at": {
+       "word": "settings.json",
+       "occurrence": 1,
+       "offset": 0.95
+      },
+      "row": "settings",
+      "dir": -1
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     330.0,
+     1878.0
+    ]
+   },
+   "_git_done": [
+    "local_md"
+   ],
+   "git_strike": [
+    {
+     "row": "settings_local",
+     "at": {
+      "word": "override.",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "wipe_in": true,
+   "cues": [
+    {
+     "at": {
+      "word": "Inside"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "settings.local.json"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "settings.json"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "override."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the settings row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s6",
+   "title": "rules",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp",
+    "dot_claude",
+    "settings",
+    "settings_local"
+   ],
+   "build": [
+    {
+     "rows": [
+      "rules",
+      "code_style",
+      "testing"
+     ],
+     "at": {
+      "word": "Rules",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [],
+    "scale": 3,
+    "pos": [
+     445.0,
+     921.0
+    ]
+   },
+   "_git_done": [
+    "local_md",
+    "settings_local"
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "Rules"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "topic,"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "path."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the rules row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s7",
+   "title": "skills and commands",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp",
+    "dot_claude",
+    "settings",
+    "settings_local",
+    "rules",
+    "code_style",
+    "testing"
+   ],
+   "build": [
+    {
+     "rows": [
+      "skills",
+      "review",
+      "fix_issue"
+     ],
+     "at": {
+      "word": "Skills",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    },
+    {
+     "rows": [
+      "commands",
+      "deploy"
+     ],
+     "at": {
+      "word": "Commands",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "into_folder",
+      "at": {
+       "word": "Skills",
+       "occurrence": 1,
+       "offset": 0.25
+      },
+      "to": [
+       102.0,
+       1222.4750000000001
+      ],
+      "row": "skills",
+      "hold": 99
+     },
+     {
+      "type": "out_of_folder",
+      "at": {
+       "word": "Commands",
+       "occurrence": 1,
+       "offset": -0.5
+      },
+      "to": [
+       330.0,
+       1878.0
+      ]
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     445.0,
+     921.0
+    ]
+   },
+   "_git_done": [
+    "local_md",
+    "settings_local"
+   ],
+   "frontmatter": {
+    "row": "review",
+    "push": "skills",
+    "at": {
+     "word": "one",
+     "occurrence": 1,
+     "offset": 0.0
+    },
+    "until": {
+     "word": "Commands",
+     "occurrence": 1,
+     "offset": 0.0
+    },
+    "file": "review/SKILL.md",
+    "lines": [
+     "---",
+     "name: review",
+     "description: Reviews the diff for bugs and style",
+     "---"
+    ]
+   },
+   "legacy": {
+    "row": "commands",
+    "at": {
+     "word": "older,",
+     "occurrence": 1,
+     "offset": 0.0
+    }
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "Skills"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "Commands"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "one"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "older,"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the skills and commands row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.05,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s8",
+   "title": "agents",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp",
+    "dot_claude",
+    "settings",
+    "settings_local",
+    "rules",
+    "code_style",
+    "testing",
+    "skills",
+    "review",
+    "fix_issue",
+    "commands",
+    "deploy"
+   ],
+   "build": [
+    {
+     "rows": [
+      "agents",
+      "code_reviewer",
+      "security_auditor"
+     ],
+     "at": {
+      "word": "Agents",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [],
+    "scale": 3,
+    "pos": [
+     330.0,
+     1878.0
+    ]
+   },
+   "_git_done": [
+    "local_md",
+    "settings_local"
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "Agents"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "tools."
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the agents row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 0.5,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s9",
+   "title": "hooks",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp",
+    "dot_claude",
+    "settings",
+    "settings_local",
+    "rules",
+    "code_style",
+    "testing",
+    "skills",
+    "review",
+    "fix_issue",
+    "commands",
+    "deploy",
+    "agents",
+    "code_reviewer",
+    "security_auditor"
+   ],
+   "build": [
+    {
+     "rows": [
+      "hooks",
+      "validate"
+     ],
+     "at": {
+      "word": "Hooks",
+      "occurrence": 1,
+      "offset": 0.0
+     }
+    }
+   ],
+   "phase": "build",
+   "mascot": {
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "scripts",
+       "occurrence": 1,
+       "offset": 0.6
+      },
+      "to": [
+       965.0,
+       1540.4250000000004
+      ]
+     },
+     {
+      "type": "shake",
+      "at": {
+       "word": "block",
+       "occurrence": 1,
+       "offset": 0.0
+      }
+     }
+    ],
+    "scale": 3,
+    "pos": [
+     330.0,
+     1878.0
+    ]
+   },
+   "_git_done": [
+    "local_md",
+    "settings_local"
+   ],
+   "hook_flow": {
+    "row": "hooks",
+    "at": {
+     "word": "scripts",
+     "occurrence": 1,
+     "offset": 0.0
+    },
+    "until": 999,
+    "block_at": {
+     "word": "block",
+     "occurrence": 1,
+     "offset": 0.0
+    }
+   },
+   "wipe_out": true,
+   "cues": [
+    {
+     "at": {
+      "word": "Hooks"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "scripts"
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "block"
+     },
+     "action": "pulse"
+    }
+   ],
+   "objective": "Build the hooks row and its card while the line is spoken",
+   "reason": "One focal action per line: connector, icon, glow, arrow, card."
+  },
+  {
+   "treatment": "motion",
+   "effect": "project_tree",
+   "transition": "cut",
+   "tree": [
+    {
+     "id": "root",
+     "name": "my-project/",
+     "depth": 0,
+     "dir": true,
+     "icon": "folder-open",
+     "term": [
+      "."
+     ]
+    },
+    {
+     "id": "claude_md",
+     "name": "CLAUDE.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Project brief loaded at session start. Stack, commands, conventions. Supports @imports."
+    },
+    {
+     "id": "local_md",
+     "name": "CLAUDE.local.md",
+     "depth": 1,
+     "icon": "file-text",
+     "card": "Your personal notes. Read after CLAUDE.md. Add it to .gitignore."
+    },
+    {
+     "id": "mcp",
+     "name": ".mcp.json",
+     "depth": 1,
+     "icon": "file-json",
+     "card": "Team-shared MCP servers: GitHub, Jira, databases. Committed with the repo."
+    },
+    {
+     "id": "dot_claude",
+     "name": ".claude/",
+     "depth": 1,
+     "dir": true,
+     "icon": "folder-open"
+    },
+    {
+     "id": "settings",
+     "name": "settings.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Permissions, hooks, env vars, model defaults. Enforced, not advisory.",
+     "space_after": 16
+    },
+    {
+     "id": "settings_local",
+     "name": "settings.local.json",
+     "depth": 2,
+     "icon": "file-cog",
+     "card": "Personal overrides. Git-ignored once Claude Code writes it."
+    },
+    {
+     "id": "rules",
+     "name": "rules/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Instructions split by topic. Can be scoped to file paths."
+    },
+    {
+     "id": "code_style",
+     "name": "code-style.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "testing",
+     "name": "testing.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "skills",
+     "name": "skills/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "One folder per skill with SKILL.md. Run with /name, or used automatically when relevant."
+    },
+    {
+     "id": "review",
+     "name": "review/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "review",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "fix_issue",
+     "name": "fix-issue/SKILL.md",
+     "depth": 3,
+     "icon": "file-text",
+     "term": [
+      "fix-issue",
+      "SKILL.md"
+     ]
+    },
+    {
+     "id": "commands",
+     "name": "commands/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "tag": "legacy",
+     "card": "Single-file prompts. Older form of skills; same /name mechanism."
+    },
+    {
+     "id": "deploy",
+     "name": "deploy.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "agents",
+     "name": "agents/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Subagents with their own prompt, tools and model."
+    },
+    {
+     "id": "code_reviewer",
+     "name": "code-reviewer.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "security_auditor",
+     "name": "security-auditor.md",
+     "depth": 3,
+     "icon": "file-text"
+    },
+    {
+     "id": "hooks",
+     "name": "hooks/",
+     "depth": 2,
+     "dir": true,
+     "icon": "folder",
+     "card": "Scripts run before or after tool calls. Pre-tool hooks can block unsafe actions."
+    },
+    {
+     "id": "validate",
+     "name": "validate-bash.sh",
+     "depth": 3,
+     "icon": "file-terminal",
+     "note": "script, wired up in settings.json"
+    }
+   ],
+   "footnote": "Repo already has AGENTS.md? Claude Code can read it in place of CLAUDE.md, when there is no CLAUDE.md.",
+   "lane": true,
+   "tree_title": "Claude Code",
+   "pill": "Project Structure",
+   "pad_start": 0.1,
+   "pad_end": 3.7,
+   "tier": "hypothesis",
+   "recipes": [],
+   "id": "s10",
+   "title": "Guidance vs enforced",
+   "done": [
+    "root",
+    "claude_md",
+    "local_md",
+    "mcp",
+    "dot_claude",
+    "settings",
+    "settings_local",
+    "rules",
+    "code_style",
+    "testing",
+    "skills",
+    "review",
+    "fix_issue",
+    "commands",
+    "deploy",
+    "agents",
+    "code_reviewer",
+    "security_auditor",
+    "hooks",
+    "validate"
+   ],
+   "build": [],
+   "phase": "recap",
+   "mascot": {
+    "pos": [
+     930.0,
+     1878.0
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": 0.7,
+      "to": [
+       540.0,
+       1878.0
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": 1.15
+     },
+     {
+      "type": "hop",
+      "at": {
+       "word": "files.",
+       "occurrence": 1,
+       "offset": 0.9
+      },
+      "to": [
+       930.0,
+       1878.0
+      ]
+     }
+    ],
+    "scale": 3
+   },
+   "_git_done": [
+    "local_md",
+    "settings_local"
+   ],
+   "wipe_in": true,
+   "recap": {
+    "keep": [
+     "claude_md",
+     "settings"
+    ],
+    "dim_at": {
+     "word": "CLAUDE.md",
+     "occurrence": 1,
+     "offset": 0.0
+    },
+    "all_at": {
+     "word": "files.",
+     "occurrence": 1,
+     "offset": 0.6
+    }
+   },
+   "objective": "Everything dims but CLAUDE.md and settings.json; then the full diagram lights up and holds 3 s",
+   "reason": "The takeaway, then a frame worth saving.",
+   "cover": true,
+   "cover_crop": [
+    300,
+    1890
+   ],
+   "cover_mascot": {
+    "x": 935,
+    "y": 1560,
+    "scale": 4,
+    "glasses_dy": -6
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "files."
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "guidance."
+     },
+     "action": "pulse"
+    },
+    {
+     "at": {
+      "word": "enforced."
+     },
+     "action": "pulse"
+    }
+   ]
+  }
+ ]
+}

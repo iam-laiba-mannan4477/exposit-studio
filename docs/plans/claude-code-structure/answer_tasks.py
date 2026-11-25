@@ -2,7 +2,7 @@
 import json, sys, time
 from pathlib import Path
 R = Path(__file__).resolve().parents[3]
-H = Path(__file__).parent
+H = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).parent
 T = R / "data" / "bridge" / "tasks"
 PID = sys.argv[1]
 load = lambda n: json.loads((H / n).read_text(encoding="utf-8"))
@@ -13,7 +13,7 @@ REVIEW = {"passed": True, "accuracy_issues": [], "engagement_notes": [
 ANS = {"researcher": lambda: load("research.json"), "creative_director": lambda: load("strategy.json"),
        "storyteller": lambda: load("script.json"), "reviewer": lambda: REVIEW, "visual_planner": lambda: load("board.json")}
 done, t0 = set(), time.time()
-while time.time() - t0 < 240:
+while time.time() - t0 < 150:
     tasks = sorted(T.glob("*.json"), key=lambda p: p.stat().st_mtime)
     for f in tasks:
         if f.name in done:

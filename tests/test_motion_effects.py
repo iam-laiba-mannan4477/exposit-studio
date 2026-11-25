@@ -17,7 +17,7 @@ def _px(png):
 
 
 def test_fourteen_effects_are_listed_and_in_the_gallery():
-    assert len(motion.EFFECTS) == 15 and set(gallery.EFFECTS) == set(motion.EFFECTS)
+    assert len(motion.EFFECTS) == 16 and set(gallery.EFFECTS) == set(motion.EFFECTS)
 
 
 @pytest.mark.parametrize("name", list(motion.EFFECTS))

@@ -108,7 +108,8 @@ def frame(t_blink: bool = False, glasses_dy: int = 0, eye_dx: int = 0, shine: fl
     return out
 
 
-def blit(c, arr: np.ndarray, x: float, y: float, scale: int, clip_y: float | None = None, alpha: float = 1.0) -> None:
+def blit(c, arr: np.ndarray, x: float, y: float, scale: int, clip_y: float | None = None, alpha: float = 1.0,
+         rim: str | None = None, shadow: bool = False) -> None:
     """Draws a frame with its feet (bottom centre) at (x, y), integer scale, nearest sampling, snapped to the grid."""
     img = skia.Image.fromarray(np.ascontiguousarray(arr), skia.kRGBA_8888_ColorType)
     h, w = arr.shape[:2]
@@ -117,6 +118,18 @@ def blit(c, arr: np.ndarray, x: float, y: float, scale: int, clip_y: float | Non
     c.save()
     if clip_y is not None:
         c.clipRect(skia.Rect.MakeLTRB(-100, -100, 2000, clip_y))
+    if shadow:                                            # a small warm ground shadow under the feet
+        sp = D.blur(D.paint(D.col("#000000", 0.55 * alpha)), 6)
+        c.drawOval(skia.Rect.MakeXYWH(x - w * scale * 0.36, y - 8, w * scale * 0.72, 16), sp)
+    if rim:                                               # a 1-pixel cream rim: the silhouette, offset, at half opacity
+        sil = np.zeros_like(arr)
+        sil[..., :3] = [int(rim[i:i + 2], 16) for i in (1, 3, 5)]
+        sil[..., 3] = (arr[..., 3] > 0) * 255
+        simg = skia.Image.fromarray(np.ascontiguousarray(sil), skia.kRGBA_8888_ColorType)
+        rp = skia.Paint(Alphaf=0.5 * alpha)
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            c.drawImageRect(simg, skia.Rect.MakeXYWH(x0 + dx * scale, y0 + dy * scale, w * scale, h * scale),
+                            skia.SamplingOptions(skia.FilterMode.kNearest), rp)
     p = skia.Paint(Alphaf=alpha) if alpha < 1 else None
     c.drawImageRect(img, skia.Rect.MakeXYWH(x0, y0, w * scale, h * scale),
                     skia.SamplingOptions(skia.FilterMode.kNearest), p)
@@ -175,6 +188,8 @@ class Mascot:
         dust = []
         visible = True
         busy_until = -1.0
+        if self.acts and self.acts[0]["type"] == "drop_in" and t < self.acts[0]["t0"]:
+            visible = False                                   # not on screen before it drops in
         for a in self.acts:
             if t < a["t0"]:
                 break
@@ -247,7 +262,7 @@ class Mascot:
             y -= self.scale * (int(t / 0.5) % 2)              # sprite pixel at the drawn scale)
         return x, y, kw, sx, sy, clip, dust, visible
 
-    def draw(self, c, t: float, alpha: float = 1.0, to_screen=None) -> None:
+    def draw(self, c, t: float, alpha: float = 1.0, to_screen=None, rim: str | None = None, shadow: bool = False) -> None:
         if not available():
             return
         x, y, kw, sx, sy, clip, dust, visible = self.state(t)
@@ -263,4 +278,4 @@ class Mascot:
         arr = frame(**kw)
         if sx != 1.0 or sy != 1.0:
             arr = _resample(arr, sx, sy)
-        blit(c, arr, x, y, self.scale, clip, alpha)
+        blit(c, arr, x, y, self.scale, clip, alpha, rim, shadow and visible)

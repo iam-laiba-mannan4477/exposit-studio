@@ -20,7 +20,7 @@ from .pro import ProTreatment
 
 WRAPPERS = ("parallax", "pinned_heading", "focus_frame")
 CONTENT = ("card_zoom_3d", "line_reveal", "marquee", "card_carousel", "model_3d", "stacking_cards", "scroll_demo",
-           "globe", "flat_map", "split_compare", "cache_split", "project_tree")
+           "globe", "flat_map", "split_compare", "cache_split", "project_tree", "dev_scene")
 EFFECTS = WRAPPERS + CONTENT
 MODELS = ("server_rack", "cube", "globe", "database", "datacenter")
 
@@ -452,6 +452,13 @@ class MotionScene(ProTreatment):
 
     def draw(self, c, t):
         getattr(self, "_" + self.effect, self._marquee)(c, t)
+
+    # ---- 16 premium developer-tool scenes (see devscenes.py)
+    def _dev_scene(self, c, t):
+        if not hasattr(self, "_dev"):
+            from .devscenes import Scene
+            self._dev = Scene(self)
+        self._dev.draw(c, t)
 
     # ---- 15 project-structure diagram that builds across scenes (see tree.py)
     def _project_tree(self, c, t):

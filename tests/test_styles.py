@@ -18,7 +18,7 @@ SUBSET = ("iconflow", "stat", "cards-benefits", "kinetic")
 
 
 def test_seventeen_styles_with_three_planned():
-    assert len(styles.STYLES) == 19
+    assert len(styles.STYLES) == 20
     assert set(styles.PLANNED) == {"stick-figure-story", "paper-cutout-puppet", "hand-puppet-theatre"}
     for n in styles.PLANNED:
         assert styles.STYLES[n].why_planned and n not in design.TEMPLATES, "planned styles are not offered as templates"

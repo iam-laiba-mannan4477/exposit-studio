@@ -82,6 +82,7 @@ Styles available (`styles_available`), with what each is best for:
 - cardboard-diorama: architecture overviews, how the parts sit together (parallax by default)
 - claude-warm-dark: developer tooling on deep charcoal: project structure, config files, CLI workflows
 - claude-orange: developer tooling explainers on warm cream with terracotta accents
+- claude-orange-dark: premium developer-tool explainers on black: editor UI, terminals, diagrams
 - stop-motion-clay: light, friendly intros and simple flows
 - hd-pixel-sprite-3d: ONLY for videos with a 3D model scene (model_3d); never instead of pixel-art
 Planned and NOT available (`styles_planned`): stick-figure-story, paper-cutout-puppet, hand-puppet-theatre. For incident
@@ -101,6 +102,7 @@ Motion effects (`effects_available`), best for:
 - globe: the real Earth at night or day, camera fly-to between cities, arcs with light-trail packets
 - split_compare: an analogy or contrast in two rows (far source vs near source), a travel arrow per row
 - cache_split: cache hit vs cache miss side by side, with a small real-response panel
+- dev_scene: premium developer-tool scenes (generic editor, terminal, hub, stacking cards, node graph, hook timeline), one layout per line
 - project_tree: a project-structure diagram (file tree + one card per entry, joined by arrows) that builds across scenes
 - flat_map: a regional view (Europe, Asia) of the same imagery with country borders and city labels
 

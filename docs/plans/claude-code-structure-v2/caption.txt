@@ -1,0 +1,26 @@
+Claude Code ignored your rule? It's probably in the wrong file.
+
+Where each one goes:
+- CLAUDE.md: the project brief, loaded every session. Guidance, not a guarantee.
+- CLAUDE.local.md: the same idea, but personal. Add it to .gitignore.
+- .mcp.json: tools like GitHub or a database, for the whole team.
+- .claude/settings.json: permissions, hooks, env vars, model. Enforced by the client.
+- .claude/settings.local.json: your private override.
+- rules/: instructions by topic, optionally scoped to file paths.
+- skills/: reusable workflows, called with a slash or picked up automatically. commands/ is the older form.
+- agents/: subagents with their own context and tools.
+- hooks: scripts around tool calls; a pre-tool hook can block unsafe ones. Wired up in settings.json.
+
+Three things to remember:
+1. CLAUDE.md is guidance, not a guarantee.
+2. If it must never happen, enforce it with a deny rule or a hook.
+3. Start with CLAUDE.md and settings.json.
+
+Save the last frame as a reference.
+
+Sources: code.claude.com/docs (claude-directory, memory, settings, permissions, hooks, skills, sub-agents, mcp), read 2026-11-25. Editor UI and terminal output are generic and illustrative.
+Sounds: generated in code, no third-party audio.
+
+#ClaudeCode #DeveloperTools #SoftwareEngineering #TechHub
+
+Sprite: Icons8 (icons8.com). Not affiliated with Anthropic.

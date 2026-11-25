@@ -399,6 +399,15 @@ def bg_cream(c, W, H):
     c.drawCircle(W * 0.5, H * 0.45, max(W, H) * 0.45, D.blur(D.paint(col("#F6DCCB", 0.35)), 220))
 
 
+def bg_orange_dark(c, W, H):
+    """Near-black with a faint warm radial glow at the centre (#1A1512); grain comes from the post chain."""
+    _bg_solid(c, "#0E0D0C", W, H)
+    p = skia.Paint()
+    p.setShader(skia.GradientShader.MakeRadial(skia.Point(W / 2, H * 0.45), max(W, H) * 0.62,
+                                               [col("#1A1512"), col("#0E0D0C")]))
+    c.drawRect(skia.Rect.MakeWH(W, H), p)
+
+
 # ================================================================== the style packs
 class Style:
     def __init__(self, name: str, tier: int, status: str, best_for: str, tpl: Template | None, post: tuple = (),
@@ -536,6 +545,15 @@ _add(Style("claude-orange", 1, "ready", "developer tooling explainers with a war
                 conn=dict(color="#D97757", width=3.0, active="#9E4528", glow=False, dash=(14, 10)),
                 sem=dict(success="#2E7D32", fail="#C0392B", info="#9E4528", neutral="#635C55")),
            post=(("paper", 0.05), ("grain", 0.016))))
+_add(Style("claude-orange-dark", 1, "ready", "premium developer-tool explainers: editor UI, terminals, diagrams on black",
+           _tpl("claude-orange-dark", _T("#0E0D0C", "#171615", "#171615", "#2A2725", "#F4F1EA", "#A8A097", "#D97757",
+                                         red="#E5604D", green="#7FB77E", amber="#F0A07E", blue="#F0A07E", teal="#F0A07E"),
+                dark=True, bg_fn=bg_orange_dark, family_bold="Heavy", bold_scale=0.92,
+                card=_card("#171615", "#2A2725", 2.0, 16, shadow=0.4, shadow_color="#000000"),
+                icon=dict(style="outline", color="#F4F1EA", badge=None, ring="#D97757", stroke=2.5),
+                conn=dict(color="#D97757", width=4.0, active="#F0A07E", glow=True, dash=(14, 10)),
+                sem=dict(success="#7FB77E", fail="#E5604D", info="#F0A07E", neutral="#A8A097")),
+           post=(("grain", 0.012),)))
 # ---- Tier 2
 _add(Style("stop-motion-clay", 2, "ready", "light, friendly intros; simple flows",
            _tpl("stop-motion-clay", _T("#F1D6B8", "#F6E2CB", "#FFC9B0", "#7A3E2E", "#3A1E16", "#55301F", "#C2410C", blue="#2F6F9E", teal="#2B8A7E", green="#2F6420"),

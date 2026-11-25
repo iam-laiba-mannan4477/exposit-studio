@@ -73,6 +73,7 @@ EFFECTS = {
                               {"id": "cfg", "name": ".claude/", "depth": 1, "icon": "folder-open"},
                               {"id": "set", "name": "settings.json", "depth": 2, "icon": "file-cog", "card": "Permissions, hooks, env vars. Enforced."}],
                      "build": [{"rows": ["root", "readme"], "at": 0.2}, {"rows": ["cfg", "set"], "at": 1.0}]}},
+    "dev_scene": {"narration": N, "spec": {"treatment": "motion", "effect": "dev_scene", "kind": "agents", "file": ".claude/agents/"}},
 }
 # extra 3D models on the still sheet
 MODELS = ["server_rack", "cube", "globe", "database"]

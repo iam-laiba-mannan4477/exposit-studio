@@ -221,7 +221,7 @@ def render_settings(pid: str) -> dict:
         w, h = w // 2, h // 2
     return {"w": w, "h": h, "fps": int(b.get("fps", config.FPS)), "theme": resolve_template(pid, b),
             "captions": bool(s.get("burn_captions", True)), "caption_style": s.get("caption_style", "phrase") if s.get("caption_style") in engine.CAPTION_STYLES else "phrase", "voice": b.get("voice") or s["voice"], "speed": float(b.get("voice_speed") or s["voice_speed"]),
-            "music": bool(s.get("music", True)), "sfx": bool(s.get("sfx", True)),
+            "music": bool(b.get("music", s.get("music", True))), "sfx": bool(s.get("sfx", True)),
             "engine": str(b.get("engine_version") or config.ENGINE_VERSION)}   # a production may pin its clips' engine version
 
 

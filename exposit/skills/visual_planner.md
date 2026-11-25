@@ -193,6 +193,10 @@ or arcs), city "kind": "focus" (bright pulse), "region", "alert" (red pulse, hea
     tree -a and morphs into the tree), "git_strike", "legacy", "frontmatter" (camera push with a code panel),
     "hook_flow", "recap" ({"keep", "dim_at", "all_at"}), "wipe_in"/"wipe_out", and "mascot" (the channel's pixel
     sprite, see render/mascot.py). tree.check_layout() verifies arrows, overlaps and 30 px text.
+16. dev_scene: one developer-tool scene per line on black (claude-orange-dark), "kind" one of hook, claude_md, local_md,
+    mcp, settings, rules, skills, agents, hooks, takeaway (see render/devscenes.py for each kind's fields). Scenes are
+    joined by "cut" and draw their own transitions: "tin"/"tout" whip, zoom, push, mask, match; "wipe_in"/"wipe_out".
+    "file" is the pinned heading, "pops" kinetic keywords, "push" camera push-ins on words, "mascot" the pixel sprite.
 
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.
 

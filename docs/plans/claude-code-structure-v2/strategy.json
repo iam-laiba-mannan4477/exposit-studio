@@ -1,0 +1,177 @@
+{
+ "audience_profile": "Senior engineers who use Claude Code or are evaluating it, and want to know which file in a repository does what, and which ones are enforced.",
+ "learning_objective": "Name each project file and folder Claude Code reads (CLAUDE.md, CLAUDE.local.md, .mcp.json, .claude/settings*.json, rules, skills, commands, agents, hook scripts) and tell guidance from enforced configuration.",
+ "creative_concept": "A premium multi-scene edit: a different layout and camera move per line inside a generic developer UI, ending on one save-worthy dark diagram.",
+ "treatments": [
+  {
+   "name": "A. Multi-scene developer UI edit",
+   "shape": "terminal, editor, split screen, hub diagram, stacking cards, isometric stack, menu, node graph, lifecycle timeline, full diagram",
+   "engagement": "high: a new shot every line",
+   "teaching_fit": "strong: each file shown doing its job",
+   "accuracy_risk": "low: every UI detail from the docs",
+   "feasibility": "new dev_scene effect",
+   "verdict": "Chosen: the user's v2 plan."
+  },
+  {
+   "name": "B. v1's single building diagram",
+   "shape": "one diagram, row by row",
+   "engagement": "steady",
+   "teaching_fit": "strong overview",
+   "accuracy_risk": "low",
+   "feasibility": "done",
+   "verdict": "Rejected for v2: one layout for 60 s."
+  },
+  {
+   "name": "C. Talking-head style captions over b-roll",
+   "shape": "kinetic text only",
+   "engagement": "medium",
+   "teaching_fit": "weak",
+   "accuracy_risk": "low",
+   "feasibility": "easy",
+   "verdict": "Rejected: shows nothing real."
+  }
+ ],
+ "chosen": "A. Multi-scene developer UI edit",
+ "hook": "A blinking cursor types claude; tree -a cascades and flies apart into 3D file cards.",
+ "narrative_structure": "Overview; root files (CLAUDE.md, CLAUDE.local.md, .mcp.json); inside .claude (settings, rules, skills, commands, agents, hooks); guidance vs enforced; full diagram held 3 s.",
+ "visual_direction": "claude-orange-dark: near-black, terracotta and bright orange accents, generic editor windows, warm syntax theme, light rays, the channel's mascot with a cream rim light.",
+ "narration_approach": "Calm, one line per row; file names spoken as written (Claude dot M D, dot M C P dot jay-son).",
+ "scene_breakdown": [
+  {
+   "title": "Hook",
+   "treatment": "motion",
+   "effect": "dev_scene:hook",
+   "seconds": 4.6,
+   "purpose": "Black screen, `claude` typed, tree -a cascades, the camera dollies through as the tree flies apart into 3D file cards"
+  },
+  {
+   "title": "CLAUDE.md",
+   "treatment": "motion",
+   "effect": "dev_scene:claude_md",
+   "seconds": 4.2,
+   "purpose": "Cards fly into the editor; CLAUDE.md types in; on 'loaded' it pours into the context-window bar"
+  },
+  {
+   "title": "CLAUDE.local.md",
+   "treatment": "motion",
+   "effect": "dev_scene:local_md",
+   "seconds": 5.4,
+   "purpose": "Editor above, terminal below: git status, echo >> .gitignore, the file greys out with an 'ignored' tag"
+  },
+  {
+   "title": ".mcp.json",
+   "treatment": "motion",
+   "effect": "dev_scene:mcp",
+   "seconds": 6.4,
+   "purpose": ".mcp.json keys highlight one by one; mask reveal into a hub with GitHub, Postgres and Jira; 'shared with team'"
+  },
+  {
+   "title": "settings",
+   "treatment": "motion",
+   "effect": "dev_scene:settings",
+   "seconds": 10.5,
+   "purpose": "Wipe into .claude/: a deny rule, a blocked command, then the settings precedence as stacking cards"
+  },
+  {
+   "title": "rules",
+   "treatment": "motion",
+   "effect": "dev_scene:rules",
+   "seconds": 3.9,
+   "purpose": "Isometric rule cards fan out; a paths glob lights the matching files"
+  },
+  {
+   "title": "skills and commands",
+   "treatment": "motion",
+   "effect": "dev_scene:skills",
+   "seconds": 10.9,
+   "purpose": "'/' opens the skill menu; /review; push into SKILL.md frontmatter; card flip to commands/ (legacy)"
+  },
+  {
+   "title": "agents",
+   "treatment": "motion",
+   "effect": "dev_scene:agents",
+   "seconds": 2.6,
+   "purpose": "The main session spawns two subagents with their own tool chips; they work in parallel and send summaries back"
+  },
+  {
+   "title": "hooks",
+   "treatment": "motion",
+   "effect": "dev_scene:hooks",
+   "seconds": 5.4,
+   "purpose": "PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"
+  },
+  {
+   "title": "Guidance vs enforced",
+   "treatment": "motion",
+   "effect": "dev_scene:takeaway",
+   "seconds": 9.3,
+   "purpose": "Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s"
+  }
+ ],
+ "tools": [
+  "Exposit renderer",
+  "Kokoro voice",
+  "Lucide icons",
+  "Archivo Black, Inter, JetBrains Mono (OFL)",
+  "Channel owner's pixel sprite"
+ ],
+ "decisions": [
+  {
+   "key": "hook",
+   "choice": "tree -a in a terminal morphing into the diagram",
+   "reason": "Starts from a command engineers know.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "length",
+   "choice": "about 63 s",
+   "reason": "User approved after trimming 145 to 126 words.",
+   "tier": "preference"
+  },
+  {
+   "key": "mascot",
+   "choice": "channel's own 48x48 sprite at 3x/4x, nearest-neighbour",
+   "reason": "User's asset; never covers title, tree rows, card text or arrows.",
+   "tier": "preference"
+  },
+  {
+   "key": "template",
+   "choice": "claude-orange-dark",
+   "reason": "User's choice; comment colour lightened to #8F877D for 4.5:1.",
+   "tier": "preference"
+  },
+  {
+   "key": "structure",
+   "choice": "a different layout per line",
+   "reason": "User's v2 plan.",
+   "tier": "preference"
+  },
+  {
+   "key": "transitions",
+   "choice": "match cut, whip pans, zoom-through, push-through, mask reveals, two wipes",
+   "reason": "Varied, one per change.",
+   "tier": "preference"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "s5 settings (10 s)",
+   "why": "Two files and four terms in one line",
+   "countermeasure": "Wipe into .claude/, mascot taps the row, git badge on the .local file"
+  },
+  {
+   "where": "s7 skills (11 s)",
+   "why": "Longest line",
+   "countermeasure": "Camera push into skills/ with the SKILL.md frontmatter, then the legacy tag"
+  }
+ ],
+ "experiment": "Does a save-worthy final frame lift saves compared with earlier videos?",
+ "recipes_used": [],
+ "template": "claude-orange-dark",
+ "template_reason": "User's choice for v2.",
+ "effects": [
+  "dev_scene",
+  "project_tree"
+ ],
+ "effects_reason": "dev_scene for the per-line scenes; project_tree for the final diagram."
+}

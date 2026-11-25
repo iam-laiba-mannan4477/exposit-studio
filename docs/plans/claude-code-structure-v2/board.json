@@ -1,0 +1,958 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Hook",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "fade",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "hook",
+   "file": "~/my-project",
+   "focus_out": [
+    540,
+    900
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     940,
+     1500
+    ],
+    "acts": [
+     {
+      "type": "drop_in",
+      "at": {
+       "word": "Here",
+       "offset": 0.5,
+       "occurrence": 1
+      },
+      "to": [
+       940,
+       1500
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": {
+       "word": "Here",
+       "offset": 1.2,
+       "occurrence": 1
+      }
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.35,
+     "action": "keys"
+    },
+    {
+     "at": 1.1,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "Here",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "transition"
+    }
+   ],
+   "objective": "Black screen, `claude` typed, tree -a cascades, the camera dollies through as the tree flies apart into 3D file cards"
+  },
+  {
+   "id": "s2",
+   "title": "CLAUDE.md",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "claude_md",
+   "file": "CLAUDE.md",
+   "tin": "match",
+   "tout": "whip",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     940,
+     1500
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "brief,",
+       "offset": 0.2,
+       "occurrence": 1
+      },
+      "to": [
+       900,
+       330
+      ]
+     }
+    ]
+   },
+   "pops": [
+    {
+     "text": "CLAUDE.md",
+     "at": {
+      "word": "CLAUDE.md",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1470
+    }
+   ],
+   "push": [
+    {
+     "at": {
+      "word": "loaded",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "x": 540,
+     "y": 1300,
+     "z": 1.06,
+     "hold": 1.2
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.75,
+     "action": "keys"
+    },
+    {
+     "at": 1.6,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "loaded",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    }
+   ],
+   "objective": "Cards fly into the editor; CLAUDE.md types in; on 'loaded' it pours into the context-window bar"
+  },
+  {
+   "id": "s3",
+   "title": "CLAUDE.local.md",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "local_md",
+   "file": "CLAUDE.local.md",
+   "tin": "whip",
+   "tout": "zoom",
+   "focus_out": [
+    700,
+    1240
+   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     900,
+     320
+    ],
+    "acts": [
+     {
+      "type": "peek",
+      "at": {
+       "word": "personal",
+       "offset": 0.0,
+       "occurrence": 1
+      },
+      "dur": 2.4
+     }
+    ]
+   },
+   "pops": [
+    {
+     "text": "private",
+     "at": {
+      "word": "personal",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1470
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "add",
+      "offset": 0.2,
+      "occurrence": 1
+     },
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": ".gitignore.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Editor above, terminal below: git status, echo >> .gitignore, the file greys out with an 'ignored' tag"
+  },
+  {
+   "id": "s4",
+   "title": ".mcp.json",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "mcp",
+   "file": ".mcp.json",
+   "tin": "zoom",
+   "focus_in": [
+    540,
+    600
+   ],
+   "wipe_out": true,
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     330
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "connects",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "GitHub",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "team.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": ".mcp.json keys highlight one by one; mask reveal into a hub with GitHub, Postgres and Jira; 'shared with team'"
+  },
+  {
+   "id": "s5",
+   "title": "settings",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "settings",
+   "file": ".claude/settings.json",
+   "wipe_in": true,
+   "tout": "push",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     320
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "settings.json",
+       "offset": 0.2,
+       "occurrence": 1
+      },
+      "to": [
+       760,
+       372
+      ]
+     },
+     {
+      "type": "tap",
+      "at": {
+       "word": "settings.json",
+       "offset": 0.8,
+       "occurrence": 1
+      },
+      "dir": -1
+     }
+    ]
+   },
+   "pops": [
+    {
+     "text": "enforced",
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1450
+    }
+   ],
+   "push": [
+    {
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "x": 540,
+     "y": 1150,
+     "z": 1.07,
+     "hold": 1.6
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": 0.5,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "permissions,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "settings.local.json",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "override.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Wipe into .claude/: a deny rule, a blocked command, then the settings precedence as stacking cards"
+  },
+  {
+   "id": "s6",
+   "title": "rules",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "rules",
+   "file": ".claude/rules/",
+   "tin": "push",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     930
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "topic,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "path.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Isometric rule cards fan out; a paths glob lights the matching files"
+  },
+  {
+   "id": "s7",
+   "title": "skills and commands",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "skills",
+   "file": ".claude/skills/",
+   "tin": "mask",
+   "focus_in": [
+    540,
+    900
+   ],
+   "tout": "whip",
+   "pick_at": {
+    "word": "Run",
+    "offset": 0.1,
+    "occurrence": 1
+   },
+   "push_at": {
+    "word": "Claude",
+    "offset": -0.2,
+    "occurrence": 1
+   },
+   "flip_at": {
+    "word": "Commands",
+    "offset": -0.1,
+    "occurrence": 2
+   },
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     330
+    ],
+    "acts": [
+     {
+      "type": "into_folder",
+      "at": {
+       "word": "Claude",
+       "offset": 0.5,
+       "occurrence": 1
+      },
+      "to": [
+       58,
+       470
+      ],
+      "hold": 99
+     },
+     {
+      "type": "out_of_folder",
+      "at": {
+       "word": "Commands",
+       "offset": -0.6,
+       "occurrence": 2
+      },
+      "to": [
+       900,
+       650
+      ]
+     }
+    ]
+   },
+   "pops": [
+    {
+     "text": "/review",
+     "at": {
+      "word": "Run",
+      "offset": 0.1,
+      "occurrence": 1
+     },
+     "y": 1420
+    }
+   ],
+   "push": [
+    {
+     "at": {
+      "word": "Claude",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "x": 540,
+     "y": 700,
+     "z": 1.06,
+     "hold": 2.0
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.35,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "Run",
+      "offset": 0.1,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "Claude",
+      "offset": 0.2,
+      "occurrence": 1
+     },
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "Commands",
+      "offset": 0,
+      "occurrence": 2
+     },
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "older,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "'/' opens the skill menu; /review; push into SKILL.md frontmatter; card flip to commands/ (legacy)"
+  },
+  {
+   "id": "s8",
+   "title": "agents",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "agents",
+   "file": ".claude/agents/",
+   "tin": "whip",
+   "tout": "push",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     900,
+     650
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "subagents",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "tools.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "The main session spawns two subagents with their own tool chips; they work in parallel and send summaries back"
+  },
+  {
+   "id": "s9",
+   "title": "hooks",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.6,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "hooks",
+   "file": ".claude/hooks/",
+   "tin": "push",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     960,
+     760
+    ],
+    "acts": [
+     {
+      "type": "shake",
+      "at": {
+       "word": "block",
+       "offset": 0.0,
+       "occurrence": 1
+      }
+     }
+    ]
+   },
+   "push": [
+    {
+     "at": {
+      "word": "block",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "x": 300,
+     "y": 700,
+     "z": 1.06,
+     "hold": 0.9
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": 0.9,
+     "action": "keys"
+    },
+    {
+     "at": {
+      "word": "block",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "run.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"
+  },
+  {
+   "id": "s10",
+   "title": "Guidance vs enforced",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 3.7,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "takeaway",
+   "file": "my-project/",
+   "tin": "mask",
+   "focus_in": [
+    540,
+    900
+   ],
+   "wipe_out": {
+    "word": "Start",
+    "offset": -0.35,
+    "occurrence": 1
+   },
+   "diagram": {
+    "tree": [
+     {
+      "id": "root",
+      "name": "my-project/",
+      "depth": 0,
+      "dir": true,
+      "icon": "folder-open",
+      "term": [
+       "."
+      ]
+     },
+     {
+      "id": "claude_md",
+      "name": "CLAUDE.md",
+      "depth": 1,
+      "icon": "file-text",
+      "card": "Project brief, read every session. Supports @imports."
+     },
+     {
+      "id": "local_md",
+      "name": "CLAUDE.local.md",
+      "depth": 1,
+      "icon": "file-text",
+      "card": "Your personal notes, read after CLAUDE.md. Add it to .gitignore."
+     },
+     {
+      "id": "mcp",
+      "name": ".mcp.json",
+      "depth": 1,
+      "icon": "file-json",
+      "card": "Team-shared MCP servers, committed with the repo."
+     },
+     {
+      "id": "dot_claude",
+      "name": ".claude/",
+      "depth": 1,
+      "dir": true,
+      "icon": "folder-open"
+     },
+     {
+      "id": "settings",
+      "name": "settings.json",
+      "depth": 2,
+      "icon": "file-cog",
+      "card": "Permissions, hooks, env, model. Enforced, not advisory."
+     },
+     {
+      "id": "settings_local",
+      "name": "settings.local.json",
+      "depth": 2,
+      "icon": "file-cog",
+      "card": "Personal overrides. Git-ignored once Claude Code writes it."
+     },
+     {
+      "id": "rules",
+      "name": "rules/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Instructions by topic. Can be scoped to file paths."
+     },
+     {
+      "id": "code_style",
+      "name": "code-style.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "testing",
+      "name": "testing.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "skills",
+      "name": "skills/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "One folder per skill. Run with /name, or used when relevant."
+     },
+     {
+      "id": "review",
+      "name": "review/SKILL.md",
+      "depth": 3,
+      "icon": "file-text",
+      "term": [
+       "review",
+       "SKILL.md"
+      ]
+     },
+     {
+      "id": "fix_issue",
+      "name": "fix-issue/SKILL.md",
+      "depth": 3,
+      "icon": "file-text",
+      "term": [
+       "fix-issue",
+       "SKILL.md"
+      ]
+     },
+     {
+      "id": "commands",
+      "name": "commands/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "tag": "legacy",
+      "card": "Older single-file form of skills. Same /name."
+     },
+     {
+      "id": "deploy",
+      "name": "deploy.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "agents",
+      "name": "agents/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Subagents with their own prompt, tools and model."
+     },
+     {
+      "id": "code_reviewer",
+      "name": "code-reviewer.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "security_auditor",
+      "name": "security-auditor.md",
+      "depth": 3,
+      "icon": "file-text"
+     },
+     {
+      "id": "hooks",
+      "name": "hooks/",
+      "depth": 2,
+      "dir": true,
+      "icon": "folder",
+      "card": "Scripts around tool calls. Pre-tool hooks can block."
+     },
+     {
+      "id": "validate",
+      "name": "validate-bash.sh",
+      "depth": 3,
+      "icon": "file-terminal",
+      "note": "wired in settings.json"
+     }
+    ],
+    "footnote": "Has AGENTS.md? Claude Code reads it if there is no CLAUDE.md.",
+    "band": [
+     330,
+     1530
+    ],
+    "foot_inset": 0,
+    "keep": [
+     "claude_md",
+     "settings"
+    ]
+   },
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     420
+    ],
+    "acts": [
+     {
+      "type": "hop",
+      "at": {
+       "word": "Start",
+       "offset": -0.25,
+       "occurrence": 1
+      },
+      "to": [
+       930.0,
+       336.17
+      ]
+     },
+     {
+      "type": "glasses",
+      "at": {
+       "word": "Start",
+       "offset": 1.4,
+       "occurrence": 1
+      }
+     }
+    ]
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "guidance.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "enforced.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "Start",
+      "offset": -0.35,
+      "occurrence": 1
+     },
+     "action": "transition"
+    },
+    {
+     "at": {
+      "word": "files.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s",
+   "cover": true,
+   "cover_crop": [
+    280,
+    1560
+   ],
+   "cover_mascot": {
+    "x": 940,
+    "y": 1600,
+    "scale": 4,
+    "glasses_dy": -6
+   }
+  }
+ ]
+}

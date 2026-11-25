@@ -61,7 +61,27 @@ def tick() -> np.ndarray:
     return (np.sin(2 * np.pi * 1500 * t) * np.exp(-t * 90) * 0.25).astype(np.float32)
 
 
-SFX = {"packet": lambda: blip(740), "highlight": lambda: blip(988, 0.18), "callout": lambda: blip(587, 0.3),
+def keys(seed: int = 5) -> np.ndarray:
+    """Soft keyboard clicks: four short filtered noise ticks over 0.32 s (generated)."""
+    rng = np.random.default_rng(seed)
+    out = np.zeros(int(0.36 * SR), dtype=np.float32)
+    for j in range(4):
+        n = int(0.018 * SR)
+        x = _lp(rng.standard_normal(n), 4000) * np.exp(-np.arange(n) / n * 6)
+        i = int((0.02 + 0.08 * j + 0.012 * rng.random()) * SR)
+        out[i:i + n] += (x * 0.16).astype(np.float32)
+    return out
+
+
+def thud() -> np.ndarray:
+    """A low thud: a decaying 58 Hz sine with a short noise attack (generated)."""
+    t = np.arange(int(0.45 * SR)) / SR
+    body = np.sin(2 * np.pi * 58 * t) * np.exp(-t * 9) * 0.55
+    hit = _lp(np.random.default_rng(9).standard_normal(len(t)), 300) * np.exp(-t * 40) * 0.4
+    return (body + hit).astype(np.float32)
+
+
+SFX = {"keys": keys, "thud": thud, "whoosh_soft": lambda: whoosh(0.5) * 0.5,"packet": lambda: blip(740), "highlight": lambda: blip(988, 0.18), "callout": lambda: blip(587, 0.3),
        "count": lambda: blip(1174, 0.16), "enter": lambda: blip(523, 0.3), "transition": whoosh, "type": tick,
        "soft": lambda: blip(660, 0.2) * 0.45}         # end-slide lines: quieter than cue sounds
 

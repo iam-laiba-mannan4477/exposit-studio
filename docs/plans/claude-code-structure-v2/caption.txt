@@ -1,0 +1,23 @@
+Which files does Claude Code actually read? (v2)
+
+Every file Claude Code reads in a repo, and what it does:
+- CLAUDE.md: the project brief, loaded every session. Guidance, not enforcement.
+- CLAUDE.local.md: your personal notes. Add it to .gitignore.
+- .mcp.json: team-shared MCP servers, committed with the repo.
+- .claude/settings.json: permissions, hooks, env vars, model defaults. Enforced by the client.
+- .claude/settings.local.json: personal overrides, git-ignored once Claude Code writes it.
+- rules/: instructions split by topic, optionally scoped to file paths.
+- skills/: one folder per skill with SKILL.md. Run with /name, or Claude uses it when the task fits.
+- commands/: the older single-file form; same /name mechanism.
+- agents/: subagents with their own prompt, tools and model.
+- hooks: scripts that run around tool calls; pre-tool hooks can block unsafe actions. Wired up in settings.json.
+
+Start with two files: CLAUDE.md and settings.json.
+Save the last frame as a reference.
+
+Sources: code.claude.com/docs (claude-directory, memory, settings, permissions, hooks, skills, sub-agents, mcp), read 2026-11-25. Editor UI is generic and illustrative.
+Sounds: generated in code, no third-party audio.
+
+#ClaudeCode #DeveloperTools #SoftwareEngineering #TechHub
+
+Sprite: Icons8 (icons8.com). Not affiliated with Anthropic.

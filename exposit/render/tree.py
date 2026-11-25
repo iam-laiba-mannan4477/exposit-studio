@@ -34,6 +34,8 @@ PALETTES = {
                  CARD="#1E1C1A", PANEL="#141312", BG="#1A1918", DIMB="#4A3A32", BAND=None, BAND_T="#F4F1EA", GLOW=0.30),
     # claude-orange: cream page, peach cards. Grey, accent text and the title band are the nearest shades of the brief's
     # colours that reach 4.5:1 (#9A938B, #D97757 as text, and cream on #D97757 measure 2.7-2.8:1).
+    "orange-dark": dict(TEXT="#F4F1EA", MUTED="#A8A097", ACC="#D97757", ACC_T="#F0A07E", RUST="#B85C3C", OK="#7FB77E", BAD="#E5604D",
+                        CARD="#171615", PANEL="#131211", BG="#0E0D0C", DIMB="#2A2725", BAND=None, BAND_T="#F4F1EA", GLOW=0.30),
     "orange": dict(TEXT="#1F1E1D", MUTED="#635C55", ACC="#D97757", ACC_T="#9E4528", RUST="#B85C3C", OK="#2E7D32", BAD="#C0392B",
                    CARD="#F6DCCB", PANEL="#FBF8F2", BG="#F4F1EA", DIMB="#E3B9A0", BAND="#A44A2C", BAND_T="#F4F1EA", GLOW=0.22),
 }
@@ -41,7 +43,7 @@ TEXT = MUTED = ACC = ACC_T = RUST = OK = BAD = CARD = PANEL = BG = DIMB = BAND =
 
 
 def set_palette(name: str) -> None:
-    globals().update(PALETTES["orange" if name == "claude-orange" else "dark"])
+    globals().update(PALETTES[{"claude-orange": "orange", "claude-orange-dark": "orange-dark"}.get(name, "dark")])
 
 
 set_palette("dark")
@@ -76,16 +78,20 @@ def _layout_cached(key: str):
 
 def layout(spec: dict) -> dict:
     import json
-    return _layout_cached(json.dumps({k: spec.get(k) for k in ("tree", "footnote", "pill", "lane")}, sort_keys=True))
+    return _layout_cached(json.dumps({k: spec.get(k) for k in ("tree", "footnote", "pill", "lane", "band", "foot_inset")}, sort_keys=True))
 
 
 def _layout(spec: dict) -> dict:
     global TOP, LH, PAD
+    global BOTTOM
     lane = bool(spec.get("lane"))                            # room for the mascot: above the first card, beside the footnote
     TOP, LH, PAD = (362.0, 35.0, 12.0) if lane else (262.0, 36.0, 14.0)
+    BOTTOM = 1880.0
+    if spec.get("band"):                                     # an explicit vertical band (e.g. inside platform safe zones)
+        TOP, BOTTOM, LH, PAD = float(spec["band"][0]), float(spec["band"][1]), 34.0, 11.0
     rows = [dict(r) for r in spec["tree"]]
     foot = spec.get("footnote")
-    foot_w = W - 2 * TREE_X - (230 if lane else 0)
+    foot_w = W - 2 * TREE_X - (230 if lane else float(spec.get("foot_inset") or 0))
     foot_lines = D.wrap(foot, foot_w - 2 * PAD, FS, "Regular") if foot else []
     foot_h = len(foot_lines) * LH + 2 * PAD - 8 if foot else 0.0
     bottom = BOTTOM - (foot_h + 16 if foot else 0)
@@ -119,7 +125,7 @@ def _layout(spec: dict) -> dict:
         return max(ry - P + 26, cy - gap)
 
     P, gap = 60.0, 12.0
-    while place(P, gap) > bottom and P > 44:
+    while place(P, gap) > bottom and P > (41 if spec.get("band") else 44):
         P -= 1.0
         gap = max(8.0, gap - 0.25)
     spare = bottom - place(P, gap)
@@ -175,6 +181,11 @@ def check_layout(spec: dict) -> list[str]:
         for ln in c["lines"]:
             if D.text_width(ln, FS) > c["w"] - 2 * PAD + 0.5:
                 errs.append(f"card {c['row']} line too wide: {ln}")
+    ft = L.get("foot")
+    if ft:
+        low = max([r["y"] + 14 + len(r["note_lines"]) * LH * 0.9 for r in rows] + [c["y"] + c["h"] for c in cards.values()])
+        if low > ft["y"] - 6:
+            errs.append(f"the footnote overlaps the diagram by {low - ft['y'] + 6:.0f} px")
     if L["pitch"] < FS * 1.3:
         errs.append(f"row pitch {L['pitch']:.0f} px is too tight for {FS:.0f} px text")
     return errs
@@ -383,6 +394,8 @@ class Tree:
                 c.drawRect(skia.Rect.MakeLTRB(0, 0, W * k, H), D.paint(col(ACC)))
 
     def _title(self, c, t):
+        if self.sp.get("no_title"):
+            return
         z = self.camera(t)[0]
         kb = clamp((z - 1.06) / 0.15)
         if kb > 0:                                            # a backdrop while the camera pushes in

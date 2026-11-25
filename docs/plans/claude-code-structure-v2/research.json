@@ -1,0 +1,337 @@
+{
+ "arrangement": "A typical repository using Claude Code: project memory files at the root, team MCP config, and a .claude/ folder with settings, rules, skills, legacy commands, subagents and a hook script.",
+ "claims": [
+  {
+   "id": "c1",
+   "text": "CLAUDE.md is read at the start of every session; it holds commands, conventions and architecture notes and can import files with @path/to/import.",
+   "sources": [
+    {
+     "title": "Memory (CLAUDE.md files) (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/memory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c2",
+   "text": "CLAUDE.local.md holds private per-project preferences, is appended after CLAUDE.md, and should be added to .gitignore.",
+   "sources": [
+    {
+     "title": "Memory (CLAUDE.md files) (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/memory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c3",
+   "text": "A project-scoped .mcp.json is checked into version control so the team shares the same MCP servers (e.g. GitHub, databases; Jira appears as a use case).",
+   "sources": [
+    {
+     "title": "Connect Claude Code to tools via MCP (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/mcp",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c4",
+   "text": ".claude/settings.json holds permissions, hooks, env vars and model defaults; unlike CLAUDE.md these are enforced.",
+   "sources": [
+    {
+     "title": "Explore the .claude directory (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/claude-directory",
+     "kind": "primary"
+    },
+    {
+     "title": "Claude Code settings (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/settings",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c5",
+   "text": ".claude/settings.local.json holds personal overrides and is gitignored when Claude Code saves a setting to it.",
+   "sources": [
+    {
+     "title": "Claude Code settings (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/settings",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c6",
+   "text": ".claude/rules/*.md split instructions by topic and can be scoped to file paths with a `paths` frontmatter field.",
+   "sources": [
+    {
+     "title": "Memory (rules) (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/memory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c7",
+   "text": "Skills live in .claude/skills/<name>/SKILL.md, are invoked with /skill-name, or used by Claude when it matches the task.",
+   "sources": [
+    {
+     "title": "Extend Claude with skills (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/skills",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c8",
+   "text": "Custom commands (.claude/commands/*.md) have been merged into skills: single-file prompts, same mechanism.",
+   "sources": [
+    {
+     "title": "Extend Claude with skills (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/skills",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c9",
+   "text": "Subagents in .claude/agents/*.md each have their own system prompt, tool access and optionally their own model.",
+   "sources": [
+    {
+     "title": "Create custom subagents (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/sub-agents",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c10",
+   "text": "Hooks run commands before (PreToolUse) or after (PostToolUse) tool calls; a PreToolUse hook can block the call. Hooks are defined in settings files; .claude/hooks/ is the path used in the docs' examples, not a required folder.",
+   "sources": [
+    {
+     "title": "Hooks reference (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/hooks",
+     "kind": "primary"
+    },
+    {
+     "title": "Claude Code settings (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/settings",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c11",
+   "text": "If a repository already has an AGENTS.md, Claude Code can read it in place of a CLAUDE.md (by default only when there is no CLAUDE.md).",
+   "sources": [
+    {
+     "title": "Explore the .claude directory (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/claude-directory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c12",
+   "text": "Claude treats CLAUDE.md as context, not enforced configuration; settings rules are enforced by the client.",
+   "sources": [
+    {
+     "title": "Memory (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/memory",
+     "kind": "primary"
+    },
+    {
+     "title": "Claude Code settings (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/settings",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c13",
+   "text": "The .claude directory page lists CLAUDE.md, .mcp.json, .claude/settings.json, settings.local.json, rules/, skills/, commands/ and agents/ for a project, among other files.",
+   "sources": [
+    {
+     "title": "Explore the .claude directory (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/claude-directory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c14",
+   "text": "A Bash deny rule can use a * wildcard that matches any text, e.g. \"deny\": [\"Bash(rm -rf *)\"] under permissions. The docs do not give an exact denial message, so the video's terminal shows generic wording.",
+   "sources": [
+    {
+     "title": "Permissions (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/permissions",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c15",
+   "text": "Settings precedence, highest first: managed settings, command line, project local, shared project, user.",
+   "sources": [
+    {
+     "title": "Claude Code settings (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/settings",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c16",
+   "text": "Rules can be scoped with a paths: list of globs in YAML frontmatter, e.g. \"src/api/**/*.ts\".",
+   "sources": [
+    {
+     "title": "Memory (rules) (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/memory",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c17",
+   "text": "Each subagent runs in its own context window with its own tool access; subagents can run concurrently and return their results to the main conversation.",
+   "sources": [
+    {
+     "title": "Create custom subagents (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/sub-agents",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c18",
+   "text": "A PreToolUse hook receives tool_input.command for Bash and can deny the call (the docs' example greps for 'rm -rf' with jq).",
+   "sources": [
+    {
+     "title": "Hooks reference (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/hooks",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c19",
+   "text": "Skills appear in the / menu; the frontmatter name is the command shown there and description tells Claude when to use it.",
+   "sources": [
+    {
+     "title": "Extend Claude with skills (read 2026-11-25)",
+     "url": "https://code.claude.com/docs/en/skills",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  }
+ ],
+ "model": {
+  "components": [
+   {
+    "id": "repo",
+    "kind": "zone",
+    "label": "my-project/"
+   },
+   {
+    "id": "memory",
+    "kind": "service",
+    "label": "CLAUDE.md, CLAUDE.local.md"
+   },
+   {
+    "id": "mcp",
+    "kind": "service",
+    "label": ".mcp.json"
+   },
+   {
+    "id": "dotclaude",
+    "kind": "zone",
+    "label": ".claude/"
+   },
+   {
+    "id": "settings",
+    "kind": "service",
+    "label": "settings.json, settings.local.json"
+   },
+   {
+    "id": "ext",
+    "kind": "service",
+    "label": "rules, skills, commands, agents, hook scripts"
+   }
+  ],
+  "links": [
+   [
+    "repo",
+    "memory"
+   ],
+   [
+    "repo",
+    "mcp"
+   ],
+   [
+    "repo",
+    "dotclaude"
+   ],
+   [
+    "dotclaude",
+    "settings"
+   ],
+   [
+    "dotclaude",
+    "ext"
+   ]
+  ],
+  "steps": [
+   {
+    "n": 1,
+    "text": "At session start Claude reads CLAUDE.md, then CLAUDE.local.md.",
+    "components": [
+     "repo",
+     "memory"
+    ]
+   },
+   {
+    "n": 2,
+    "text": "Project MCP servers from .mcp.json connect outside tools.",
+    "components": [
+     "mcp"
+    ]
+   },
+   {
+    "n": 3,
+    "text": "The client enforces settings.json: permissions, hooks, env, model.",
+    "components": [
+     "dotclaude",
+     "settings"
+    ]
+   },
+   {
+    "n": 4,
+    "text": "Rules, skills, commands, agents and hook scripts extend Claude.",
+    "components": [
+     "ext"
+    ]
+   }
+  ]
+ },
+ "open_questions": []
+}

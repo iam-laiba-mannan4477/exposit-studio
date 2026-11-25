@@ -80,6 +80,8 @@ Styles available (`styles_available`), with what each is best for:
 - paper-craft: architecture overviews, layered systems
 - shadow-puppetry: dramatic stories: outages, failures, before and after
 - cardboard-diorama: architecture overviews, how the parts sit together (parallax by default)
+- claude-warm-dark: developer tooling on deep charcoal: project structure, config files, CLI workflows
+- claude-orange: developer tooling explainers on warm cream with terracotta accents
 - stop-motion-clay: light, friendly intros and simple flows
 - hd-pixel-sprite-3d: ONLY for videos with a 3D model scene (model_3d); never instead of pixel-art
 Planned and NOT available (`styles_planned`): stick-figure-story, paper-cutout-puppet, hand-puppet-theatre. For incident
@@ -99,6 +101,7 @@ Motion effects (`effects_available`), best for:
 - globe: the real Earth at night or day, camera fly-to between cities, arcs with light-trail packets
 - split_compare: an analogy or contrast in two rows (far source vs near source), a travel arrow per row
 - cache_split: cache hit vs cache miss side by side, with a small real-response panel
+- project_tree: a project-structure diagram (file tree + one card per entry, joined by arrows) that builds across scenes
 - flat_map: a regional view (Europe, Asia) of the same imagery with country borders and city labels
 
 Rules: playful styles are allowed only when they help the explanation; labels stay precise either way (real protocol

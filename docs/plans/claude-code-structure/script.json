@@ -1,0 +1,164 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "Hook",
+   "sentences": [
+    {
+     "text": "Here are the key files in a Claude Code project, and what each does.",
+     "claims": [
+      "c13"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "CLAUDE.md",
+   "sentences": [
+    {
+     "text": "CLAUDE.md is the project brief, loaded every session.",
+     "claims": [
+      "c1"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s3",
+   "title": "CLAUDE.local.md",
+   "sentences": [
+    {
+     "text": "CLAUDE.local.md holds your personal notes; add it to .gitignore.",
+     "claims": [
+      "c2"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s4",
+   "title": ".mcp.json",
+   "sentences": [
+    {
+     "text": ".mcp.json connects tools like GitHub or a database for the whole team.",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s5",
+   "title": "settings",
+   "sentences": [
+    {
+     "text": "Inside .claude: settings.json is enforced: permissions, hooks, environment, model.",
+     "claims": [
+      "c4"
+     ]
+    },
+    {
+     "text": "settings.local.json is your private override.",
+     "claims": [
+      "c5"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s6",
+   "title": "rules",
+   "sentences": [
+    {
+     "text": "Rules split instructions by topic, even by file path.",
+     "claims": [
+      "c6"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s7",
+   "title": "skills and commands",
+   "sentences": [
+    {
+     "text": "Skills are reusable workflows, one folder each.",
+     "claims": [
+      "c7"
+     ]
+    },
+    {
+     "text": "Run them as slash commands, or Claude uses them when the task fits.",
+     "claims": [
+      "c7"
+     ]
+    },
+    {
+     "text": "Commands are the older, single-file version.",
+     "claims": [
+      "c8"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s8",
+   "title": "agents",
+   "sentences": [
+    {
+     "text": "Agents are subagents with their own tools.",
+     "claims": [
+      "c9"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s9",
+   "title": "hooks",
+   "sentences": [
+    {
+     "text": "Hooks run scripts around tool calls, and can block unsafe ones before they run.",
+     "claims": [
+      "c10"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s10",
+   "title": "Guidance vs enforced",
+   "sentences": [
+    {
+     "text": "CLAUDE.md is guidance.",
+     "claims": [
+      "c12"
+     ]
+    },
+    {
+     "text": "Settings and hooks are enforced.",
+     "claims": [
+      "c12"
+     ]
+    },
+    {
+     "text": "Start with those two files.",
+     "claims": [
+      "c12"
+     ]
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

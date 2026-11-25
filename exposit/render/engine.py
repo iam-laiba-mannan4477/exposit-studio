@@ -1103,7 +1103,7 @@ def draw_frame(canvas: skia.Canvas, tr: Treatment, t: float, w: int, h: int, cap
             canvas.restore()
     else:
         _draw_frame(canvas, tr, t, w, h, captions)
-    if st and st.post:                                      # textures (grain, paper, vignette...) as image blits
+    if st and st.post and not getattr(tr, "no_background", False):                                    # textures (grain, paper, vignette...) as image blits
         styles.overlay(canvas, st.post, w, h, int(t * 30))
 
 
@@ -1425,6 +1425,8 @@ def _visual_still(spec: dict, timing: dict, theme: str, w: int, h: int) -> skia.
     v["cues"] = [c for c in v.get("cues", []) if c.get("action") not in ("count", "callout", "highlight")]
     v["camera"] = {}
     v["effects"] = []                                     # no focus dimming, scrolling or parallax on a cover
+    if v.get("cover_mascot"):                             # the cover draws the mascot itself, larger
+        v.pop("mascot", None)
     tr = build(v, timing, theme, portrait=h > w)
     tr.fade_out = False
     tr.no_background = True                               # drawn straight onto the cover's own background
@@ -1472,12 +1474,19 @@ def render_cover(theme: str, headline: str, kicker: str = "", visual: tuple[dict
         vw, vh = (1080, 1920) if portrait else (1920, 1080)
         img = _visual_still(spec, timing, theme, vw, vh)
         sy0, sy1 = (design.PORTRAIT_BAND[0] - 14, design.PORTRAIT_BAND[1] + 14) if portrait else (60, 1040)
+        if spec.get("cover_crop"):                         # a scene that fills the frame (e.g. a full diagram)
+            sy0, sy1 = spec["cover_crop"]
         src = skia.Rect.MakeLTRB(0, sy0, vw, sy1)
         bx, by, bw, bh = box
         k = min(bw / src.width(), bh / src.height())
         dw, dh = src.width() * k, src.height() * k
         dst = skia.Rect.MakeXYWH(bx + (bw - dw) / 2, by + (bh - dh) / 2, dw, dh)
         c.drawImageRect(img, src, dst, skia.SamplingOptions(skia.FilterMode.kLinear))
+    cm = (visual[0].get("cover_mascot") if visual else None)
+    if cm:                                                 # the channel's pixel mascot, integer scale, nearest
+        from . import mascot as M
+        if M.available():
+            M.blit(c, M.frame(glasses_dy=int(cm.get("glasses_dy", -6))), float(cm["x"]), float(cm["y"]), int(cm.get("scale", 4)))
     if brand:                                              # small badge, bottom left of the safe area
         f = design.make_font(36, "Bold")
         tw = f.measureText(brand)

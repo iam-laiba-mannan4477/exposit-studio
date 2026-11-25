@@ -186,6 +186,13 @@ Content effects, with "treatment": "motion":
 Globe options for journeys: "labels": "compact" (32 px names and 30 px codes on small pills that never overlap each other
 or arcs), city "kind": "focus" (bright pulse), "region", "alert" (red pulse, heavy load), "until" (cue when it fades);
 "all_regions" / "all_edges" background layers; "tags" (word pills); "counter"; fly keyframes may "lead" their word.
+15. project_tree: a file tree (left) with one explanation card per entry (right), each joined to its own row by a
+    horizontal arrow; a pinned title. Every scene of the sequence carries the same "tree" ([{"id", "name", "depth",
+    "icon", "card", "tag", "note"}]) and "footnote"; "done" lists rows built earlier and "build" ([{"rows", "at"}]) the
+    rows this scene builds, so scenes joined by "cut" read as one build. Extras: "phase": "hook" (a terminal runs
+    tree -a and morphs into the tree), "git_strike", "legacy", "frontmatter" (camera push with a code panel),
+    "hook_flow", "recap" ({"keep", "dim_at", "all_at"}), "wipe_in"/"wipe_out", and "mascot" (the channel's pixel
+    sprite, see render/mascot.py). tree.check_layout() verifies arrows, overlaps and 30 px text.
 
 Only draw what the facts establish. Give every element a model_ref when the system model has that component.
 

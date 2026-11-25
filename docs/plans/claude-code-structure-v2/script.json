@@ -2,18 +2,18 @@
  "scenes": [
   {
    "id": "s1",
-   "title": "Hook",
+   "title": "Hook: ignored rule",
    "sentences": [
     {
-     "text": "Which files does Claude Code actually read?",
+     "text": "Claude Code ignored your rule?",
      "claims": [
-      "c13"
+      "c12"
      ]
     },
     {
-     "text": "Here are the key ones.",
+     "text": "It's probably in the wrong file.",
      "claims": [
-      "c13"
+      "c12"
      ]
     }
    ],
@@ -37,7 +37,13 @@
    "title": "CLAUDE.local.md",
    "sentences": [
     {
-     "text": "CLAUDE.local.md holds your personal notes; add it to .gitignore.",
+     "text": "CLAUDE.local.md is the same idea, but personal.",
+     "claims": [
+      "c2"
+     ]
+    },
+    {
+     "text": "Add it to .gitignore.",
      "claims": [
       "c2"
      ]
@@ -82,9 +88,10 @@
    "title": "rules",
    "sentences": [
     {
-     "text": "Rules split instructions by topic, even by file path.",
+     "text": "Rules split instructions by topic, and can target specific file paths.",
      "claims": [
-      "c6"
+      "c6",
+      "c16"
      ]
     }
    ],
@@ -95,19 +102,14 @@
    "title": "skills and commands",
    "sentences": [
     {
-     "text": "Skills are reusable workflows, one folder each.",
+     "text": "Skills are reusable workflows, called with a slash or picked up automatically.",
      "claims": [
-      "c7"
+      "c7",
+      "c19"
      ]
     },
     {
-     "text": "Run them as slash commands, or Claude uses them when the task fits.",
-     "claims": [
-      "c7"
-     ]
-    },
-    {
-     "text": "Commands are the older, single-file version.",
+     "text": "Commands are the older form.",
      "claims": [
       "c8"
      ]
@@ -120,9 +122,10 @@
    "title": "agents",
    "sentences": [
     {
-     "text": "Agents are subagents with their own tools.",
+     "text": "Agents are subagents with their own context and tools.",
      "claims": [
-      "c9"
+      "c9",
+      "c17"
      ]
     }
    ],
@@ -135,7 +138,8 @@
     {
      "text": "Hooks run scripts around tool calls, and can block unsafe ones before they run.",
      "claims": [
-      "c10"
+      "c10",
+      "c18"
      ]
     }
    ],
@@ -143,22 +147,50 @@
   },
   {
    "id": "s10",
-   "title": "Guidance vs enforced",
+   "title": "Three things",
    "sentences": [
     {
-     "text": "CLAUDE.md is guidance.",
+     "text": "Three things to remember.",
      "claims": [
       "c12"
      ]
-    },
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s11",
+   "title": "Takeaway one",
+   "sentences": [
     {
-     "text": "Settings and hooks are enforced.",
+     "text": "CLAUDE.md is guidance, not a guarantee.",
      "claims": [
       "c12"
      ]
-    },
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s12",
+   "title": "Takeaway two",
+   "sentences": [
     {
-     "text": "Start with those two files.",
+     "text": "If it must never happen, enforce it with a deny rule or a hook.",
+     "claims": [
+      "c14",
+      "c18"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s13",
+   "title": "Takeaway three",
+   "sentences": [
+    {
+     "text": "Start with CLAUDE.md and settings.json.",
      "claims": [
       "c12"
      ]

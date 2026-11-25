@@ -320,7 +320,11 @@ class Scene:
         z, fx, fy = self.camera(t)
         pc.save()
         pc.translate(fx, fy); pc.scale(z, z); pc.translate(-fx, -fy)
-        getattr(self, "_" + self.kind)(pc, t)
+        fn = getattr(self, "_" + self.kind, None)
+        if fn is None:
+            from . import ide
+            fn = ide.SCENES[self.kind].__get__(self)
+        fn(pc, t)
         pc.restore()
         self._overlays(pc, t)
         pic = rec.finishRecordingAsPicture()
@@ -353,6 +357,11 @@ class Scene:
 
     def camera(self, t):
         """A slow drift (1.0 -> 1.03) plus a push-in on each key word ("push": [{"at", "x", "y", "z"}])."""
+        if self.kind == "ide_hook":                       # starts pushed in on the editor and terminal, pulls back
+            from . import ide
+            return ide.ide_hook_camera(self, t)
+        if self.kind == "takeaway_step" and self.sp.get("diagram") and t > self.at(self.sp.get("diagram_at"), 1e9) + 0.3:
+            return 1.0, W / 2, 900.0
         if self.kind == "takeaway" and t > self.w("Start", 3.0, 0.1):
             return 1.0, W / 2, 900.0                          # the saved frame: no drift, the mascot's perch stays exact
         z = 1.0 + 0.03 * io(t / max(self.dur, 0.1))
@@ -366,7 +375,7 @@ class Scene:
         return z, fx, fy
 
     def _overlays(self, c, t):
-        if self.sp.get("file"):
+        if self.sp.get("file") and not self.kind.startswith("ide_"):   # the IDE's tab and breadcrumbs name the file
             heading(c, self.sp["file"])
         for p in self.sp.get("pops", []):
             pop(c, p["text"], p.get("x", W / 2), p.get("y", 1440), t, self.at(p.get("at"), 0), p.get("size", 80),
@@ -542,7 +551,7 @@ class Scene:
            '      "url": "https://api.githubcopilot.com/mcp/"', "    }", "  }", "}"]
 
     def _mcp(self, c, t):
-        cut = self.w("GitHub", 2.4, -0.25)
+        cut = -1.0 if self.sp.get("hub_only") else self.w("GitHub", 2.4, -0.25)
         if t < cut:
             hl = min(4, max(1, int((t - 0.3) / 0.45) + 1))
             rays(c, W / 2, 360, t, 0.7)
@@ -642,7 +651,7 @@ class Scene:
                     code_line(c, ln, -220, -80 + i * 44, "yaml" if i < 4 else "md", None, io((t - 0.6 - 0.12 * i) / 0.3))
             c.restore()
         # mini tree: files under src/api light up on "path"
-        lit = io((t - self.w("path.", 2.6, -0.3)) / 0.4)
+        lit = io((t - self.at(self.sp.get("lit_at"), self.w("path.", 2.6, -0.3))) / 0.4)
         files = [("src/", 0, None), ("api/", 1, True), ("users.ts", 2, True), ("orders.ts", 2, True), ("web/", 1, False), ("app.tsx", 2, False)]
         x0, y0 = 660.0, 1000.0
         box(c, x0 - 30, y0 - 70, 400, 380, 18, P["panel"], P["border"], 2, fan)
@@ -815,7 +824,7 @@ class Scene:
                         recap={"keep": spec.get("keep", []), "dim_at": 0.0, "all_at": 0.0})   # all lit; kept rows glow
             shim = SimpleNamespace(sc=SimpleNamespace(spec=spec, dur=self.dur), tpl=self.ms.tpl, cue_t=lambda at, d=0.0: d if at is None else (float(at) if isinstance(at, (int, float)) else self.ms.cue_t(at, d)))
             self._diagram = Tree(shim)
-        k = io((t - self.w("Start", 3.0, 0.2)) / 0.6)
+        k = io((t - self.at(self.sp.get("diagram_at"), self.w("Start", 3.0)) - 0.2) / 0.6)
         self._diagram.draw(c, t)
         if k < 1:
             c.drawRect(skia.Rect.MakeWH(W, H), D.paint(col(P["bg"], 1 - k)))

@@ -2,69 +2,84 @@
  "scenes": [
   {
    "id": "s1",
-   "title": "Hook",
+   "title": "Hook: ignored rule",
    "treatment": "motion",
    "effect": "dev_scene",
    "transition": "fade",
    "pad_start": 0.1,
-   "pad_end": 0.15,
+   "pad_end": 0.6,
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "hook",
-   "file": "~/my-project",
-   "focus_out": [
-    540,
-    900
+   "kind": "ide_hook",
+   "file": "CLAUDE.md",
+   "tout": "whip",
+   "pops": [
+    {
+     "text": "Ignored your rule?",
+     "at": 0.45,
+     "y": 760,
+     "size": 84,
+     "hold": 2.2
+    }
    ],
    "mascot": {
     "scale": 3,
     "pos": [
-     940,
-     1500
+     960,
+     900
     ],
     "acts": [
      {
-      "type": "drop_in",
-      "at": {
-       "word": "Here",
-       "offset": 0.5,
-       "occurrence": 1
-      },
-      "to": [
-       940,
-       1500
-      ]
-     },
-     {
-      "type": "glasses",
-      "at": {
-       "word": "Here",
-       "offset": 1.2,
-       "occurrence": 1
-      }
+      "type": "peek",
+      "at": 0.7,
+      "dur": 2.3
      }
     ]
    },
    "cues": [
     {
-     "at": 0.35,
-     "action": "keys"
+     "at": 0.3,
+     "action": "thud"
     },
     {
-     "at": 1.1,
-     "action": "keys"
+     "at": 0.45,
+     "action": "highlight"
     },
     {
      "at": {
-      "word": "Here",
+      "word": "wrong",
       "offset": 0.0,
       "occurrence": 1
      },
-     "action": "transition"
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "file.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
     }
    ],
-   "objective": "Black screen, `claude` typed, tree -a cascades, the camera dollies through as the tree flies apart into 3D file cards"
+   "expand_at": {
+    "word": "wrong",
+    "offset": -0.1,
+    "occurrence": 1
+   },
+   "objective": "Frame 0: CLAUDE.md says 'Never delete build/' while the terminal shows rm -rf build/ (illustrative); the rule flashes red; 'Ignored your rule?'; pull back as the explorer expands",
+   "cover": true,
+   "cover_crop": [
+    236,
+    1524
+   ],
+   "cover_mascot": {
+    "x": 930,
+    "y": 1700,
+    "scale": 4,
+    "glasses_dy": -6
+   }
   },
   {
    "id": "s2",
@@ -77,31 +92,10 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "claude_md",
+   "kind": "ide_claude_md",
    "file": "CLAUDE.md",
-   "tin": "match",
-   "tout": "whip",
-   "mascot": {
-    "scale": 3,
-    "pos": [
-     940,
-     1500
-    ],
-    "acts": [
-     {
-      "type": "hop",
-      "at": {
-       "word": "brief,",
-       "offset": 0.2,
-       "occurrence": 1
-      },
-      "to": [
-       900,
-       330
-      ]
-     }
-    ]
-   },
+   "tin": "whip",
+   "tout": "push",
    "pops": [
     {
      "text": "CLAUDE.md",
@@ -110,29 +104,24 @@
       "offset": 0.0,
       "occurrence": 1
      },
-     "y": 1470
+     "y": 1440
     }
    ],
-   "push": [
-    {
-     "at": {
-      "word": "loaded",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "x": 540,
-     "y": 1300,
-     "z": 1.06,
-     "hold": 1.2
-    }
-   ],
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     900.0,
+     352.0
+    ],
+    "acts": []
+   },
    "cues": [
     {
-     "at": 0.75,
+     "at": 0.4,
      "action": "keys"
     },
     {
-     "at": 1.6,
+     "at": 1.4,
      "action": "keys"
     },
     {
@@ -141,10 +130,18 @@
       "offset": 0.0,
       "occurrence": 1
      },
-     "action": "whoosh_soft"
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "session.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
     }
    ],
-   "objective": "Cards fly into the editor; CLAUDE.md types in; on 'loaded' it pours into the context-window bar"
+   "objective": "CLAUDE.md types in the editor; on 'loaded every session' it fills the context window"
   },
   {
    "id": "s3",
@@ -157,52 +154,48 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "local_md",
+   "kind": "ide_local",
    "file": "CLAUDE.local.md",
-   "tin": "whip",
+   "tin": "push",
    "tout": "zoom",
    "focus_out": [
     700,
-    1240
+    1300
+   ],
+   "pops": [
+    {
+     "text": "personal",
+     "at": {
+      "word": "personal.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1000
+    }
    ],
    "mascot": {
     "scale": 3,
     "pos": [
-     900,
-     320
+     900.0,
+     352.0
     ],
     "acts": [
      {
       "type": "peek",
       "at": {
-       "word": "personal",
+       "word": "personal.",
        "offset": 0.0,
        "occurrence": 1
       },
-      "dur": 2.4
+      "dur": 2.2
      }
     ]
    },
-   "pops": [
-    {
-     "text": "private",
-     "at": {
-      "word": "personal",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "y": 1470
-    }
-   ],
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
      "at": {
-      "word": "add",
-      "offset": 0.2,
+      "word": "Add",
+      "offset": 0.1,
       "occurrence": 1
      },
      "action": "keys"
@@ -216,7 +209,7 @@
      "action": "highlight"
     }
    ],
-   "objective": "Editor above, terminal below: git status, echo >> .gitignore, the file greys out with an 'ignored' tag"
+   "objective": "Explorer marks CLAUDE.local.md untracked (U); Add-Content .gitignore; the file dims as ignored"
   },
   {
    "id": "s4",
@@ -230,26 +223,23 @@
    "recipes": [],
    "reason": "A different layout and camera move per line.",
    "kind": "mcp",
+   "hub_only": true,
    "file": ".mcp.json",
    "tin": "zoom",
    "focus_in": [
     540,
-    600
+    860
    ],
    "wipe_out": true,
    "mascot": {
     "scale": 3,
     "pos": [
-     960,
-     330
+     930,
+     420
     ],
     "acts": []
    },
    "cues": [
-    {
-     "at": 0.0,
-     "action": "transition"
-    },
     {
      "at": {
       "word": "connects",
@@ -264,7 +254,7 @@
       "offset": 0.0,
       "occurrence": 1
      },
-     "action": "whoosh_soft"
+     "action": "packet"
     },
     {
      "at": {
@@ -275,7 +265,7 @@
      "action": "highlight"
     }
    ],
-   "objective": ".mcp.json keys highlight one by one; mask reveal into a hub with GitHub, Postgres and Jira; 'shared with team'"
+   "objective": "Full-screen hub: Claude Code connected to GitHub, Postgres and Jira; 'shared with team'"
   },
   {
    "id": "s5",
@@ -288,15 +278,26 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "settings",
+   "kind": "ide_settings",
    "file": ".claude/settings.json",
    "wipe_in": true,
    "tout": "push",
+   "pops": [
+    {
+     "text": "enforced",
+     "at": {
+      "word": "enforced:",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1000
+    }
+   ],
    "mascot": {
     "scale": 3,
     "pos": [
-     960,
-     320
+     930,
+     420
     ],
     "acts": [
      {
@@ -307,8 +308,8 @@
        "occurrence": 1
       },
       "to": [
-       760,
-       372
+       900.0,
+       352.0
       ]
      },
      {
@@ -322,37 +323,9 @@
      }
     ]
    },
-   "pops": [
-    {
-     "text": "enforced",
-     "at": {
-      "word": "enforced:",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "y": 1450
-    }
-   ],
-   "push": [
-    {
-     "at": {
-      "word": "enforced:",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "x": 540,
-     "y": 1150,
-     "z": 1.07,
-     "hold": 1.6
-    }
-   ],
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
-     "at": 0.5,
+     "at": 0.4,
      "action": "keys"
     },
     {
@@ -388,7 +361,7 @@
      "action": "highlight"
     }
    ],
-   "objective": "Wipe into .claude/: a deny rule, a blocked command, then the settings precedence as stacking cards"
+   "objective": "IDE: a deny rule; the terminal's rm -rf build/ is denied (illustrative); then the precedence stack"
   },
   {
    "id": "s6",
@@ -404,6 +377,11 @@
    "kind": "rules",
    "file": ".claude/rules/",
    "tin": "push",
+   "lit_at": {
+    "word": "paths.",
+    "offset": 0.0,
+    "occurrence": 1
+   },
    "mascot": {
     "scale": 3,
     "pos": [
@@ -414,10 +392,6 @@
    },
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
      "at": {
       "word": "topic,",
       "offset": 0.0,
@@ -427,14 +401,14 @@
     },
     {
      "at": {
-      "word": "path.",
+      "word": "paths.",
       "offset": 0.0,
       "occurrence": 1
      },
      "action": "highlight"
     }
    ],
-   "objective": "Isometric rule cards fan out; a paths glob lights the matching files"
+   "objective": "Full-screen isometric rule cards; a paths glob lights the matching files"
   },
   {
    "id": "s7",
@@ -447,7 +421,7 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "skills",
+   "kind": "ide_skills",
    "file": ".claude/skills/",
    "tin": "mask",
    "focus_in": [
@@ -456,37 +430,48 @@
    ],
    "tout": "whip",
    "pick_at": {
-    "word": "Run",
+    "word": "slash",
     "offset": 0.1,
     "occurrence": 1
    },
    "push_at": {
-    "word": "Claude",
-    "offset": -0.2,
+    "word": "automatically.",
+    "offset": -0.3,
     "occurrence": 1
    },
    "flip_at": {
     "word": "Commands",
     "offset": -0.1,
-    "occurrence": 2
+    "occurrence": 1
    },
+   "pops": [
+    {
+     "text": "/review",
+     "at": {
+      "word": "slash",
+      "offset": 0.1,
+      "occurrence": 1
+     },
+     "y": 1400
+    }
+   ],
    "mascot": {
     "scale": 3,
     "pos": [
-     960,
-     330
+     900.0,
+     352.0
     ],
     "acts": [
      {
       "type": "into_folder",
       "at": {
-       "word": "Claude",
-       "offset": 0.5,
+       "word": "automatically.",
+       "offset": 0.1,
        "occurrence": 1
       },
       "to": [
-       58,
-       470
+       100,
+       446
       ],
       "hold": 99
      },
@@ -495,7 +480,7 @@
       "at": {
        "word": "Commands",
        "offset": -0.6,
-       "occurrence": 2
+       "occurrence": 1
       },
       "to": [
        900,
@@ -504,38 +489,14 @@
      }
     ]
    },
-   "pops": [
-    {
-     "text": "/review",
-     "at": {
-      "word": "Run",
-      "offset": 0.1,
-      "occurrence": 1
-     },
-     "y": 1420
-    }
-   ],
-   "push": [
-    {
-     "at": {
-      "word": "Claude",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "x": 540,
-     "y": 700,
-     "z": 1.06,
-     "hold": 2.0
-    }
-   ],
    "cues": [
     {
-     "at": 0.35,
+     "at": 0.6,
      "action": "keys"
     },
     {
      "at": {
-      "word": "Run",
+      "word": "slash",
       "offset": 0.1,
       "occurrence": 1
      },
@@ -543,8 +504,8 @@
     },
     {
      "at": {
-      "word": "Claude",
-      "offset": 0.2,
+      "word": "automatically.",
+      "offset": 0.0,
       "occurrence": 1
      },
      "action": "keys"
@@ -552,21 +513,21 @@
     {
      "at": {
       "word": "Commands",
-      "offset": 0,
-      "occurrence": 2
+      "offset": 0.0,
+      "occurrence": 1
      },
      "action": "whoosh_soft"
     },
     {
      "at": {
-      "word": "older,",
+      "word": "older",
       "offset": 0.0,
       "occurrence": 1
      },
      "action": "highlight"
     }
    ],
-   "objective": "'/' opens the skill menu; /review; push into SKILL.md frontmatter; card flip to commands/ (legacy)"
+   "objective": "IDE terminal: '/' opens the menu, /review; SKILL.md frontmatter in the editor; commands/ card flips to legacy"
   },
   {
    "id": "s8",
@@ -593,10 +554,6 @@
    },
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
      "at": {
       "word": "subagents",
       "offset": 0.0,
@@ -613,7 +570,7 @@
      "action": "highlight"
     }
    ],
-   "objective": "The main session spawns two subagents with their own tool chips; they work in parallel and send summaries back"
+   "objective": "Full-screen node graph: two subagents with their own tools report back"
   },
   {
    "id": "s9",
@@ -626,14 +583,14 @@
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "hooks",
+   "kind": "ide_hooks",
    "file": ".claude/hooks/",
    "tin": "push",
    "mascot": {
     "scale": 3,
     "pos": [
-     960,
-     760
+     900.0,
+     352.0
     ],
     "acts": [
      {
@@ -646,26 +603,9 @@
      }
     ]
    },
-   "push": [
-    {
-     "at": {
-      "word": "block",
-      "offset": 0.0,
-      "occurrence": 1
-     },
-     "x": 300,
-     "y": 700,
-     "z": 1.06,
-     "hold": 0.9
-    }
-   ],
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
-     "at": 0.9,
+     "at": 0.2,
      "action": "keys"
     },
     {
@@ -678,6 +618,14 @@
     },
     {
      "at": {
+      "word": "block",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
       "word": "run.",
       "offset": 0.0,
       "occurrence": 1
@@ -685,31 +633,137 @@
      "action": "highlight"
     }
    ],
-   "objective": "PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"
+   "objective": "IDE: validate-bash.sh, the lifecycle strip, BLOCK on rm -rf (illustrative), npm test allowed"
   },
   {
    "id": "s10",
-   "title": "Guidance vs enforced",
+   "title": "Three things",
    "treatment": "motion",
    "effect": "dev_scene",
    "transition": "cut",
    "pad_start": 0.1,
-   "pad_end": 3.7,
+   "pad_end": 0.2,
    "tier": "hypothesis",
    "recipes": [],
    "reason": "A different layout and camera move per line.",
-   "kind": "takeaway",
+   "kind": "takeaway_step",
+   "step": 0,
    "file": "my-project/",
    "tin": "mask",
    "focus_in": [
     540,
-    900
+    700
    ],
-   "wipe_out": {
-    "word": "Start",
-    "offset": -0.35,
-    "occurrence": 1
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     450
+    ],
+    "acts": []
    },
+   "cues": [
+    {
+     "at": {
+      "word": "three",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "'3 things to remember'"
+  },
+  {
+   "id": "s11",
+   "title": "Takeaway one",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.15,
+   "pad_end": 0.2,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "takeaway_step",
+   "step": 1,
+   "file": "my-project/",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     450
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "guidance,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Card 1: CLAUDE.md = guidance (book)"
+  },
+  {
+   "id": "s12",
+   "title": "Takeaway two",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.15,
+   "pad_end": 0.2,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "takeaway_step",
+   "step": 2,
+   "file": "my-project/",
+   "mascot": {
+    "scale": 3,
+    "pos": [
+     930,
+     450
+    ],
+    "acts": []
+   },
+   "cues": [
+    {
+     "at": {
+      "word": "deny",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "hook.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Card 2: Must never happen? deny rule or hook (lock); the opening rm -rf build/ is now denied (illustrative)"
+  },
+  {
+   "id": "s13",
+   "title": "Takeaway three",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.15,
+   "pad_end": 3.7,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout and camera move per line.",
+   "kind": "takeaway_step",
+   "step": 3,
+   "file": "my-project/",
    "diagram": {
     "tree": [
      {
@@ -874,18 +928,28 @@
      "settings"
     ]
    },
+   "diagram_at": {
+    "word": "settings.json.",
+    "offset": 0.5,
+    "occurrence": 1
+   },
+   "wipe_out": {
+    "word": "settings.json.",
+    "offset": 0.5,
+    "occurrence": 1
+   },
    "mascot": {
     "scale": 3,
     "pos": [
      930,
-     420
+     450
     ],
     "acts": [
      {
       "type": "hop",
       "at": {
-       "word": "Start",
-       "offset": -0.25,
+       "word": "settings.json.",
+       "offset": 0.6,
        "occurrence": 1
       },
       "to": [
@@ -896,8 +960,8 @@
      {
       "type": "glasses",
       "at": {
-       "word": "files.",
-       "offset": 1.6,
+       "word": "settings.json.",
+       "offset": 1.9,
        "occurrence": 1
       }
      }
@@ -905,12 +969,8 @@
    },
    "cues": [
     {
-     "at": 0.0,
-     "action": "transition"
-    },
-    {
      "at": {
-      "word": "guidance.",
+      "word": "CLAUDE.md",
       "offset": 0.0,
       "occurrence": 1
      },
@@ -918,49 +978,30 @@
     },
     {
      "at": {
-      "word": "enforced.",
-      "offset": 0.0,
+      "word": "settings.json.",
+      "offset": 0.5,
       "occurrence": 1
      },
-     "action": "highlight"
+     "action": "whoosh_soft"
     },
     {
      "at": {
-      "word": "Start",
-      "offset": -0.35,
+      "word": "settings.json.",
+      "offset": 1.05,
       "occurrence": 1
      },
-     "action": "transition"
+     "action": "soft"
     },
     {
      "at": {
-      "word": "files.",
-      "offset": 0.0,
+      "word": "settings.json.",
+      "offset": 3.1,
       "occurrence": 1
      },
-     "action": "highlight"
-    },
-    {
-     "at": {
-      "word": "files.",
-      "offset": 2.15,
-      "occurrence": 1
-     },
-     "action": "highlight"
+     "action": "soft"
     }
    ],
-   "objective": "Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s",
-   "cover": true,
-   "cover_crop": [
-    280,
-    1560
-   ],
-   "cover_mascot": {
-    "x": 930,
-    "y": 1690,
-    "scale": 4,
-    "glasses_dy": -6
-   }
+   "objective": "Card 3: Start with CLAUDE.md + settings.json (rocket); wipe into the full diagram; hold 3 s"
   }
  ]
 }

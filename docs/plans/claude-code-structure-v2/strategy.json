@@ -32,80 +32,101 @@
   }
  ],
  "chosen": "A. Multi-scene developer UI edit",
- "hook": "A blinking cursor types claude; tree -a cascades and flies apart into 3D file cards.",
- "narrative_structure": "Overview; root files (CLAUDE.md, CLAUDE.local.md, .mcp.json); inside .claude (settings, rules, skills, commands, agents, hooks); guidance vs enforced; full diagram held 3 s.",
+ "hook": "Frame 0: CLAUDE.md says 'Never delete build/' and the terminal shows rm -rf build/; 'Ignored your rule?'",
+ "narrative_structure": "A familiar failure; where each file goes; three takeaways; the full diagram to save.",
  "visual_direction": "claude-orange-dark: near-black, terracotta and bright orange accents, generic editor windows, warm syntax theme, light rays, the channel's mascot with a cream rim light.",
  "narration_approach": "Calm, one line per row; file names spoken as written (Claude dot M D, dot M C P dot jay-son).",
  "scene_breakdown": [
   {
-   "title": "Hook",
+   "title": "Hook: ignored rule",
    "treatment": "motion",
-   "effect": "dev_scene:hook",
-   "seconds": 4.6,
-   "purpose": "Black screen, `claude` typed, tree -a cascades, the camera dollies through as the tree flies apart into 3D file cards"
+   "effect": "dev_scene:ide_hook",
+   "seconds": 5.0,
+   "purpose": "Frame 0: CLAUDE.md says 'Never delete build/' while the terminal shows rm -rf build/ (illustrative); the rule flashes red; 'Ignored your rule?'; pull back as the explorer expands"
   },
   {
    "title": "CLAUDE.md",
    "treatment": "motion",
-   "effect": "dev_scene:claude_md",
-   "seconds": 4.2,
-   "purpose": "Cards fly into the editor; CLAUDE.md types in; on 'loaded' it pours into the context-window bar"
+   "effect": "dev_scene:ide_claude_md",
+   "seconds": 5.0,
+   "purpose": "CLAUDE.md types in the editor; on 'loaded every session' it fills the context window"
   },
   {
    "title": "CLAUDE.local.md",
    "treatment": "motion",
-   "effect": "dev_scene:local_md",
-   "seconds": 5.4,
-   "purpose": "Editor above, terminal below: git status, echo >> .gitignore, the file greys out with an 'ignored' tag"
+   "effect": "dev_scene:ide_local",
+   "seconds": 5.0,
+   "purpose": "Explorer marks CLAUDE.local.md untracked (U); Add-Content .gitignore; the file dims as ignored"
   },
   {
    "title": ".mcp.json",
    "treatment": "motion",
    "effect": "dev_scene:mcp",
-   "seconds": 6.4,
-   "purpose": ".mcp.json keys highlight one by one; mask reveal into a hub with GitHub, Postgres and Jira; 'shared with team'"
+   "seconds": 5.0,
+   "purpose": "Full-screen hub: Claude Code connected to GitHub, Postgres and Jira; 'shared with team'"
   },
   {
    "title": "settings",
    "treatment": "motion",
-   "effect": "dev_scene:settings",
-   "seconds": 10.5,
-   "purpose": "Wipe into .claude/: a deny rule, a blocked command, then the settings precedence as stacking cards"
+   "effect": "dev_scene:ide_settings",
+   "seconds": 5.0,
+   "purpose": "IDE: a deny rule; the terminal's rm -rf build/ is denied (illustrative); then the precedence stack"
   },
   {
    "title": "rules",
    "treatment": "motion",
    "effect": "dev_scene:rules",
-   "seconds": 3.9,
-   "purpose": "Isometric rule cards fan out; a paths glob lights the matching files"
+   "seconds": 5.0,
+   "purpose": "Full-screen isometric rule cards; a paths glob lights the matching files"
   },
   {
    "title": "skills and commands",
    "treatment": "motion",
-   "effect": "dev_scene:skills",
-   "seconds": 10.9,
-   "purpose": "'/' opens the skill menu; /review; push into SKILL.md frontmatter; card flip to commands/ (legacy)"
+   "effect": "dev_scene:ide_skills",
+   "seconds": 5.0,
+   "purpose": "IDE terminal: '/' opens the menu, /review; SKILL.md frontmatter in the editor; commands/ card flips to legacy"
   },
   {
    "title": "agents",
    "treatment": "motion",
    "effect": "dev_scene:agents",
-   "seconds": 2.6,
-   "purpose": "The main session spawns two subagents with their own tool chips; they work in parallel and send summaries back"
+   "seconds": 5.0,
+   "purpose": "Full-screen node graph: two subagents with their own tools report back"
   },
   {
    "title": "hooks",
    "treatment": "motion",
-   "effect": "dev_scene:hooks",
-   "seconds": 5.4,
-   "purpose": "PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"
+   "effect": "dev_scene:ide_hooks",
+   "seconds": 5.0,
+   "purpose": "IDE: validate-bash.sh, the lifecycle strip, BLOCK on rm -rf (illustrative), npm test allowed"
   },
   {
-   "title": "Guidance vs enforced",
+   "title": "Three things",
    "treatment": "motion",
-   "effect": "dev_scene:takeaway",
-   "seconds": 9.3,
-   "purpose": "Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s"
+   "effect": "dev_scene:takeaway_step0",
+   "seconds": 5.0,
+   "purpose": "'3 things to remember'"
+  },
+  {
+   "title": "Takeaway one",
+   "treatment": "motion",
+   "effect": "dev_scene:takeaway_step1",
+   "seconds": 5.0,
+   "purpose": "Card 1: CLAUDE.md = guidance (book)"
+  },
+  {
+   "title": "Takeaway two",
+   "treatment": "motion",
+   "effect": "dev_scene:takeaway_step2",
+   "seconds": 5.0,
+   "purpose": "Card 2: Must never happen? deny rule or hook (lock); the opening rm -rf build/ is now denied (illustrative)"
+  },
+  {
+   "title": "Takeaway three",
+   "treatment": "motion",
+   "effect": "dev_scene:takeaway_step3",
+   "seconds": 5.0,
+   "purpose": "Card 3: Start with CLAUDE.md + settings.json (rocket); wipe into the full diagram; hold 3 s"
   }
  ],
  "tools": [

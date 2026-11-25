@@ -13,7 +13,7 @@ REVIEW = {"passed": True, "accuracy_issues": [], "engagement_notes": [
 ANS = {"researcher": lambda: load("research.json"), "creative_director": lambda: load("strategy.json"),
        "storyteller": lambda: load("script.json"), "reviewer": lambda: REVIEW, "visual_planner": lambda: load("board.json")}
 done, t0 = set(), time.time()
-while time.time() - t0 < 120:
+while time.time() - t0 < 150:
     tasks = sorted(T.glob("*.json"), key=lambda p: p.stat().st_mtime)
     for f in tasks:
         if f.name in done:

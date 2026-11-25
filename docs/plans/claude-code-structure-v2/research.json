@@ -174,7 +174,7 @@
   },
   {
    "id": "c14",
-   "text": "A Bash deny rule can use a * wildcard that matches any text, e.g. \"deny\": [\"Bash(rm -rf *)\"] under permissions. The docs do not give an exact denial message, so the video's terminal shows generic wording.",
+   "text": "A Bash deny rule can use a * wildcard that matches any text, e.g. \"deny\": [\"Bash(rm -rf *)\"] under permissions. The docs do not give an exact denial message, so the video's terminal shows generic wording. Card 2's 'hooks are the strongest' is an editorial judgement: deny rules match command text, while a hook sees the full tool input.",
    "sources": [
     {
      "title": "Permissions (read 2026-11-25)",

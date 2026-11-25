@@ -1,6 +1,7 @@
-"""Claude Code project structure Reel, v2: a multi-scene edit in claude-orange-dark (one dev_scene per script line,
-varied transitions, generic editor UI, the channel's mascot) ending on the full dark diagram. Script and facts from v1
-(fact-checked 2026-11-25), line 1 as a question. Writes script.json, board.json, research.json and strategy.json."""
+"""Claude Code project structure Reel, v2 update (production p5c0e8dbb85): the problem-first script (2026-11-25),
+a generic IDE for S1-S3, S5, S7 and S9, full-screen diagrams for S4, S6 and S8, and three takeaway cards. Line 10 is
+four scenes (intro + one per takeaway) so the scene pads give the ~0.35 s pauses between the points.
+Writes script.json, board.json, research.json and strategy.json next to this file."""
 import json, sys
 from pathlib import Path
 
@@ -10,12 +11,27 @@ sys.path.insert(0, str(H.parents[2]))
 from exposit.render import tree as TR, design as DS, styles  # noqa: E402,F401
 
 THEME = "claude-orange-dark"
-v1_script = json.loads((V1 / "script.json").read_text(encoding="utf-8"))
-script = json.loads(json.dumps(v1_script))
-script["scenes"][0]["sentences"] = [{"text": "Which files does Claude Code actually read?", "claims": ["c13"]},
-                                    {"text": "Here are the key ones.", "claims": ["c13"]}]
+S = lambda text, *claims: {"text": text, "claims": list(claims)}
+LINES = [
+    ("s1", "Hook: ignored rule", [S("Claude Code ignored your rule?", "c12"), S("It's probably in the wrong file.", "c12")]),
+    ("s2", "CLAUDE.md", [S("CLAUDE.md is the project brief, loaded every session.", "c1")]),
+    ("s3", "CLAUDE.local.md", [S("CLAUDE.local.md is the same idea, but personal.", "c2"), S("Add it to .gitignore.", "c2")]),
+    ("s4", ".mcp.json", [S(".mcp.json connects tools like GitHub or a database for the whole team.", "c3")]),
+    ("s5", "settings", [S("Inside .claude: settings.json is enforced: permissions, hooks, environment, model.", "c4"),
+                        S("settings.local.json is your private override.", "c5")]),
+    ("s6", "rules", [S("Rules split instructions by topic, and can target specific file paths.", "c6", "c16")]),
+    ("s7", "skills and commands", [S("Skills are reusable workflows, called with a slash or picked up automatically.", "c7", "c19"),
+                                   S("Commands are the older form.", "c8")]),
+    ("s8", "agents", [S("Agents are subagents with their own context and tools.", "c9", "c17")]),
+    ("s9", "hooks", [S("Hooks run scripts around tool calls, and can block unsafe ones before they run.", "c10", "c18")]),
+    ("s10", "Three things", [S("Three things to remember.", "c12")]),
+    ("s11", "Takeaway one", [S("CLAUDE.md is guidance, not a guarantee.", "c12")]),
+    ("s12", "Takeaway two", [S("If it must never happen, enforce it with a deny rule or a hook.", "c14", "c18")]),
+    ("s13", "Takeaway three", [S("Start with CLAUDE.md and settings.json.", "c12")]),
+]
+script = {"scenes": [{"id": i, "title": t, "sentences": s, "terms": []} for i, t, s in LINES]}
 
-# the final diagram: v1's tree with two-line cards so it fits between y 300 and 1530 (Instagram safe zones)
+# the final diagram, as approved for v2
 CARDS = {"claude_md": "Project brief, read every session. Supports @imports.",
          "local_md": "Your personal notes, read after CLAUDE.md. Add it to .gitignore.",
          "mcp": "Team-shared MCP servers, committed with the repo.",
@@ -37,69 +53,78 @@ DIAGRAM = {"tree": TREE, "footnote": FOOT, "band": [330, 1530], "foot_inset": 0,
 DS.set_active(DS.TEMPLATES[THEME])
 TR.set_palette(THEME)
 problems = TR.check_layout(DIAGRAM)
-PERCH = [930.0, TR.layout(DIAGRAM)["cards"]["claude_md"]["y"] - 1]      # on the CLAUDE.md card's top edge, under the heading row
+PERCH = [930.0, TR.layout(DIAGRAM)["cards"]["claude_md"]["y"] - 1]
 
 w = lambda x, off=0.0, occ=1: {"word": x, "offset": off, "occurrence": occ}
 M = lambda pos, *acts: {"scale": 3, "pos": list(pos), "acts": list(acts)}
+TABS = [900.0, 352.0]                                    # on the IDE's tab row, right side
 SC = {
- "s1": dict(kind="hook", file="~/my-project", focus_out=[540, 900],
-            mascot=M((940, 1500), {"type": "drop_in", "at": w("Here", 0.5), "to": [940, 1500]}, {"type": "glasses", "at": w("Here", 1.2)}),
-            cues=[{"at": 0.35, "action": "keys"}, {"at": 1.1, "action": "keys"}, {"at": w("Here"), "action": "transition"}],
-            objective="Black screen, `claude` typed, tree -a cascades, the camera dollies through as the tree flies apart into 3D file cards"),
- "s2": dict(kind="claude_md", file="CLAUDE.md", tin="match", tout="whip",
-            mascot=M((940, 1500), {"type": "hop", "at": w("brief,", 0.2), "to": [900, 330]}),
-            pops=[{"text": "CLAUDE.md", "at": w("CLAUDE.md"), "y": 1470}],
-            push=[{"at": w("loaded"), "x": 540, "y": 1300, "z": 1.06, "hold": 1.2}],
-            cues=[{"at": 0.75, "action": "keys"}, {"at": 1.6, "action": "keys"}, {"at": w("loaded"), "action": "whoosh_soft"}],
-            objective="Cards fly into the editor; CLAUDE.md types in; on 'loaded' it pours into the context-window bar"),
- "s3": dict(kind="local_md", file="CLAUDE.local.md", tin="whip", tout="zoom", focus_out=[700, 1240],
-            mascot=M((900, 320), {"type": "peek", "at": w("personal"), "dur": 2.4}),
-            pops=[{"text": "private", "at": w("personal"), "y": 1470}],
-            cues=[{"at": 0.0, "action": "transition"}, {"at": w("add", 0.2), "action": "keys"}, {"at": w(".gitignore."), "action": "highlight"}],
-            objective="Editor above, terminal below: git status, echo >> .gitignore, the file greys out with an 'ignored' tag"),
- "s4": dict(kind="mcp", file=".mcp.json", tin="zoom", focus_in=[540, 600], wipe_out=True,
-            mascot=M((960, 330)),
-            cues=[{"at": 0.0, "action": "transition"}, {"at": w("connects"), "action": "highlight"}, {"at": w("GitHub"), "action": "whoosh_soft"},
+ "s1": dict(kind="ide_hook", file="CLAUDE.md", tout="whip",
+            pops=[{"text": "Ignored your rule?", "at": 0.45, "y": 760, "size": 84, "hold": 2.2}],
+            mascot=M((960, 900), {"type": "peek", "at": 0.7, "dur": 2.3}),
+            cues=[{"at": 0.3, "action": "thud"}, {"at": 0.45, "action": "highlight"}, {"at": w("wrong"), "action": "whoosh_soft"},
+                  {"at": w("file."), "action": "highlight"}],
+            expand_at=w("wrong", -0.1),
+            objective="Frame 0: CLAUDE.md says 'Never delete build/' while the terminal shows rm -rf build/ (illustrative); the rule flashes red; 'Ignored your rule?'; pull back as the explorer expands"),
+ "s2": dict(kind="ide_claude_md", file="CLAUDE.md", tin="whip", tout="push",
+            pops=[{"text": "CLAUDE.md", "at": w("CLAUDE.md"), "y": 1440}],
+            mascot=M(TABS),
+            cues=[{"at": 0.4, "action": "keys"}, {"at": 1.4, "action": "keys"}, {"at": w("loaded"), "action": "highlight"},
+                  {"at": w("session."), "action": "highlight"}],
+            objective="CLAUDE.md types in the editor; on 'loaded every session' it fills the context window"),
+ "s3": dict(kind="ide_local", file="CLAUDE.local.md", tin="push", tout="zoom", focus_out=[700, 1300],
+            pops=[{"text": "personal", "at": w("personal."), "y": 1000}],
+            mascot=M(TABS, {"type": "peek", "at": w("personal."), "dur": 2.2}),
+            cues=[{"at": w("Add", 0.1), "action": "keys"}, {"at": w(".gitignore."), "action": "highlight"}],
+            objective="Explorer marks CLAUDE.local.md untracked (U); Add-Content .gitignore; the file dims as ignored"),
+ "s4": dict(kind="mcp", hub_only=True, file=".mcp.json", tin="zoom", focus_in=[540, 860], wipe_out=True,
+            mascot=M((930, 420)),
+            cues=[{"at": w("connects"), "action": "highlight"}, {"at": w("GitHub"), "action": "packet"},
                   {"at": w("team."), "action": "highlight"}],
-            objective=".mcp.json keys highlight one by one; mask reveal into a hub with GitHub, Postgres and Jira; 'shared with team'"),
- "s5": dict(kind="settings", file=".claude/settings.json", wipe_in=True, tout="push",
-            mascot=M((960, 320), {"type": "hop", "at": w("settings.json", 0.2), "to": [760, 372]},
+            objective="Full-screen hub: Claude Code connected to GitHub, Postgres and Jira; 'shared with team'"),
+ "s5": dict(kind="ide_settings", file=".claude/settings.json", wipe_in=True, tout="push",
+            pops=[{"text": "enforced", "at": w("enforced:"), "y": 1000}],
+            mascot=M((930, 420), {"type": "hop", "at": w("settings.json", 0.2), "to": TABS},
                      {"type": "tap", "at": w("settings.json", 0.8), "dir": -1}),
-            pops=[{"text": "enforced", "at": w("enforced:"), "y": 1450}],
-            push=[{"at": w("enforced:"), "x": 540, "y": 1150, "z": 1.07, "hold": 1.6}],
-            cues=[{"at": 0.0, "action": "transition"}, {"at": 0.5, "action": "keys"}, {"at": w("enforced:", 0.0), "action": "keys"},
-                  {"at": w("permissions,"), "action": "highlight"}, {"at": w("settings.local.json"), "action": "whoosh_soft"},
-                  {"at": w("override."), "action": "highlight"}],
-            objective="Wipe into .claude/: a deny rule, a blocked command, then the settings precedence as stacking cards"),
- "s6": dict(kind="rules", file=".claude/rules/", tin="push",
+            cues=[{"at": 0.4, "action": "keys"}, {"at": w("enforced:"), "action": "keys"}, {"at": w("permissions,"), "action": "highlight"},
+                  {"at": w("settings.local.json"), "action": "whoosh_soft"}, {"at": w("override."), "action": "highlight"}],
+            objective="IDE: a deny rule; the terminal's rm -rf build/ is denied (illustrative); then the precedence stack"),
+ "s6": dict(kind="rules", file=".claude/rules/", tin="push", lit_at=w("paths."),
             mascot=M((930, 930)),
-            cues=[{"at": 0.0, "action": "transition"}, {"at": w("topic,"), "action": "highlight"}, {"at": w("path."), "action": "highlight"}],
-            objective="Isometric rule cards fan out; a paths glob lights the matching files"),
- "s7": dict(kind="skills", file=".claude/skills/", tin="mask", focus_in=[540, 900], tout="whip",
-            pick_at=w("Run", 0.1), push_at=w("Claude", -0.2), flip_at=w("Commands", -0.1, 2),
-            mascot=M((960, 330), {"type": "into_folder", "at": w("Claude", 0.5), "to": [58, 470], "hold": 99},
-                     {"type": "out_of_folder", "at": w("Commands", -0.6, 2), "to": [900, 650]}),
-            pops=[{"text": "/review", "at": w("Run", 0.1), "y": 1420}],
-            push=[{"at": w("Claude"), "x": 540, "y": 700, "z": 1.06, "hold": 2.0}],
-            cues=[{"at": 0.35, "action": "keys"}, {"at": w("Run", 0.1), "action": "highlight"}, {"at": w("Claude", 0.2), "action": "keys"},
-                  {"at": w("Commands", 0, 2), "action": "whoosh_soft"}, {"at": w("older,"), "action": "highlight"}],
-            objective="'/' opens the skill menu; /review; push into SKILL.md frontmatter; card flip to commands/ (legacy)"),
+            cues=[{"at": w("topic,"), "action": "highlight"}, {"at": w("paths."), "action": "highlight"}],
+            objective="Full-screen isometric rule cards; a paths glob lights the matching files"),
+ "s7": dict(kind="ide_skills", file=".claude/skills/", tin="mask", focus_in=[540, 900], tout="whip",
+            pick_at=w("slash", 0.1), push_at=w("automatically.", -0.3), flip_at=w("Commands", -0.1),
+            pops=[{"text": "/review", "at": w("slash", 0.1), "y": 1400}],
+            mascot=M(TABS, {"type": "into_folder", "at": w("automatically.", 0.1), "to": [100, 446], "hold": 99},
+                     {"type": "out_of_folder", "at": w("Commands", -0.6), "to": [900, 650]}),
+            cues=[{"at": 0.6, "action": "keys"}, {"at": w("slash", 0.1), "action": "highlight"}, {"at": w("automatically."), "action": "keys"},
+                  {"at": w("Commands"), "action": "whoosh_soft"}, {"at": w("older"), "action": "highlight"}],
+            objective="IDE terminal: '/' opens the menu, /review; SKILL.md frontmatter in the editor; commands/ card flips to legacy"),
  "s8": dict(kind="agents", file=".claude/agents/", tin="whip", tout="push",
             mascot=M((900, 650)),
-            cues=[{"at": 0.0, "action": "transition"}, {"at": w("subagents"), "action": "highlight"}, {"at": w("tools."), "action": "highlight"}],
-            objective="The main session spawns two subagents with their own tool chips; they work in parallel and send summaries back"),
- "s9": dict(kind="hooks", file=".claude/hooks/", tin="push",
-            mascot=M((960, 760), {"type": "shake", "at": w("block")}),
-            push=[{"at": w("block"), "x": 300, "y": 700, "z": 1.06, "hold": 0.9}],
-            cues=[{"at": 0.0, "action": "transition"}, {"at": 0.9, "action": "keys"}, {"at": w("block"), "action": "thud"},
+            cues=[{"at": w("subagents"), "action": "highlight"}, {"at": w("tools."), "action": "highlight"}],
+            objective="Full-screen node graph: two subagents with their own tools report back"),
+ "s9": dict(kind="ide_hooks", file=".claude/hooks/", tin="push", pad_end=0.6,
+            mascot=M(TABS, {"type": "shake", "at": w("block")}),
+            cues=[{"at": 0.2, "action": "keys"}, {"at": w("block"), "action": "thud"}, {"at": w("block"), "action": "highlight"},
                   {"at": w("run."), "action": "highlight"}],
-            objective="PreToolUse -> tool runs -> PostToolUse; validate-bash.sh; BLOCK stamp with a shake; a safe call passes"),
- "s10": dict(kind="takeaway", file="my-project/", tin="mask", focus_in=[540, 900], wipe_out=w("Start", -0.35), diagram=DIAGRAM,
-             mascot=M((930, 420), {"type": "hop", "at": w("Start", -0.25), "to": PERCH}, {"type": "glasses", "at": w("files.", 1.6)}),
-             cues=[{"at": 0.0, "action": "transition"}, {"at": w("guidance."), "action": "highlight"}, {"at": w("enforced."), "action": "highlight"},
-                   {"at": w("Start", -0.35), "action": "transition"}, {"at": w("files."), "action": "highlight"},
-                   {"at": w("files.", 2.15), "action": "highlight"}],   # the shine: breaks the silent 3 s hold
-             pad_end=3.7, objective="Guidance vs enforced, then a wipe into the full diagram; CLAUDE.md and settings.json glow; hold 3 s"),
+            objective="IDE: validate-bash.sh, the lifecycle strip, BLOCK on rm -rf (illustrative), npm test allowed"),
+ "s10": dict(kind="takeaway_step", step=0, file="my-project/", tin="mask", focus_in=[540, 700], pad_end=0.2,
+             mascot=M((930, 450)), cues=[{"at": w("three"), "action": "highlight"}],
+             objective="'3 things to remember'"),
+ "s11": dict(kind="takeaway_step", step=1, file="my-project/", pad_start=0.15, pad_end=0.2, mascot=M((930, 450)),
+             cues=[{"at": w("guidance,"), "action": "highlight"}], objective="Card 1: CLAUDE.md = guidance (book)"),
+ "s12": dict(kind="takeaway_step", step=2, file="my-project/", pad_start=0.15, pad_end=0.2, mascot=M((930, 450)),
+             cues=[{"at": w("deny"), "action": "highlight"}, {"at": w("hook."), "action": "highlight"}],
+             objective="Card 2: Must never happen? deny rule or hook (lock); the opening rm -rf build/ is now denied (illustrative)"),
+ "s13": dict(kind="takeaway_step", step=3, file="my-project/", pad_start=0.15, pad_end=3.7, diagram=DIAGRAM,
+             diagram_at=w("settings.json.", 0.5), wipe_out=w("settings.json.", 0.5),
+             mascot=M((930, 450), {"type": "hop", "at": w("settings.json.", 0.6), "to": PERCH}, {"type": "glasses", "at": w("settings.json.", 1.9)}),
+             cues=[{"at": w("CLAUDE.md"), "action": "highlight"}, {"at": w("settings.json.", 0.5), "action": "whoosh_soft"},
+                   {"at": w("settings.json.", 1.05), "action": "soft"},
+                   {"at": w("settings.json.", 3.1), "action": "soft"}],   # the landing and the shine: no silent 3 s in the hold
+             objective="Card 3: Start with CLAUDE.md + settings.json (rocket); wipe into the full diagram; hold 3 s"),
 }
 scenes = []
 for s in script["scenes"]:
@@ -108,48 +133,20 @@ for s in script["scenes"]:
     sp.update(SC[s["id"]])
     if s["id"] == "s1":
         sp["transition"] = "fade"
-    if s["id"] == "s9":
-        sp["pad_end"] = 0.6
-    if s["id"] == "s10":
-        sp.update(cover=True, cover_crop=[280, 1560], cover_mascot={"x": 930, "y": 1690, "scale": 4, "glasses_dy": -6})
+        sp["pad_end"] = 0.6                              # the explorer finishes expanding before the cut
+        sp.update(cover=True, cover_crop=[236, 1524], cover_mascot={"x": 930, "y": 1700, "scale": 4, "glasses_dy": -6})
     scenes.append(sp)
 
-research = json.loads((V1 / "research.json").read_text(encoding="utf-8"))
-D = "https://code.claude.com/docs/en/"
-research["claims"] += [
- {"id": "c14", "text": "A Bash deny rule can use a * wildcard that matches any text, e.g. \"deny\": [\"Bash(rm -rf *)\"] under permissions. The docs do not give an exact denial message, so the video's terminal shows generic wording.", "sources": [{"title": "Permissions (read 2026-11-25)", "url": D + "permissions", "kind": "primary"}], "confidence": "high"},
- {"id": "c15", "text": "Settings precedence, highest first: managed settings, command line, project local, shared project, user.", "sources": [{"title": "Claude Code settings (read 2026-11-25)", "url": D + "settings", "kind": "primary"}], "confidence": "high"},
- {"id": "c16", "text": "Rules can be scoped with a paths: list of globs in YAML frontmatter, e.g. \"src/api/**/*.ts\".", "sources": [{"title": "Memory (rules) (read 2026-11-25)", "url": D + "memory", "kind": "primary"}], "confidence": "high"},
- {"id": "c17", "text": "Each subagent runs in its own context window with its own tool access; subagents can run concurrently and return their results to the main conversation.", "sources": [{"title": "Create custom subagents (read 2026-11-25)", "url": D + "sub-agents", "kind": "primary"}], "confidence": "high"},
- {"id": "c18", "text": "A PreToolUse hook receives tool_input.command for Bash and can deny the call (the docs' example greps for 'rm -rf' with jq).", "sources": [{"title": "Hooks reference (read 2026-11-25)", "url": D + "hooks", "kind": "primary"}], "confidence": "high"},
- {"id": "c19", "text": "Skills appear in the / menu; the frontmatter name is the command shown there and description tells Claude when to use it.", "sources": [{"title": "Extend Claude with skills (read 2026-11-25)", "url": D + "skills", "kind": "primary"}], "confidence": "high"},
-]
-research["open_questions"] = []
-
-strategy = json.loads((V1 / "strategy.json").read_text(encoding="utf-8"))
-strategy.update(
-    creative_concept="A premium multi-scene edit: a different layout and camera move per line inside a generic developer UI, ending on one save-worthy dark diagram.",
-    treatments=[
-        {"name": "A. Multi-scene developer UI edit", "shape": "terminal, editor, split screen, hub diagram, stacking cards, isometric stack, menu, node graph, lifecycle timeline, full diagram",
-         "engagement": "high: a new shot every line", "teaching_fit": "strong: each file shown doing its job", "accuracy_risk": "low: every UI detail from the docs",
-         "feasibility": "new dev_scene effect", "verdict": "Chosen: the user's v2 plan."},
-        {"name": "B. v1's single building diagram", "shape": "one diagram, row by row", "engagement": "steady", "teaching_fit": "strong overview",
-         "accuracy_risk": "low", "feasibility": "done", "verdict": "Rejected for v2: one layout for 60 s."},
-        {"name": "C. Talking-head style captions over b-roll", "shape": "kinetic text only", "engagement": "medium", "teaching_fit": "weak",
-         "accuracy_risk": "low", "feasibility": "easy", "verdict": "Rejected: shows nothing real."}],
-    chosen="A. Multi-scene developer UI edit",
-    hook="A blinking cursor types claude; tree -a cascades and flies apart into 3D file cards.",
-    visual_direction="claude-orange-dark: near-black, terracotta and bright orange accents, generic editor windows, warm syntax theme, light rays, the channel's mascot with a cream rim light.",
-    scene_breakdown=[{"title": s["title"], "treatment": "motion", "effect": "dev_scene", "seconds": 0, "purpose": s["objective"]} for s in scenes],
-    template="claude-orange-dark", template_reason="User's choice for v2.",
-    effects=["dev_scene", "project_tree"], effects_reason="dev_scene for the per-line scenes; project_tree for the final diagram.",
-    decisions=[d for d in strategy["decisions"] if d["key"] not in ("template", "structure", "transitions")] + [
-        {"key": "template", "choice": "claude-orange-dark", "reason": "User's choice; comment colour lightened to #8F877D for 4.5:1.", "tier": "preference"},
-        {"key": "structure", "choice": "a different layout per line", "reason": "User's v2 plan.", "tier": "preference"},
-        {"key": "transitions", "choice": "match cut, whip pans, zoom-through, push-through, mask reveals, two wipes", "reason": "Varied, one per change.", "tier": "preference"}])
-for i, sc in enumerate(strategy["scene_breakdown"]):
-    sc["seconds"] = [4.6, 4.2, 5.4, 6.4, 10.5, 3.9, 10.9, 2.6, 5.4, 9.3][i]
-    sc["effect"] = "dev_scene:" + scenes[i]["kind"]          # each kind is its own layout (a different shot)
+research = json.loads((H / "research.json").read_text(encoding="utf-8"))
+for c_ in research["claims"]:
+    if c_["id"] == "c14" and "editorial" not in c_["text"]:
+        c_["text"] += " Card 2's 'hooks are the strongest' is an editorial judgement: deny rules match command text, while a hook sees the full tool input."
+strategy = json.loads((H / "strategy.json").read_text(encoding="utf-8"))
+strategy.update(hook="Frame 0: CLAUDE.md says 'Never delete build/' and the terminal shows rm -rf build/; 'Ignored your rule?'",
+                narrative_structure="A familiar failure; where each file goes; three takeaways; the full diagram to save.",
+                scene_breakdown=[{"title": sp["title"], "treatment": "motion",
+                                  "effect": "dev_scene:" + sp["kind"] + (str(sp.get("step", "")) if sp["kind"] == "takeaway_step" else ""),
+                                  "seconds": 5.0, "purpose": sp["objective"]} for sp in scenes])
 
 for name, obj in (("script", script), ("board", {"scenes": scenes}), ("research", research), ("strategy", strategy)):
     (H / f"{name}.json").write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")

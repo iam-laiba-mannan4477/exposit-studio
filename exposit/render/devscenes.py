@@ -322,8 +322,8 @@ class Scene:
         pc.translate(fx, fy); pc.scale(z, z); pc.translate(-fx, -fy)
         fn = getattr(self, "_" + self.kind, None)
         if fn is None:
-            from . import ide
-            fn = ide.SCENES[self.kind].__get__(self)
+            from . import ide, story
+            fn = {**ide.SCENES, **story.SCENES}[self.kind].__get__(self)
         fn(pc, t)
         pc.restore()
         self._overlays(pc, t)
@@ -789,6 +789,12 @@ class Scene:
                 assets.draw_icon(c, "circle-check", 1000, y + 150, 44, P["ok"], 1, 2.6)
 
     def shake(self, t):
+        if self.sp.get("shake_at"):                       # a small camera shake on a cue (e.g. "denied")
+            t0 = self.at(self.sp["shake_at"], 1e9)
+            if 0 < t - t0 < 0.3:
+                a = (1 - (t - t0) / 0.3) * 9
+                return a * math.sin((t - t0) * 90), a * math.cos((t - t0) * 70)
+            return 0.0, 0.0
         blk = self.w("block", 2.8)
         if self.kind == "hooks" and 0 < t - blk < 0.3:
             a = (1 - (t - blk) / 0.3) * 10

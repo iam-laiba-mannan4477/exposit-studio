@@ -1,0 +1,170 @@
+{
+ "audience_profile": "Senior engineers who use Claude Code or are evaluating it, and want to know which file in a repository does what, and which ones are enforced.",
+ "learning_objective": "Name each project file and folder Claude Code reads (CLAUDE.md, CLAUDE.local.md, .mcp.json, .claude/settings*.json, rules, skills, commands, agents, hook scripts) and tell guidance from enforced configuration.",
+ "creative_concept": "One story: what Claude Code does when it starts, step by step, in clean diagrams; ending on the save-worthy file diagram.",
+ "treatments": [
+  {
+   "name": "A. One story in clean diagrams",
+   "shape": "terminal, editor, split screen, hub diagram, stacking cards, isometric stack, menu, node graph, lifecycle timeline, full diagram",
+   "engagement": "high: a new shot every line",
+   "teaching_fit": "strong: each file shown doing its job",
+   "accuracy_risk": "low: every UI detail from the docs",
+   "feasibility": "new dev_scene effect",
+   "verdict": "Chosen: the user's v3 plan; v2's IDE screens were too busy."
+  },
+  {
+   "name": "B. v1's single building diagram",
+   "shape": "one diagram, row by row",
+   "engagement": "steady",
+   "teaching_fit": "strong overview",
+   "accuracy_risk": "low",
+   "feasibility": "done",
+   "verdict": "Rejected for v2: one layout for 60 s."
+  },
+  {
+   "name": "C. Talking-head style captions over b-roll",
+   "shape": "kinetic text only",
+   "engagement": "medium",
+   "teaching_fit": "weak",
+   "accuracy_risk": "low",
+   "feasibility": "easy",
+   "verdict": "Rejected: shows nothing real."
+  }
+ ],
+ "chosen": "A. One story in clean diagrams",
+ "hook": "Pure black, `$ claude` typed in the centre: what happens next?",
+ "narrative_structure": "Start command; the context stack; each file's job in load order; what loads later; enforcement; the payoff and the diagram.",
+ "visual_direction": "claude-orange-dark diagrams only: file cards, a context stack, a gate, a hub, shelves, a rule that wakes, a hook timeline, guides vs enforces; no editor UI.",
+ "narration_approach": "Calm, one line per row; file names spoken as written (Claude dot M D, dot M C P dot jay-son).",
+ "scene_breakdown": [
+  {
+   "title": "Type claude",
+   "treatment": "motion",
+   "effect": "dev_scene:st_hook",
+   "seconds": 7.0,
+   "purpose": "$ claude types in the centre; Enter ripples; 'What happens next?'; file cards fall into a Context stack"
+  },
+  {
+   "title": "CLAUDE.md",
+   "treatment": "motion",
+   "effect": "dev_scene:st_claude_md",
+   "seconds": 7.0,
+   "purpose": "Match cut: the top card grows into CLAUDE.md, three headings type in; sessions 1-3 load the same card"
+  },
+  {
+   "title": "CLAUDE.local.md",
+   "treatment": "motion",
+   "effect": "dev_scene:st_local",
+   "seconds": 7.0,
+   "purpose": "CLAUDE.local.md slides out from behind; git bounces off a 'gitignored' shield"
+  },
+  {
+   "title": "settings.json",
+   "treatment": "motion",
+   "effect": "dev_scene:st_gate",
+   "seconds": 7.0,
+   "purpose": "A gate: npm test and git push pass green; rm -rf build is denied with a shake; ENFORCED stamps"
+  },
+  {
+   "title": ".mcp.json",
+   "treatment": "motion",
+   "effect": "dev_scene:mcp",
+   "seconds": 7.0,
+   "purpose": "Hub and spoke: Claude Code to GitHub, Postgres and Jira; data pulses; 'shared with team'"
+  },
+  {
+   "title": "skills and agents",
+   "treatment": "motion",
+   "effect": "dev_scene:st_skills_agents",
+   "seconds": 7.0,
+   "purpose": "Two shelves: skill tiles show name + description, /review opens to its full SKILL.md; agents in their own context"
+  },
+  {
+   "title": "rules",
+   "treatment": "motion",
+   "effect": "dev_scene:st_rules",
+   "seconds": 7.0,
+   "purpose": "A rule with paths: src/api/** sleeps on Button.tsx and wakes on users.ts, sliding into Context"
+  },
+  {
+   "title": "hooks",
+   "treatment": "motion",
+   "effect": "dev_scene:hooks",
+   "seconds": 7.0,
+   "purpose": "PreToolUse -> tool runs -> PostToolUse; the script runs; BLOCK slams; a safe call passes"
+  },
+  {
+   "title": "payoff",
+   "treatment": "motion",
+   "effect": "dev_scene:st_payoff",
+   "seconds": 7.0,
+   "purpose": "GUIDES vs ENFORCES, then a wipe into the full dark diagram; CLAUDE.md and settings.json glow; hold 3 s"
+  }
+ ],
+ "tools": [
+  "Exposit renderer",
+  "Kokoro voice",
+  "Lucide icons",
+  "Archivo Black, Inter, JetBrains Mono (OFL)",
+  "Channel owner's pixel sprite"
+ ],
+ "decisions": [
+  {
+   "key": "hook",
+   "choice": "tree -a in a terminal morphing into the diagram",
+   "reason": "Starts from a command engineers know.",
+   "tier": "hypothesis"
+  },
+  {
+   "key": "length",
+   "choice": "about 63 s",
+   "reason": "User approved after trimming 145 to 126 words.",
+   "tier": "preference"
+  },
+  {
+   "key": "mascot",
+   "choice": "channel's own 48x48 sprite at 3x/4x, nearest-neighbour",
+   "reason": "User's asset; never covers title, tree rows, card text or arrows.",
+   "tier": "preference"
+  },
+  {
+   "key": "template",
+   "choice": "claude-orange-dark",
+   "reason": "User's choice; comment colour lightened to #8F877D for 4.5:1.",
+   "tier": "preference"
+  },
+  {
+   "key": "structure",
+   "choice": "a different layout per line",
+   "reason": "User's v2 plan.",
+   "tier": "preference"
+  },
+  {
+   "key": "transitions",
+   "choice": "match cut, whip pans, zoom-through, push-through, mask reveals, two wipes",
+   "reason": "Varied, one per change.",
+   "tier": "preference"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "s5 settings (10 s)",
+   "why": "Two files and four terms in one line",
+   "countermeasure": "Wipe into .claude/, mascot taps the row, git badge on the .local file"
+  },
+  {
+   "where": "s7 skills (11 s)",
+   "why": "Longest line",
+   "countermeasure": "Camera push into skills/ with the SKILL.md frontmatter, then the legacy tag"
+  }
+ ],
+ "experiment": "Does a save-worthy final frame lift saves compared with earlier videos?",
+ "recipes_used": [],
+ "template": "claude-orange-dark",
+ "template_reason": "User's choice for v2.",
+ "effects": [
+  "dev_scene",
+  "project_tree"
+ ],
+ "effects_reason": "dev_scene for the per-line scenes; project_tree for the final diagram."
+}

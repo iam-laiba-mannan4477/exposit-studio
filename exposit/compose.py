@@ -114,4 +114,11 @@ def checks(path: str, expect: dict) -> list[dict]:
         res.append({"name": "No empty frames", "passed": not runs,
                     "detail": ("Near-empty content at " + ", ".join(f"{a:.2f}-{b:.2f} s" for a, b in runs)) if runs else "None found (sampled every 0.25 s)"})
     res.append({"name": "Plays outside the studio", "passed": p["vcodec"] == "h264" and p["acodec"] == "aac", "detail": f"{p['vcodec']} video, {p['acodec']} audio, MP4"})
+    if expect.get("end_slide"):
+        a, b = expect["end_slide"]
+        o2 = _run(["-ss", f"{a:.3f}", "-t", f"{max(0.1, b - a):.3f}", "-i", path, "-af", "volumedetect", "-vn", "-f", "null", "-"])
+        mv = re.search(r"mean_volume: (-?[\d.]+) dB", o2)
+        level = float(mv.group(1)) if mv else -99.0
+        res.append({"name": "End slide is narrated", "passed": level > -40.0,
+                    "detail": f"mean {level:.1f} dB over {a:.1f}-{b:.1f} s" + ("" if level > -40.0 else ": no voice on the end slide")})
     return res

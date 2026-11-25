@@ -294,6 +294,8 @@ def end_slide(rs: dict, last_spec: dict | None, pid: str = "") -> dict | None:
     if not s.get("end_slide", True):
         return None
     spoken = [x.strip() for x in s.get("end_slide_spoken", []) if str(x).strip()]
+    if not spoken:                                       # every video's end slide is narrated: fall back to the default
+        spoken = list(store.DEFAULT_SETTINGS["end_slide_spoken"]) if hasattr(store, "DEFAULT_SETTINGS") else []
     if not spoken:
         return None
     tr = (last_spec or {}).get("transition", "fade")
@@ -486,7 +488,8 @@ def run_export(pid: str, ctx: Ctx) -> bool:
     tail = sum(s["duration"] for s in man["scenes"] if s.get("end_slide"))
     checks = compose.checks(str(ex / "video.mp4"), {"width": rs["w"], "height": rs["h"], "fps": rs["fps"], "duration": _target_seconds(brief),
                                                     "tolerance": max(3.0, 0.08 * _target_seconds(brief)), "exclude_tail": tail,
-                                                    "empty_skip": empty_skip(man)})
+                                                    "empty_skip": empty_skip(man),
+                                                    "end_slide": next(([s["start"], s["start"] + s["duration"]] for s in man["scenes"] if s.get("end_slide")), None)})
     treatments = sorted({s["treatment"] for s in man["scenes"] if not s.get("end_slide")})
     checks.append({"name": "No paid service was used", "passed": not any(j["paid"] for j in store.list_jobs(500, pid)), "detail": "Job log shows local tools only"})
     gate = {"gate": "final", "passed": all(c["passed"] for c in checks), "criteria": checks, "treatments": treatments, "mix": mixinfo}

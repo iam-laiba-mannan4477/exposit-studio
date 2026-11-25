@@ -1,0 +1,20 @@
+What actually happens when you type claude?
+
+Before your first prompt, Claude Code reads a stack of files:
+- CLAUDE.md: your project brief (commands, stack, conventions), loaded into every session.
+- CLAUDE.local.md: your personal notes, kept out of git via .gitignore.
+- .claude/settings.json: enforced, not advice. What Claude may run, and what it never can.
+- .mcp.json: your team's tools, like GitHub or a database.
+- Skills and agents get registered: a skill loads in full only when it's needed; an agent works in its own context.
+- Path-scoped rules wait until Claude reads a matching file.
+- Hooks fire on events, like before every tool call, where they can block it.
+
+CLAUDE.md guides. Settings and hooks enforce. Know which file you're writing in.
+Save the last frame as a reference.
+
+Sources: code.claude.com/docs (memory, settings, permissions, mcp, skills, sub-agents, hooks, claude-directory), read 2026-11-25.
+Sounds: generated in code, no third-party audio.
+
+#ClaudeCode #DeveloperTools #SoftwareEngineering #TechHub
+
+Sprite: Icons8 (icons8.com). Not affiliated with Anthropic.

@@ -347,6 +347,7 @@
    "recipes": [],
    "reason": "A different layout per line; the picture follows the words.",
    "shot": "globe3d",
+   "rev": 2,
    "palette": {
     "bg": "#0D0B1A",
     "base": "#26204A",

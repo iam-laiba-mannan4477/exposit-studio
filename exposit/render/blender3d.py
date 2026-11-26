@@ -500,6 +500,10 @@ if sw:
     lit = nt.nodes.new("ShaderNodeMath"); lit.operation = "MULTIPLY"; lit.inputs[1].default_value = sw.get("opacity", 0.35)
     nt.links.new(band.outputs[0], lit.inputs[0])                # translucent: the region under the band shows
     nt.links.new(lit.outputs[0], bsdf.inputs["Alpha"])
+    glow = nt.nodes.new("ShaderNodeMath"); glow.operation = "MULTIPLY"     # the glow follows the same mask, scaled
+    glow.inputs[1].default_value = sw.get("glow", 0.5)                        # by opacity, so it does not cover the land
+    nt.links.new(lit.outputs[0], glow.inputs[0])
+    nt.links.new(glow.outputs[0], bsdf.inputs["Emission Strength"])
 
 
     def PROGRESS(f):

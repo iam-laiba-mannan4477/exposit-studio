@@ -53,7 +53,7 @@ SC = {
  "s4": dict(kind="ml_comcast", rev=2, tin="whip", wipe_out=True,
             cues=[{"at": 0.0, "action": "whoosh_soft"}, {"at": w("forty-eight"), "action": "packet"}, {"at": w("largest"), "action": "highlight"}],
             objective="A traffic line climbs off the top of the chart; 'largest single event in its network history' (Comcast)"),
- "s5": dict(treatment="blender3d", shot="globe3d", transition="cut", palette=ML,
+ "s5": dict(treatment="blender3d", shot="globe3d", rev=2, transition="cut", palette=ML,
             params={"texture": str(R / "exposit" / "assets" / "earth" / "day-4096.jpg"), "spin": 70,
                     "sweep": {"start_lon": 175, "turn": 330, "width": 10, "lon_facing_at_zero": -80, "opacity": 0.35}},
             camera={"orbit": 0, "dolly": 0.6, "distance": 8.5, "elevation": 12, "target": [0, 0, 1.2]},

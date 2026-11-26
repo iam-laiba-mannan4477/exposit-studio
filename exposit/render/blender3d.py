@@ -403,7 +403,7 @@ for j, (a, b) in enumerate(links):
     pa, pb = Vector(pos[a]), Vector(pos[b])
     mid = (pa + pb) / 2 + Vector((0, 0, 0.5))
     t = tube("link%d" % j, [tuple(pa), tuple(mid), tuple(pb)], 0.05, mat("link%d" % j, P["rim"], emit=0.5))
-    for q in range(2):                                 # pulses travelling along the link
+    for q in range(2 if not A["params"].get("leaves") else 1):   # pulses travelling along the link
         s = sphere("pulse%d_%d" % (j, q), 0.11, tuple(pa), mat("pulse", P["glow"], emit=4.0), seg=12)
         c = s.constraints.new("FOLLOW_PATH")
         c.target = t
@@ -414,6 +414,27 @@ for j, (a, b) in enumerate(links):
             c.keyframe_insert("offset_factor", frame=f)
             c.offset_factor = 1.0
             c.keyframe_insert("offset_factor", frame=min(F, f + 36))
+nleaf = A["params"].get("leaves", 0)
+hub = nodes[0]["name"]
+for nd in nodes[1:]:                                   # players around each edge: short local hops
+    p = Vector(pos[nd["name"]])
+    out = (p - Vector(pos[hub])).normalized()
+    for k in range(nleaf):
+        ang = (k - (nleaf - 1) / 2) * 0.5
+        d = Vector((out.x * math.cos(ang) - out.y * math.sin(ang), out.x * math.sin(ang) + out.y * math.cos(ang), 0))
+        lp = p + d * 1.3 + Vector((0, 0, -0.4))
+        sphere("leaf_%s_%d" % (nd["name"], k), 0.12, tuple(lp), mat("leaf", P["rim"], emit=0.6), seg=10)
+        t2 = tube("hop_%s_%d" % (nd["name"], k), [tuple(p), tuple((p + lp) / 2 + Vector((0, 0, 0.15))), tuple(lp)], 0.02, mat("hop", P["rim"], emit=0.4))
+        s = sphere("hp_%s_%d" % (nd["name"], k), 0.07, tuple(p), mat("pulse", P["glow"], emit=3.0), seg=8)
+        c = s.constraints.new("FOLLOW_PATH")
+        c.target = t2
+        c.use_fixed_location = True
+        s.location = (0, 0, 0)
+        for f in range(int(F * 0.35) + k * 3, F + 1, 24):
+            c.offset_factor = 0.0
+            c.keyframe_insert("offset_factor", frame=f)
+            c.offset_factor = 1.0
+            c.keyframe_insert("offset_factor", frame=min(F, f + 20))
 ''',
  "device3d": r'''
 kind = A["params"].get("device", "phone")
@@ -448,8 +469,45 @@ if tex:                                               # the studio's local NASA 
     im = nt.nodes.new("ShaderNodeTexImage")
     im.image = bpy.data.images.load(tex)
     nt.links.new(im.outputs["Color"], nt.nodes["Principled BSDF"].inputs["Base Color"])
-key(g, "rotation_euler", [(1, (0, 0, 0)), (F, (0, 0, math.radians(A["params"].get("spin", 40))))])
+sw = A["params"].get("sweep")
+if not sw:
+    key(g, "rotation_euler", [(1, (0, 0, 0)), (F, (0, 0, math.radians(A["params"].get("spin", 40))))])
 anchor("globe", (0, 0, 0), parent=g)
+if sw:
+    # Local midnight is fixed relative to the Sun, so the band stays fixed (facing the camera) and the Earth turns
+    # eastward under it: regions pass through the band in order, starting with start_lon.
+    lon0 = sw.get("lon_facing_at_zero", -80.0)       # the texture longitude facing the camera at rotation 0
+    r0 = math.radians(lon0 - sw.get("start_lon", 175.0))
+    r1 = r0 + math.radians(sw.get("turn", 330.0))
+    f0, f1 = int(F * 0.12), int(F * 0.9)
+    key(g, "rotation_euler", [(1, (0, 0, r0)), (f0, (0, 0, r0)), (f1, (0, 0, r1))])
+    shell = sphere("midnight", 2.03, (0, 0, 1.2), mat("band", P["accent"], emit=1.2, alpha=0.0), seg=64)
+    m = shell.data.materials[0]
+    nt = m.node_tree
+    bsdf = nt.nodes["Principled BSDF"]
+    co = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(co.outputs["Object"], sep.inputs[0])     # the shell is not rotated: world-fixed longitude
+    at = nt.nodes.new("ShaderNodeMath"); at.operation = "ARCTAN2"
+    nt.links.new(sep.outputs["Y"], at.inputs[0]); nt.links.new(sep.outputs["X"], at.inputs[1])
+    d = nt.nodes.new("ShaderNodeMath"); d.operation = "SUBTRACT"
+    d.inputs[1].default_value = math.radians(sw.get("band_at", -90.0))   # -90 deg: the side facing the camera
+    nt.links.new(at.outputs[0], d.inputs[0])
+    ab = nt.nodes.new("ShaderNodeMath"); ab.operation = "ABSOLUTE"
+    nt.links.new(d.outputs[0], ab.inputs[0])
+    band = nt.nodes.new("ShaderNodeMath"); band.operation = "LESS_THAN"; band.inputs[1].default_value = math.radians(sw.get("width", 10))
+    nt.links.new(ab.outputs[0], band.inputs[0])
+    lit = nt.nodes.new("ShaderNodeMath"); lit.operation = "MULTIPLY"; lit.inputs[1].default_value = sw.get("opacity", 0.35)
+    nt.links.new(band.outputs[0], lit.inputs[0])                # translucent: the region under the band shows
+    nt.links.new(lit.outputs[0], bsdf.inputs["Alpha"])
+    glow = nt.nodes.new("ShaderNodeMath"); glow.operation = "MULTIPLY"     # the glow follows the same mask, scaled
+    glow.inputs[1].default_value = sw.get("glow", 0.5)                        # by opacity, so it does not cover the land
+    nt.links.new(lit.outputs[0], glow.inputs[0])
+    nt.links.new(glow.outputs[0], bsdf.inputs["Emission Strength"])
+
+
+    def PROGRESS(f):
+        return max(0.0, min(1.0, (g.rotation_euler.z - r0) / (r1 - r0)))
 ''',
 }
 

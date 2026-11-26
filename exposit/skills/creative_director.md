@@ -84,6 +84,7 @@ Styles available (`styles_available`), with what each is best for:
 - claude-orange: developer tooling explainers on warm cream with terracotta accents
 - claude-orange-dark: premium developer-tool explainers on black: editor UI, terminals, diagrams
 - navy-gold: platforms, paths and layered systems on dark navy with a gold accent
+- midnight-launch: launches, traffic and releases; neon-line diagrams on night navy-purple
 - stop-motion-clay: light, friendly intros and simple flows
 - hd-pixel-sprite-3d: ONLY for videos with a 3D model scene (model_3d); never instead of pixel-art
 Planned and NOT available (`styles_planned`): stick-figure-story, paper-cutout-puppet, hand-puppet-theatre. For incident

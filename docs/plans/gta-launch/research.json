@@ -1,0 +1,220 @@
+{
+ "arrangement": "A large console game launch: build and release, origin storage, CDN edges, a pre-load window, a rolling midnight unlock, and a licence check at start (how a launch like this works; not Rockstar's internal architecture).",
+ "claims": [
+  {
+   "id": "c10",
+   "text": "Take-Two's SEC filing (Form 8-K, Exhibit 99.1, 20 November 2026) reported 32.5 million GTA VI units sold pre-release. Sensor Tower had estimated about 17.1 million by midday on 18 November (Reuters).",
+   "sources": [
+    {
+     "title": "Take-Two Form 8-K, Exhibit 99.1 (SEC) (read 2026-11-27)",
+     "url": "https://www.sec.gov/Archives/edgar/data/946581/000162828026075217/exhibit9918k.htm",
+     "kind": "primary"
+    },
+    {
+     "title": "Reuters via Fox 5 NY: Sensor Tower estimate (read 2026-11-27)",
+     "url": "https://www.fox5ny.com/news/gta-vi-pulls-estimated-1-84-billion-release-day-more-than-double-gta-vs-launch-record",
+     "kind": "secondary"
+    },
+    {
+     "title": "Forbes Australia: GTA VI pre-launch revenue (read 2026-11-27)",
+     "url": "https://www.forbes.com.au/news/innovation/gta-vi-has-already-banked-1-5-billion-and-it-isnt-out-yet/",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c1",
+   "text": "Rockstar says the GTA VI pre-load requires up to 212 GB of free space depending on the device; measured PS5 downloads were about 209.8 GB.",
+   "sources": [
+    {
+     "title": "Rockstar Newswire: Pre-Load Grand Theft Auto VI Now (read 2026-11-27)",
+     "url": "https://www.rockstargames.com/newswire/article/89834o94713o21/pre-load-grand-theft-auto-vi-now",
+     "kind": "primary"
+    },
+    {
+     "title": "VICE: How big is GTA 6 on PS5 (read 2026-11-27)",
+     "url": "https://www.vice.com/en/article/gta-6-download-size-ps5/",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c2",
+   "text": "Pre-loading opened on 10 November 2026 (moved forward from 12 November), nine days before the 19 November launch.",
+   "sources": [
+    {
+     "title": "Rockstar Newswire: GTA VI pre-load begins on November 10 (read 2026-11-27)",
+     "url": "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c3",
+   "text": "GTA VI unlocked at midnight local time on 19 November in each region, starting in New Zealand (11:00 UTC on 18 November).",
+   "sources": [
+    {
+     "title": "Rockstar Support: regional pre-load and release times (read 2026-11-27)",
+     "url": "https://support.rockstargames.com/articles/29jV3Cv2cCgvwM1XgtMO5o/grand-theft-auto-vi-regional-pre-load-and-release-times-on-playstation-5-and-xbox-series-x-or-s",
+     "kind": "primary"
+    },
+    {
+     "title": "PC Gamer: GTA 6 release times (read 2026-11-27)",
+     "url": "https://www.pcgamer.com/games/grand-theft-auto/gta-6-release-time-date/",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c4",
+   "text": "Comcast's Chief Network Officer said the first 48 hours of GTA VI pre-loads were the largest single event in Comcast's network history.",
+   "sources": [
+    {
+     "title": "Newsweek: GTA 6 could break traffic records (read 2026-11-27)",
+     "url": "https://www.newsweek.com/entertainment/gta-6-internet-traffic-records-12726270",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "c5",
+   "text": "Patch 01.002.000 (13 November) was about 1.07 GB on PS5.",
+   "sources": [
+    {
+     "title": "Red Bull: GTA 6 launch updates and patch sizes (read 2026-11-27)",
+     "url": "https://www.redbull.com/int-en/gta-6-updates-patch-notes",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "c6",
+   "text": "On 18 November, hours before the unlock, PlayStation Network's status page showed sign-in, Store and gaming service problems; Sony gave no cause.",
+   "sources": [
+    {
+     "title": "IBTimes UK: PlayStation Network outage hours before GTA 6 launch (read 2026-11-27)",
+     "url": "https://www.ibtimes.co.uk/psn-sign-problems-before-gta-6-release-1833247",
+     "kind": "secondary"
+    }
+   ],
+   "confidence": "medium"
+  },
+  {
+   "id": "c7",
+   "text": "PS5 digital games are licensed to the PSN account; Console Sharing and Offline Play lets the primary console play them offline, though some content may need online revalidation.",
+   "sources": [
+    {
+     "title": "PlayStation Support: PS5 Console Sharing and Offline Play (read 2026-11-27)",
+     "url": "https://www.playstation.com/en-us/support/account/ps5-console-sharing-offline-play/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c8",
+   "text": "Rockstar hires Build & Release Engineers to automate builds and deployment; postings mention TeamCity or Jenkins and Perforce.",
+   "sources": [
+    {
+     "title": "Rockstar Games careers (Greenhouse): Build & Release Engineer (read 2026-11-27)",
+     "url": "https://job-boards.greenhouse.io/rockstargames/jobs/6269117003",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  },
+  {
+   "id": "c9",
+   "text": "Large game downloads are served through content delivery networks that cache copies on edge servers near players (general technique, not a statement about Rockstar's systems).",
+   "sources": [
+    {
+     "title": "Cloudflare: What is a CDN? (read 2026-11-27)",
+     "url": "https://www.cloudflare.com/learning/cdn/what-is-a-cdn/",
+     "kind": "primary"
+    }
+   ],
+   "confidence": "high"
+  }
+ ],
+ "model": {
+  "components": [
+   {
+    "id": "build",
+    "kind": "service",
+    "label": "Build & release"
+   },
+   {
+    "id": "origin",
+    "kind": "service",
+    "label": "Origin"
+   },
+   {
+    "id": "cdn",
+    "kind": "zone",
+    "label": "CDN edges"
+   },
+   {
+    "id": "lic",
+    "kind": "service",
+    "label": "Licence check"
+   },
+   {
+    "id": "player",
+    "kind": "browser",
+    "label": "Player"
+   }
+  ],
+  "links": [
+   [
+    "build",
+    "origin"
+   ],
+   [
+    "origin",
+    "cdn"
+   ],
+   [
+    "cdn",
+    "player"
+   ],
+   [
+    "player",
+    "lic"
+   ]
+  ],
+  "steps": [
+   {
+    "n": 1,
+    "text": "Builds are published to an origin.",
+    "components": [
+     "build",
+     "origin"
+    ]
+   },
+   {
+    "n": 2,
+    "text": "CDN edges cache copies near players during the pre-load window.",
+    "components": [
+     "origin",
+     "cdn",
+     "player"
+    ]
+   },
+   {
+    "n": 3,
+    "text": "At local midnight the game unlocks; starting it needs a licence check.",
+    "components": [
+     "player",
+     "lic"
+    ]
+   }
+  ]
+ },
+ "open_questions": []
+}

@@ -1,0 +1,663 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "212 GB at midnight",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "fade",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_hook",
+   "tout": "zoom",
+   "focus_out": [
+    540,
+    1290
+   ],
+   "sold_at": {
+    "word": "Take-Two",
+    "offset": 0.0,
+    "occurrence": 1
+   },
+   "pops": [
+    {
+     "text": "Without breaking the internet?",
+     "at": {
+      "word": "breaking",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 1470,
+     "size": 60,
+     "hold": 1.6
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.1,
+     "action": "type"
+    },
+    {
+     "at": {
+      "word": "Take-Two",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "release.",
+      "offset": 0.1,
+      "occurrence": 1
+     },
+     "action": "type"
+    },
+    {
+     "at": {
+      "word": "release.",
+      "offset": 0.7,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "breaking",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "212 GB counts up; console dots light across a dark map; 00:00; every dot fires at one server, which turns red and shakes"
+  },
+  {
+   "id": "s2",
+   "title": "Preload window",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_preload",
+   "tin": "zoom",
+   "focus_in": [
+    540,
+    900
+   ],
+   "tout": "push",
+   "pops": [
+    {
+     "text": "Over a week early",
+     "at": {
+      "word": "early,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 300,
+     "size": 56
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "preloads",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "early,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "launch",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    }
+   ],
+   "objective": "A Nov 10-19 preload window fills day by day; a midnight spike vs the same bytes spread over the window"
+  },
+  {
+   "id": "s3",
+   "title": "CDN",
+   "treatment": "blender3d",
+   "transition": "push",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "shot": "network3d",
+   "palette": {
+    "bg": "#0D0B1A",
+    "base": "#26204A",
+    "accent": "#FF8A3D",
+    "glow": "#3DD6D0",
+    "rim": "#FF4F9A",
+    "text": "#F4F1EA"
+   },
+   "params": {
+    "nodes": [
+     {
+      "name": "origin",
+      "pos": [
+       0,
+       0,
+       1.0
+      ]
+     },
+     {
+      "name": "e1",
+      "pos": [
+       -2.6,
+       1.4,
+       0.6
+      ]
+     },
+     {
+      "name": "e2",
+      "pos": [
+       2.6,
+       1.4,
+       0.6
+      ]
+     },
+     {
+      "name": "e3",
+      "pos": [
+       -2.2,
+       -1.8,
+       0.6
+      ]
+     },
+     {
+      "name": "e4",
+      "pos": [
+       2.2,
+       -1.8,
+       0.6
+      ]
+     }
+    ],
+    "links": [
+     [
+      "origin",
+      "e1"
+     ],
+     [
+      "origin",
+      "e2"
+     ],
+     [
+      "origin",
+      "e3"
+     ],
+     [
+      "origin",
+      "e4"
+     ]
+    ],
+    "leaves": 3
+   },
+   "camera": {
+    "orbit": 18,
+    "dolly": 1.0,
+    "distance": 8.6,
+    "elevation": 48,
+    "target": [
+     0,
+     0,
+     0.6
+    ]
+   },
+   "labels": [
+    {
+     "text": "origin",
+     "anchor": "origin",
+     "at": 0.3,
+     "dy": -70,
+     "size": 40
+    },
+    {
+     "text": "edge cache",
+     "anchor": "e2",
+     "at": {
+      "word": "edge",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "dy": -60
+    },
+    {
+     "text": "edge cache",
+     "anchor": "e3",
+     "at": {
+      "word": "edge",
+      "offset": 0.3,
+      "occurrence": 1
+     },
+     "dy": -60
+    },
+    {
+     "text": "players nearby",
+     "anchor": "e4",
+     "at": {
+      "word": "players",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "dy": 70
+    }
+   ],
+   "cues": [
+    {
+     "at": {
+      "word": "Downloads",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "edge",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "copies",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Blender: one origin, edge caches around it, then short local hops to players"
+  },
+  {
+   "id": "s4",
+   "title": "Comcast record",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_comcast",
+   "rev": 2,
+   "tin": "whip",
+   "wipe_out": true,
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "forty-eight",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "largest",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "A traffic line climbs off the top of the chart; 'largest single event in its network history' (Comcast)"
+  },
+  {
+   "id": "s5",
+   "title": "Rolling midnight",
+   "treatment": "blender3d",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "shot": "globe3d",
+   "rev": 2,
+   "palette": {
+    "bg": "#0D0B1A",
+    "base": "#26204A",
+    "accent": "#FF8A3D",
+    "glow": "#3DD6D0",
+    "rim": "#FF4F9A",
+    "text": "#F4F1EA"
+   },
+   "params": {
+    "texture": "C:\\Users\\PMLS\\Desktop\\studio\\exposit-studio\\exposit-studio\\exposit\\assets\\earth\\day-4096.jpg",
+    "spin": 70,
+    "sweep": {
+     "start_lon": 175,
+     "turn": 330,
+     "width": 10,
+     "lon_facing_at_zero": -80,
+     "opacity": 0.35
+    }
+   },
+   "camera": {
+    "orbit": 0,
+    "dolly": 0.6,
+    "distance": 8.5,
+    "elevation": 12,
+    "target": [
+     0,
+     0,
+     1.2
+    ]
+   },
+   "labels": [
+    {
+     "text": "Stagger the spike",
+     "x": 0.5,
+     "y": 0.2,
+     "size": 56,
+     "at": {
+      "word": "stagger",
+      "offset": 0.0,
+      "occurrence": 1
+     }
+    },
+    {
+     "text": "New Zealand",
+     "x": 0.1,
+     "y": 0.78,
+     "progress": 0.0
+    },
+    {
+     "text": "Australia",
+     "x": 0.1,
+     "y": 0.78,
+     "progress": 0.076
+    },
+    {
+     "text": "Japan",
+     "x": 0.1,
+     "y": 0.78,
+     "progress": 0.11
+    },
+    {
+     "text": "Europe",
+     "x": 0.1,
+     "y": 0.78,
+     "progress": 0.48
+    },
+    {
+     "text": "Americas",
+     "x": 0.1,
+     "y": 0.78,
+     "progress": 0.76
+    }
+   ],
+   "latest_only": true,
+   "cues": [
+    {
+     "at": {
+      "word": "stagger",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "midnight",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "type"
+    },
+    {
+     "at": {
+      "word": "Zealand.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "cover": true,
+   "objective": "Blender globe: an orange local-midnight band sweeps west from New Zealand; regions light in turn"
+  },
+  {
+   "id": "s6",
+   "title": "Deltas",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_delta",
+   "tin": "mask",
+   "focus_in": [
+    540,
+    900
+   ],
+   "tout": "push",
+   "pops": [
+    {
+     "text": "Ship deltas",
+     "at": {
+      "word": "deltas.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "y": 300,
+     "size": 60
+    }
+   ],
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "deltas.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "patch",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "packet"
+    },
+    {
+     "at": {
+      "word": "another",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "A 212 GB block of chunks; only the changed chunks glow and ship as a 1.07 GB patch"
+  },
+  {
+   "id": "s7",
+   "title": "Licence check",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_licence",
+   "tin": "push",
+   "tout": "whip",
+   "shake_at": {
+    "word": "struggled,",
+    "offset": 0.0,
+    "occurrence": 1
+   },
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "licence",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "struggled,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "start.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "A fully downloaded console waits at the licence gate while PSN is disrupted; offline play is the exception"
+  },
+  {
+   "id": "s8",
+   "title": "The lesson",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 0.15,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_lesson",
+   "tin": "whip",
+   "wipe_out": true,
+   "cues": [
+    {
+     "at": {
+      "word": "early,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "spike,",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "dependency",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "thud"
+    },
+    {
+     "at": {
+      "word": "once.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    }
+   ],
+   "objective": "Three numbered lessons; card 3 links back to the red licence gate"
+  },
+  {
+   "id": "s9",
+   "title": "Pipeline",
+   "treatment": "motion",
+   "effect": "dev_scene",
+   "transition": "cut",
+   "pad_start": 0.1,
+   "pad_end": 1.6,
+   "tier": "hypothesis",
+   "recipes": [],
+   "reason": "A different layout per line; the picture follows the words.",
+   "kind": "ml_pipeline",
+   "wipe_in": true,
+   "cues": [
+    {
+     "at": 0.0,
+     "action": "whoosh_soft"
+    },
+    {
+     "at": {
+      "word": "pipeline.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "highlight"
+    },
+    {
+     "at": {
+      "word": "plan.",
+      "offset": 0.0,
+      "occurrence": 1
+     },
+     "action": "soft"
+    },
+    {
+     "at": {
+      "word": "plan.",
+      "offset": 0.9,
+      "occurrence": 1
+     },
+     "action": "whoosh_soft"
+    }
+   ],
+   "objective": "Save-worthy pipeline: build & release, origin, CDN edges, preload window, rolling unlock, licence check (single point of failure), player"
+  }
+ ]
+}

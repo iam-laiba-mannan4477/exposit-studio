@@ -416,6 +416,14 @@ def bg_navy(c, W, H):
     c.drawRect(skia.Rect.MakeWH(W, H), p)
 
 
+def bg_midnight(c, W, H):
+    """Deep night navy-purple with a soft centre glow (the vignette comes from the post chain)."""
+    _bg_solid(c, "#0D0B1A", W, H)
+    p = skia.Paint()
+    p.setShader(skia.GradientShader.MakeRadial(skia.Point(W / 2, H * 0.45), max(W, H) * 0.6, [col("#1A1630"), col("#0D0B1A")]))
+    c.drawRect(skia.Rect.MakeWH(W, H), p)
+
+
 # ================================================================== the style packs
 class Style:
     def __init__(self, name: str, tier: int, status: str, best_for: str, tpl: Template | None, post: tuple = (),
@@ -571,6 +579,15 @@ _add(Style("navy-gold", 1, "ready", "platforms, paths and layered systems; calm 
                 conn=dict(color="#E8B44A", width=4.0, active="#FFD37A", glow=True, dash=(14, 10)),
                 sem=dict(success="#7FD1A0", fail="#F07A6A", info="#8FB8FF", neutral="#9AA8C0")),
            post=(("grain", 0.012),)))
+_add(Style("midnight-launch", 1, "ready", "launches, traffic, releases: a launch-control room of neon lines on night navy",
+           _tpl("midnight-launch", _T("#0D0B1A", "#1A1630", "#1A1630", "#2E2850", "#F4F1EA", "#A9A3C2", "#FF8A3D",
+                                      red="#E5604D", green="#3DD6D0", amber="#FF8A3D", blue="#3DD6D0", teal="#3DD6D0", pink="#FF4F9A"),
+                dark=True, bg_fn=bg_midnight, family_bold="Heavy", bold_scale=0.92,
+                card=_card("#1A1630", "#2E2850", 2.0, 18, shadow=0.4, shadow_color="#000000"),
+                icon=dict(style="outline", color="#F4F1EA", badge=None, ring="#FF8A3D", stroke=2.5),
+                conn=dict(color="#3DD6D0", width=4.0, active="#FF8A3D", glow=True, dash=(14, 10)),
+                sem=dict(success="#3DD6D0", fail="#E5604D", info="#3DD6D0", neutral="#A9A3C2")),
+           post=(("vignette", 0.3), ("grain", 0.01))))
 # ---- Tier 2
 _add(Style("stop-motion-clay", 2, "ready", "light, friendly intros; simple flows",
            _tpl("stop-motion-clay", _T("#F1D6B8", "#F6E2CB", "#FFC9B0", "#7A3E2E", "#3A1E16", "#55301F", "#C2410C", blue="#2F6F9E", teal="#2B8A7E", green="#2F6420"),

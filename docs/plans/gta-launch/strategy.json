@@ -1,0 +1,157 @@
+{
+ "audience_profile": "Senior engineers who ship releases and want to see how a very large launch avoids one traffic spike.",
+ "learning_objective": "Three launch techniques (pre-load, staggered unlock, deltas) and the one dependency that cannot be pre-loaded.",
+ "creative_concept": "A launch-control room in neon lines: one story from 212 GB to the single point of failure, ending on a save-worthy pipeline.",
+ "treatments": [
+  {
+   "name": "A. Launch-control diagrams with two 3D shots",
+   "shape": "counter + map, timeline, CDN network (3D), traffic graph, rolling globe (3D), chunk grid, gate, cards, pipeline",
+   "engagement": "high",
+   "teaching_fit": "strong",
+   "accuracy_risk": "low: public facts only",
+   "feasibility": "dev_scene + blender3d",
+   "verdict": "Chosen."
+  },
+  {
+   "name": "B. Talking points over stock footage",
+   "shape": "b-roll",
+   "engagement": "medium",
+   "teaching_fit": "weak",
+   "accuracy_risk": "IP risk",
+   "feasibility": "no footage",
+   "verdict": "Rejected: no game art allowed."
+  },
+  {
+   "name": "C. One long diagram",
+   "shape": "single pipeline built step by step",
+   "engagement": "medium",
+   "teaching_fit": "good",
+   "accuracy_risk": "low",
+   "feasibility": "easy",
+   "verdict": "Rejected: one layout for 60 s."
+  }
+ ],
+ "chosen": "A. Launch-control diagrams with two 3D shots",
+ "hook": "212 GB counts up; at 00:00 every console fires at one server.",
+ "narrative_structure": "The problem; three techniques; the dependency that can't be pre-loaded; the lesson; the pipeline to save.",
+ "visual_direction": "midnight-launch: night navy-purple, orange, pink and teal neon lines; no game art, no logos.",
+ "narration_approach": "Calm and precise; numbers spoken naturally; PS5 as 'P S five'.",
+ "scene_breakdown": [
+  {
+   "title": "212 GB at midnight",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_hook",
+   "seconds": 6.5,
+   "purpose": "212 GB counts up; console dots light across a dark map; 00:00; every dot fires at one server, which turns red and shakes"
+  },
+  {
+   "title": "Preload window",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_preload",
+   "seconds": 6.5,
+   "purpose": "A Nov 10-19 preload window fills day by day; a midnight spike vs the same bytes spread over the window"
+  },
+  {
+   "title": "CDN",
+   "treatment": "blender3d",
+   "effect": "network3d",
+   "seconds": 6.5,
+   "purpose": "Blender: one origin, edge caches around it, then short local hops to players"
+  },
+  {
+   "title": "Comcast record",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_comcast",
+   "seconds": 6.5,
+   "purpose": "A traffic line climbs off the top of the chart; 'largest single event in its network history' (Comcast)"
+  },
+  {
+   "title": "Rolling midnight",
+   "treatment": "blender3d",
+   "effect": "globe3d",
+   "seconds": 6.5,
+   "purpose": "Blender globe: an orange local-midnight band sweeps west from New Zealand; regions light in turn"
+  },
+  {
+   "title": "Deltas",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_delta",
+   "seconds": 6.5,
+   "purpose": "A 212 GB block of chunks; only the changed chunks glow and ship as a 1.07 GB patch"
+  },
+  {
+   "title": "Licence check",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_licence",
+   "seconds": 6.5,
+   "purpose": "A fully downloaded console waits at the licence gate while PSN is disrupted; offline play is the exception"
+  },
+  {
+   "title": "The lesson",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_lesson",
+   "seconds": 6.5,
+   "purpose": "Three numbered lessons; card 3 links back to the red licence gate"
+  },
+  {
+   "title": "Pipeline",
+   "treatment": "motion",
+   "effect": "dev_scene:ml_pipeline",
+   "seconds": 6.5,
+   "purpose": "Save-worthy pipeline: build & release, origin, CDN edges, preload window, rolling unlock, licence check (single point of failure), player"
+  }
+ ],
+ "tools": [
+  "Exposit renderer",
+  "Kokoro voice",
+  "Blender (optional 3D)",
+  "Lucide icons"
+ ],
+ "decisions": [
+  {
+   "key": "template",
+   "choice": "midnight-launch",
+   "reason": "User's choice; an original control-room look, not the game's style.",
+   "tier": "preference"
+  },
+  {
+   "key": "3d",
+   "choice": "two Blender shots: CDN network, rolling-midnight globe",
+   "reason": "Depth explains distribution and time zones.",
+   "tier": "preference"
+  },
+  {
+   "key": "honesty",
+   "choice": "public facts only; techniques framed generally",
+   "reason": "Rockstar has not published its infrastructure.",
+   "tier": "preference"
+  },
+  {
+   "key": "ip",
+   "choice": "no game art, logos or footage",
+   "reason": "User rule.",
+   "tier": "preference"
+  },
+  {
+   "key": "transitions",
+   "choice": "zoom-through, push, whip, wipes, mask",
+   "reason": "A different transition on every cut.",
+   "tier": "preference"
+  }
+ ],
+ "dropoff": [
+  {
+   "where": "s7 licence check",
+   "why": "Abstract",
+   "countermeasure": "A console visibly waits at a red gate"
+  }
+ ],
+ "experiment": "Does a news hook framed as an engineering question hold senior viewers?",
+ "recipes_used": [],
+ "template": "midnight-launch",
+ "template_reason": "User's choice for this video.",
+ "effects": [
+  "dev_scene"
+ ],
+ "effects_reason": "2D diagrams (dev_scene) for most lines; two blender3d shots (a treatment, not a motion effect) where depth explains."
+}

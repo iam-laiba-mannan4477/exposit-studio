@@ -92,3 +92,13 @@ Shots are split at hard cuts and fades through a dark or flat frame. Dissolves a
 ## Resetting
 
 Your work lives in `data\`. To start completely fresh, stop the studio and rename `data` to `data-old`; a new one is created at the next start. To reinstall packages only, delete `.venv` and run `install.ps1`.
+
+## 3D shots (Blender)
+- **"Blender not found"**: install Blender from blender.org, or set `BLENDER_PATH=` in `.env` to the full path of
+  `blender.exe`. Restart the studio. `python -m exposit.cli doctor` shows what it found and runs a 64x64 test render.
+  Without Blender, 3D scenes render as 2D and the production still finishes.
+- **A 3D shot timed out**: the log is in `data/productions/<id>/shots/<scene>/3d/<hash>/blender.log`. The scene fell
+  back to 2D. Shorten the shot, or render on a machine with more free memory.
+- **Low RAM**: 3D renders use EEVEE at 8 samples with 2 threads at 720x1280, one shot at a time. A watchdog aborts a
+  render above 2.5 GB (set `BLENDER_MAX_MB` in `.env` to change it) and the scene renders in 2D. Close other apps; keep 3D to
+  2-3 shots per minute; previews render at 540x960.

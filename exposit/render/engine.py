@@ -1037,6 +1037,8 @@ from . import motion                      # noqa: E402
 TREATMENTS.update(PRO_TREATMENTS)
 TREATMENTS["motion"] = motion.MotionScene
 TREATMENTS["footage"] = Footage
+from .shot3d import Blender3DScene        # noqa: E402  (optional 3D; engine.build swaps in a 2D fallback without frames)
+TREATMENTS["blender3d"] = Blender3DScene
 
 
 # ------------------------------------------------------------------ frame + clip
@@ -1270,6 +1272,12 @@ def build(spec: dict, timing: dict, theme: str = "premium-technical", portrait: 
     st = styles.style_of(design.template(spec.get("theme") or theme))
     if st and st.effects and "effects" not in spec:          # a style's default motion effects ([] means none)
         spec = dict(spec, effects=[{"type": e} for e in st.effects])
+    if spec.get("treatment") == "blender3d":
+        from . import blender3d
+        if not spec.get("_shot_dir"):                     # stills and previews: render on demand into the shared cache
+            px = spec.get("_px") or ((540, 960) if portrait else (960, 540))
+            d = blender3d.render_shot(spec, blender3d.cache_dir(), px[0], px[1], 30, log=lambda m: None) if blender3d.available() else None
+            spec = dict(spec, _shot_dir=str(d)) if d else blender3d.fallback_spec(spec)
     sc = Scene(spec, timing, theme)
     sc.portrait = portrait
     sc.caption_band = bool(captions) and portrait

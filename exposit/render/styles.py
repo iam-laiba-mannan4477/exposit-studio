@@ -408,6 +408,14 @@ def bg_orange_dark(c, W, H):
     c.drawRect(skia.Rect.MakeWH(W, H), p)
 
 
+def bg_navy(c, W, H):
+    """Dark navy with a faint cool glow at the centre."""
+    _bg_solid(c, "#0B1220", W, H)
+    p = skia.Paint()
+    p.setShader(skia.GradientShader.MakeRadial(skia.Point(W / 2, H * 0.45), max(W, H) * 0.6, [col("#16223A"), col("#0B1220")]))
+    c.drawRect(skia.Rect.MakeWH(W, H), p)
+
+
 # ================================================================== the style packs
 class Style:
     def __init__(self, name: str, tier: int, status: str, best_for: str, tpl: Template | None, post: tuple = (),
@@ -553,6 +561,15 @@ _add(Style("claude-orange-dark", 1, "ready", "premium developer-tool explainers:
                 icon=dict(style="outline", color="#F4F1EA", badge=None, ring="#D97757", stroke=2.5),
                 conn=dict(color="#D97757", width=4.0, active="#F0A07E", glow=True, dash=(14, 10)),
                 sem=dict(success="#7FB77E", fail="#E5604D", info="#F0A07E", neutral="#A8A097")),
+           post=(("grain", 0.012),)))
+_add(Style("navy-gold", 1, "ready", "platforms, paths and layered systems; calm and premium",
+           _tpl("navy-gold", _T("#0B1220", "#16223A", "#16223A", "#2A3A5C", "#F4F1EA", "#9AA8C0", "#E8B44A",
+                                red="#F07A6A", green="#7FD1A0", amber="#FFD37A", blue="#8FB8FF", teal="#7FD1C8"),
+                dark=True, bg_fn=bg_navy, family_bold="Heavy", bold_scale=0.92,
+                card=_card("#16223A", "#2A3A5C", 2.0, 16, shadow=0.4, shadow_color="#000000"),
+                icon=dict(style="outline", color="#F4F1EA", badge=None, ring="#E8B44A", stroke=2.5),
+                conn=dict(color="#E8B44A", width=4.0, active="#FFD37A", glow=True, dash=(14, 10)),
+                sem=dict(success="#7FD1A0", fail="#F07A6A", info="#8FB8FF", neutral="#9AA8C0")),
            post=(("grain", 0.012),)))
 # ---- Tier 2
 _add(Style("stop-motion-clay", 2, "ready", "light, friendly intros; simple flows",

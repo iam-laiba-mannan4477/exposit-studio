@@ -35,3 +35,9 @@ does not mention video, so their use here is unclear); Tabler and Phosphor (not 
 lucide: activity arrow-down arrow-left arrow-right arrow-right-left arrow-up ban bell blocks book-open box braces building-2 check chevron-down chevron-right circle-check circle-x clock cloud cloud-download cloud-upload code container cpu database database-zap earth ellipsis eye factory file file-code file-cog file-json file-terminal file-text files filter fingerprint flask-conical folder folder-open gauge git-branch git-merge globe hard-drive house inbox info key laptop layers link list list-ordered lock mail map-pin memory-stick merge message-square milk minus monitor network package play plug plus-circle radio-tower refresh-cw repeat rocket rotate-ccw route router scale search send server server-cog settings shield shield-check smartphone split square square-terminal store terminal timer triangle-alert truck user users waypoints wifi workflow x zap
 
 k8s: cm control-plane deploy ds hpa ing job node ns pod pvc rs secret sts svc
+
+## Optional external tool: Blender
+Blender (https://www.blender.org) is GPL-licensed. It is not bundled, downloaded or installed by the studio; the user
+installs it. The studio runs it headless with `--factory-startup` (no add-ons) on scripts the studio generates; the
+scripts and the rendered frames are our own output. 3D scenes use primitives and procedural materials only; the
+optional globe uses the NASA image already listed above.

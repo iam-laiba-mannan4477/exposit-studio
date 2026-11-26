@@ -121,6 +121,16 @@ def strategy_markdown(s: dict, title: str) -> str:
     return "\n".join(L) + "\n"
 
 
+def _three_d(brief: dict) -> dict:
+    """What the roles know about 3D: availability, the brief's mode (auto, off, or scenes to force), the shot types."""
+    from .render import blender3d
+    mode = brief.get("three_d", "auto")
+    return {"available": blender3d.wanted(brief), "mode": mode, "shot_types": list(blender3d.SHOT_TYPES),
+            "max_shots_per_60s": blender3d.MAX_SHOTS_PER_MINUTE,
+            "note": "Use 3D only where depth explains something (layers, flows, physical metaphors, hero shots). "
+                    "At most 2-3 shots per 60 s; everything else stays 2D. Never put text in 3D: labels are drawn on top."}
+
+
 def run_strategy(pid: str, ctx: Ctx) -> bool:
     p = store.get_production(pid)
     brief = _brief(pid)
@@ -128,7 +138,9 @@ def run_strategy(pid: str, ctx: Ctx) -> bool:
     prefs = [k for k in knowledge.items() if k["tier"] == "preference" and k["status"] == "active"]
     payload = {"brief": brief, "facts": facts, "library": knowledge.for_strategy(),
                "preferences": [{"title": k["title"], "body": k["body"]} for k in prefs],
-               "recent_productions": recent_structures(pid), "treatments_available": schemas.TREATMENTS,
+               "recent_productions": recent_structures(pid),
+               "treatments_available": [t for t in schemas.TREATMENTS if t != "blender3d" or _three_d(brief)["available"]],
+               "three_d": _three_d(brief),
                "templates_available": list(engine.design.NEW_TEMPLATES) + ["premium-technical"],
                "styles_available": [{"name": n, "best_for": st.best_for, "requires": st.requires}
                                     for n, st in engine.styles.STYLES.items() if st.status == "ready"],
@@ -191,7 +203,7 @@ def run_storyboard(pid: str, ctx: Ctx) -> bool:
     script = store.read_json(pid, "script/script.json", {})
     facts = store.read_json(pid, "research/facts.json", {})
     strategy = store.read_json(pid, "strategy/strategy.json", {})
-    payload = {"script": script, "system_model": facts.get("model", {}), "strategy": strategy,
+    payload = {"script": script, "system_model": facts.get("model", {}), "strategy": strategy, "three_d": _three_d(_brief(pid)),
                "library": [k for k in knowledge.for_strategy() if k["category"] in ("Animation recipes", "Camera movements", "Transition patterns", "Visual compositions", "Motion graphics patterns")]}
     gate = None
     for attempt in range(1 + _repairs()):
@@ -347,6 +359,28 @@ def final_hash(pid: str, cur: list[dict] | None = None) -> str:
     return store.sha("final", [(s["id"], s["clip_hash"]) for s in cur], rs["music"], rs["sfx"])
 
 
+def prepare_3d(pid: str, s: dict, rs: dict, ctx: Ctx) -> dict:
+    """A blender3d scene's render spec: its frames rendered (or reused) under shots/<scene>/3d, or the 2D fallback when
+    Blender is missing, 3D is switched off in the brief, or the render fails. The reason goes to the production log."""
+    spec = s["spec"]
+    if spec.get("treatment") != "blender3d":
+        return spec
+    from .render import blender3d
+    log = (lambda m: store.job_log(ctx.job_id, m)) if ctx.job_id else (lambda m: ctx.say(m, None))
+    if not blender3d.wanted(_brief(pid)):
+        log(f"3D: {s['id']} uses the 2D fallback ({'Blender not found' if not blender3d.available() else '3D is off for this production'}).")
+        return blender3d.fallback_spec(spec)
+    dur = engine.Scene(spec, s["timing"], rs["theme"]).dur
+    spec2 = dict(spec, seconds=round(dur, 2))
+    t0 = time.time()
+    ctx.say(f"3D: rendering {spec.get('shot')} for {s['id']} in Blender (about {blender3d.estimate_seconds(spec2, rs['h']) / 60:.1f} min)", None)
+    d = blender3d.render_shot(spec2, store.pdir(pid) / "shots" / s["id"] / "3d", rs["w"], rs["h"], rs["fps"], log=log)
+    if d is None:
+        return blender3d.fallback_spec(spec)
+    log(f"3D: {s['id']} {spec.get('shot')} ready in {time.time() - t0:.0f} s ({d.name}).")
+    return dict(spec2, _shot_dir=str(d))
+
+
 def run_produce(pid: str, ctx: Ctx) -> bool:
     rs = render_settings(pid)
     d = store.pdir(pid)
@@ -374,7 +408,8 @@ def run_produce(pid: str, ctx: Ctx) -> bool:
             prev = {"spec": cur[i - 1]["spec"], "timing": cur[i - 1]["timing"]} if i > 0 else None
             nxt = cur[i + 1]["spec"] if i + 1 < n else {}
             fade_out = not (nxt and (engine.needs_prev(nxt) or nxt.get("transition") == "cut")) and not s.get("end_slide")  # the end slide holds
-            info = engine.render_clip(s["spec"], s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
+            spec_r = prepare_3d(pid, s, rs, ctx)
+            info = engine.render_clip(spec_r, s["timing"], str(tmp), rs["w"], rs["h"], rs["fps"], rs["theme"], rs["captions"],
                                       progress=lambda k, b=base: store.update_job(ctx.job_id, progress=round(b + 0.35 / n * k, 3)) if ctx.job_id else None,
                                       caption_style=rs["caption_style"], prev=prev, fade_out=fade_out)
             tmp.replace(clip)

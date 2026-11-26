@@ -293,8 +293,22 @@ def transform_for(kind, k, focus=(540.0, 900.0), incoming=True):
     return m, 1.0, 0
 
 
+P_DEFAULT = dict(P)
+
+
+def use_palette(tpl_name: str) -> None:
+    """Shared helpers (chips, pops, wipes) take their colours from P: switch it to the template's palette."""
+    P.clear()
+    P.update(P_DEFAULT)
+    if tpl_name == "midnight-launch":
+        from .launch import L
+        P.update(bg=L["bg"], panel=L["panel"], border=L["border"], text=L["text"], text2=L["text2"], acc=L["orange"],
+                 bright=L["orange"], ok=L["teal"], bad=L["red"])
+
+
 class Scene:
     def __init__(self, ms):
+        use_palette(ms.tpl.name)
         self.ms = ms
         self.sp = ms.sc.spec
         self.dur = ms.sc.dur
@@ -322,8 +336,8 @@ class Scene:
         pc.translate(fx, fy); pc.scale(z, z); pc.translate(-fx, -fy)
         fn = getattr(self, "_" + self.kind, None)
         if fn is None:
-            from . import ide, story
-            fn = {**ide.SCENES, **story.SCENES}[self.kind].__get__(self)
+            from . import ide, story, launch
+            fn = {**ide.SCENES, **story.SCENES, **launch.SCENES}[self.kind].__get__(self)
         fn(pc, t)
         pc.restore()
         self._overlays(pc, t)

@@ -1,0 +1,18 @@
+How do you ship 212 GB at midnight?
+
+GTA 6 needs up to 212 GB, and Take-Two reported 32.5 million copies sold before release. How a launch like this avoids one giant midnight spike:
+1. Move the bytes early: preloads opened on 10 November, nine days before launch.
+2. Serve them from CDNs: copies cached on edge servers near players.
+3. Stagger the spike: the unlock rolled through midnight local time, starting in New Zealand.
+4. Ship deltas: the first patch was about 1.07 GB on PS5.
+And find the one dependency everyone hits at once: hours before launch, PlayStation Network struggled, and a downloaded game can still need a licence check to start.
+
+Comcast said the first 48 hours of preloads were the largest single event in its network history.
+This is how a launch like this works, from public reporting; it is not Rockstar's internal architecture.
+
+Sources: Rockstar Newswire and Support, Take-Two SEC filing (Form 8-K, 20 Nov 2026), Newsweek (Comcast), PlayStation Support, Sensor Tower via Reuters, PC Gamer, Red Bull, IBTimes UK; full list in sources.md.
+Sounds: generated in code.
+
+#DevOps #SoftwareEngineering #CDN #GameDev #TechHub
+
+Not affiliated with Rockstar Games, Take-Two, Sony or Microsoft.

@@ -1,0 +1,155 @@
+{
+ "scenes": [
+  {
+   "id": "s1",
+   "title": "212 GB at midnight",
+   "sentences": [
+    {
+     "text": "GTA 6 needs up to two hundred and twelve gigabytes, and Take-Two reported over thirty-two million copies sold before release.",
+     "claims": [
+      "c1",
+      "c10"
+     ]
+    },
+    {
+     "text": "So how do you ship that without breaking the internet?",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s2",
+   "title": "Preload window",
+   "sentences": [
+    {
+     "text": "Step one: preloads opened over a week early, so the bytes could move before launch day.",
+     "claims": [
+      "c2"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s3",
+   "title": "CDN",
+   "sentences": [
+    {
+     "text": "Downloads like this come from C D Ns: copies cached on edge servers near players.",
+     "claims": [
+      "c9"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s4",
+   "title": "Comcast record",
+   "sentences": [
+    {
+     "text": "Comcast said the first forty-eight hours of preloads were the largest single event in its network history.",
+     "claims": [
+      "c4"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s5",
+   "title": "Rolling midnight",
+   "sentences": [
+    {
+     "text": "Step two: stagger the spike.",
+     "claims": [
+      "c3"
+     ]
+    },
+    {
+     "text": "The game unlocked at midnight local time, rolling around the planet from New Zealand.",
+     "claims": [
+      "c3"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s6",
+   "title": "Deltas",
+   "sentences": [
+    {
+     "text": "Step three: ship deltas.",
+     "claims": [
+      "c5"
+     ]
+    },
+    {
+     "text": "The first patch was about one gigabyte on PS5, not another two hundred.",
+     "claims": [
+      "c5"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s7",
+   "title": "Licence check",
+   "sentences": [
+    {
+     "text": "One thing can't be preloaded: the licence check.",
+     "claims": [
+      "c7"
+     ]
+    },
+    {
+     "text": "Hours before launch, PlayStation Network struggled, and a downloaded game can still need that check to start.",
+     "claims": [
+      "c6",
+      "c7"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s8",
+   "title": "The lesson",
+   "sentences": [
+    {
+     "text": "The lesson: move the bytes early, stagger the spike, and find the one dependency everyone hits at once.",
+     "claims": [
+      "c2",
+      "c3",
+      "c7"
+     ]
+    }
+   ],
+   "terms": []
+  },
+  {
+   "id": "s9",
+   "title": "Pipeline",
+   "sentences": [
+    {
+     "text": "Here's the whole launch pipeline.",
+     "claims": [
+      "c8"
+     ]
+    },
+    {
+     "text": "Save it for your next release plan.",
+     "claims": [
+      "c8"
+     ]
+    }
+   ],
+   "terms": []
+  }
+ ]
+}

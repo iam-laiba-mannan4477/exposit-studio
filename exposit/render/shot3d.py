@@ -37,9 +37,12 @@ class Blender3DScene(ProTreatment):
         c.drawImageRect(self._image(f), skia.Rect.MakeWH(self.W, self.H), skia.SamplingOptions(skia.FilterMode.kLinear))
         tpl, T = self.tpl, self.tpl.T
         placed = []                                           # (x, y, w, h) of labels drawn so far: no overlaps
+        prog = [l for l in self.sc.spec.get("labels", []) if l.get("progress") is not None]
+        passed = [l for l in prog if self.progress and self.progress[f - 1] >= float(l["progress"])]
+        latest = max(passed, key=lambda l: float(l["progress"])) if passed and self.sc.spec.get("latest_only") else None
         for l in self.sc.spec.get("labels", []):
             if l.get("progress") is not None:              # path3d badges appear as the mover passes their point
-                if not self.progress or self.progress[f - 1] < float(l["progress"]):
+                if l not in passed or (latest is not None and l is not latest):
                     continue
                 t0 = None
             else:

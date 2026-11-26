@@ -83,6 +83,7 @@ Styles available (`styles_available`), with what each is best for:
 - claude-warm-dark: developer tooling on deep charcoal: project structure, config files, CLI workflows
 - claude-orange: developer tooling explainers on warm cream with terracotta accents
 - claude-orange-dark: premium developer-tool explainers on black: editor UI, terminals, diagrams
+- navy-gold: platforms, paths and layered systems on dark navy with a gold accent
 - stop-motion-clay: light, friendly intros and simple flows
 - hd-pixel-sprite-3d: ONLY for videos with a 3D model scene (model_3d); never instead of pixel-art
 Planned and NOT available (`styles_planned`): stick-figure-story, paper-cutout-puppet, hand-puppet-theatre. For incident
@@ -113,3 +114,12 @@ cardboard-diorama or paper-craft for architecture overviews; minimal-counter for
 networking basics. Pace like ByteByteGo (tech icons, connectors with pulses, components revealed as the narration
 reaches them; Shorts about 50-60 s), show real commands and configs when the topic has them (KodeKloud), and keep a
 recognisable series format when the brief names one (Fireship).
+
+## Optional 3D (treatment "blender3d")
+Only offered when `three_d.available` is true (Blender is installed and the brief does not say "no 3D").
+- Use 3D only where depth explains something: layers (layers3d), flows and journeys (path3d), things stacking
+  (stack3d), networks (network3d), a device or rack for context (device3d), the Earth (globe3d).
+- At most 2-3 Blender shots per 60 s; everything else stays in the faster 2D treatments.
+- Each 3D shot type counts as its own layout for the variety rule (write it as the scene's "effect", e.g. "layers3d").
+- If the brief forces 3D for named scenes (`three_d.mode` = {"force": [...]}) use it there; if it is "off", never.
+- Never plan readable text inside a 3D shot: labels are drawn on top by the 2D renderer.

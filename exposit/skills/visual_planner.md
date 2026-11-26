@@ -220,3 +220,11 @@ strategy did not choose. Effect names outside the ten above, styles that are pla
 paper-cutout-puppet, hand-puppet-theatre) and hd-pixel-sprite-3d without a model_3d scene fail the storyboard gate.
 Style notes: silent-film turns each scene heading into a 1.5 s intertitle, so keep headings short and quotable;
 minimal-counter wants stat scenes; whiteboard and sketchnote suit line_reveal and stacking_cards.
+
+blender3d: (only when three_d.available is true) {"treatment": "blender3d", "shot": "layers3d" | "path3d" | "stack3d" |
+"network3d" | "device3d" | "globe3d", "params": {...}, "camera": {"orbit": deg, "dolly": m, "dof": true},
+"labels": [{"text", "anchor", "at", "dx", "dy", "size" (>= 30), "progress" (path3d: show when the mover passes)}],
+"fallback": an optional 2D spec}. Params: layers3d {"layers": [{"name", "glow"}], "sink": n}; path3d {} with anchors
+"start", "end", "mover"; stack3d {"cards": [names]}; network3d {"nodes": [{"name", "pos"}], "links": [[a, b]]};
+device3d {"device": "phone" | "laptop" | "rack"}; globe3d {"texture", "spin"}. Every label is anchored to a named
+anchor (a layer name, a card name, a node name, "mover", "device", "globe"). At most 2-3 per 60 s.

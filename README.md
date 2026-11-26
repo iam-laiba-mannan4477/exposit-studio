@@ -204,3 +204,8 @@ npm run build                   # writes web\dist, which the studio serves
 See **[docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md)**: every feature with its status and how it was checked. In short, these are not built: the 1:1 square format, 3D scenes, Urdu narration, split/merge of scenes, publishing, learning from your channel analytics, cloud rendering and a written trend interpretation. Each appears in the interface labelled **Planned**.
 
 Deployment to a server: [docs/DEPLOY-AWS.md](docs/DEPLOY-AWS.md).
+
+## Optional 3D (Blender)
+If you install Blender (blender.org), the studio can render up to 2-3 short 3D shots per video (layers, paths, stacks,
+networks, devices, a globe) and composite them with sharp 2D labels. Set `BLENDER_PATH` in `.env` if it is not
+auto-detected, and check with `python -m exposit.cli doctor`. Without Blender, those scenes render in 2D.

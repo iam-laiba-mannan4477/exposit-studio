@@ -139,6 +139,15 @@ def cmd_doctor() -> int:
         line(len(png) > 1000, "scene renderer (Skia)", f"test frame {len(png)} bytes")
     except Exception as e:
         line(False, "scene renderer (Skia)", f"{type(e).__name__}: {e}")
+    from .render import blender3d
+    bi = blender3d.info(refresh=True)
+    if bi.get("path"):
+        line(True, "Blender (optional 3D)", f"{bi['path']} (version {bi.get('version') or 'unknown'})")
+        ok, why = blender3d.test_render(log=lambda m: None)
+        line(ok, "Blender test render (64x64, EEVEE, headless)", why)
+    else:
+        print("[info] Blender (optional 3D): not found. 3D shots fall back to 2D. Install it from blender.org and set "
+              "BLENDER_PATH in .env if it is not in C:\\Program Files\\Blender Foundation.")
     try:
         import psutil
         vm = psutil.virtual_memory()

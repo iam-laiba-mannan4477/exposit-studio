@@ -161,3 +161,10 @@ Nothing was run on Windows. The risks, and what the scripts do about them:
 - **Execution policy** blocking scripts: the commands use `-ExecutionPolicy Bypass` for that one run.
 - **Fonts and paths**: the renderer loads its own bundled fonts by file path, not from the system.
 - **Speed on the i5-1235U**: not measured. See the performance notes in the README.
+
+## Optional 3D shots (Blender)
+- Status: **works when Blender is installed by the user**; otherwise every 3D shot renders as its 2D fallback
+  (stacking cards built from its labels, or the spec's own "fallback"), with a note in the production log.
+- Shot types: layers3d, path3d, stack3d, network3d, device3d, globe3d. EEVEE, 8 samples, 2 threads, capped textures and shadows, no raytracing or volumetrics, the 3D layer at
+  720x1280 upscaled under full-resolution labels, a 2.5 GB memory watchdog, one process at a time, a timeout per shot, transparent PNG frames cached by spec hash; labels are drawn in 2D on top.
+- External tool, not bundled: Blender (GPL), installed from blender.org. `python -m exposit.cli doctor` checks it.

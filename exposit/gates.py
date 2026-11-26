@@ -168,6 +168,10 @@ def engine_footage_ok(spec: dict) -> bool:
     return engine.footage_path(spec).is_file()
 
 
+def n_words_of(sc: dict) -> int:
+    return sum(len(words(s["text"])) for s in sc.get("sentences", []))
+
+
 def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None = None) -> dict:
     comps = {c["id"] for c in facts.get("model", {}).get("components", [])}
     sids = [s["id"] for s in script.get("scenes", [])]
@@ -223,8 +227,20 @@ def storyboard_gate(board: dict, script: dict, facts: dict, template: str | None
                 unknown_names.append(f"{spec['id']}: footage {spec.get('src')} is not in exposit/assets/footage")
         elif est > 0 and changes / est < 1 / 6:
             sparse.append(f"{spec['id']}: {changes} visual changes in about {est:.0f} s")
+    shots = [s for s in board.get("scenes", []) if s.get("treatment") == "blender3d"]
+    total = sum(n_words_of(sc) for sc in script.get("scenes", [])) / WPS
+    from .render import blender3d as _b3
+    max_shots = max(1, round(_b3.MAX_SHOTS_PER_MINUTE * max(total, 1) / 60))
+    est = sum(_b3.estimate_seconds(dict(s, seconds=6.0)) for s in shots)
+    bad_labels = [f"{s['id']}: {l.get('text', '')[:24]}" for s in shots for l in s.get("labels", []) if float(l.get("size", 38)) < 30]
+    unknown_shots = [f"{s['id']}: {s.get('shot')}" for s in shots if s.get("shot") not in _b3.SHOT_TYPES]
     crit = [
         _crit("One specification per script scene", [s["id"] for s in board.get("scenes", [])] == sids),
+        _crit("3D shots: at most 2-3 per 60 s, known types, labels >= 30 px", len(shots) <= max_shots and not bad_labels and not unknown_shots,
+              "; ".join(bad_labels + unknown_shots) if (bad_labels or unknown_shots) else f"{len(shots)} of at most {max_shots}"),
+        dict(_crit("Extra 3D render time (estimate)", True,
+                   (f"about {est / 60:.1f} min for {len(shots)} Blender shot(s)" + ("" if _b3.available() else "; Blender not found: they will render as 2D"))
+                   if shots else "No 3D shots"), warning=bool(shots)),
         _crit("Cues point at spoken words and known elements", not problems, "; ".join(problems[:6])),
         _crit("Drawn elements map to the system model", not refs, "; ".join(refs[:6])),
         _crit("A visual change at least every 6 seconds", not sparse, "; ".join(sparse)),

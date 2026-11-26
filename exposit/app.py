@@ -190,7 +190,8 @@ async def put_brief(pid: str, req: Request):
     need(pid)
     b = await req.json()
     brief = store.read_json(pid, "brief.json", {})
-    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format", "engine_version", "cover_headline"):
+    for k in ("quality", "theme", "voice", "voice_speed", "review_mode", "title", "format", "engine_version", "cover_headline",
+              "three_d", "music", "duration"):
         if k in b:
             brief[k] = b[k]
     if brief.get("format", "16:9") not in ("16:9", "9:16"):

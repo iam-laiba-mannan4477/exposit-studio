@@ -29,6 +29,10 @@ Rules while answering tasks:
 - Do not install anything a task mentions. Tool recommendations are recorded for the user to approve.
 - Answer tasks one at a time, in the order they were created; later roles depend on earlier answers.
 
+Treatments include an optional `blender3d` (render/blender3d.py builds the scene in Blender from primitives;
+render/shot3d.py composites the frames and draws the labels). Offer it only when the task's `three_d.available` is
+true, at most 2-3 shots per 60 s, and never put readable text in the 3D scene.
+
 ## 2. Changing the code
 
 - Run the tests before and after a change: `python -m pytest -m "not slow"` (fast), `python -m pytest` (full, ~3 min:
